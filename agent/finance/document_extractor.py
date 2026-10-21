@@ -9,7 +9,7 @@ from lxml import etree
 from .source_locations import RawLocations, raw_text
 from .literal_xml import escape_literal_text
 
-VERSION='dart-extraction-1.7'
+VERSION='dart-extraction-1.8'
 CELL_TAGS={'td','th','te','tu'}
 
 
@@ -180,7 +180,13 @@ class DocumentExtractor:
                 self.root=repaired_root
                 self.parser_kind='xml_literal_escape_strict'
             else:
-                parser=(etree.HTMLParser(no_network=True,recover=True,huge_tree=False) if self.is_html
+                # 보관 HTML은 UTF-8로 저장됐어도 예전 charset 선언이 남을 수 있다.
+                # 바이트가 엄격한 UTF-8로 유효한 경우만 우선하고 원문은 변경하지 않는다.
+                html_encoding=None
+                if self.is_html:
+                    try:content.decode('utf-8');html_encoding='utf-8'
+                    except UnicodeDecodeError:pass
+                parser=(etree.HTMLParser(no_network=True,recover=True,huge_tree=False,encoding=html_encoding) if self.is_html
                         else etree.XMLParser(recover=True,**options))
                 self.root=etree.fromstring(content,parser)
                 self.warnings.extend(self._logs(parser.error_log,'recovery'))

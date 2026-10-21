@@ -452,6 +452,7 @@ def assess_stage04(batch,reference,*,optional_balance_dates=(),store=None):
             completion=_completion_sections(batch,reference,gap_items,failures)
     passed=not failures
     return {'policy_version':VERSION,'regression_status':'pass' if passed else 'fail',
+            'implementation_assessment':'separate_development_verification_required',
             'financial_validation_status':'incomplete' if gaps or failures else 'checked_within_test_scope',
             'stage4_complete':False if gaps or failures else True,
             'completion':completion,'required_comparison_coverage':comparison_coverage,

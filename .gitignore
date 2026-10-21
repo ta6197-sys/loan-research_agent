@@ -26,3 +26,10 @@ doc/finance/evaluation/EXPECTED_RESULTS.md
 doc/image_usecase/
 doc/image_usecase_openai/
 .archify/
+
+# 로컬 금융 실행 관리자 잠금
+*.research-worker.lock
+
+# 금융 보고서 출력·시각 검증
+output/pdf/
+tmp/pdfs/
