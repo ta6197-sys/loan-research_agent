@@ -19,7 +19,7 @@ from agent.research_store import encode, now, row_data
 from .extraction_service import ACCOUNT_RULES
 from .numeric_validation import ACCOUNT_IDS
 
-VERSION = 'xbrl-mapping-1.5'
+VERSION = 'xbrl-mapping-1.6'
 XI = 'http://www.xbrl.org/2003/instance'
 XS = 'http://www.w3.org/2001/XMLSchema'
 XL = 'http://www.w3.org/1999/xlink'
@@ -133,6 +133,7 @@ def context(node):
     return {'valid': entity.get('scheme') == 'http://dart.fss.or.kr/ifrs/CIK',
             'entity': entity.text, 'entity_scheme': entity.get('scheme'), 'period': period,
             'scope': scope, 'dimensions': dimensions, 'typed_dimension_count': len(typed),
+            'non_dimensional_content_count': len(non_dimensional),
             'primary_context': scope != 'unknown' and not extra and not typed and not non_dimensional}
 
 
@@ -320,6 +321,29 @@ def bundle(store, sources, archive_id):
             'extension_concepts': [d for d in definitions.values() if d['namespace'] == schema_root.get('targetNamespace')]}
 
 
+def load_reports(store, sources):
+    """공시별 실패를 격리한다. 읽기 실패를 자료 없음이나 검증 성공으로 바꾸지 않는다."""
+    reports, failures = {}, []
+    archives = [s for s in sources if s['metadata']['reporting_period'].get('operation') == 'xbrl']
+    grouped = defaultdict(list)
+    for source in archives:
+        grouped[source['metadata'].get('receipt_number')].append(source)
+    for receipt, candidates in grouped.items():
+        if not receipt or len(candidates) != 1:
+            failures.append({'receipt_number': receipt, 'source_ids': [s['id'] for s in candidates],
+                             'status': 'not_checked', 'reason': 'ambiguous_xbrl_archive'})
+            continue
+        try:
+            report = bundle(store, sources, candidates[0]['id'])
+            if report['receipt'] != receipt:
+                raise ValueError('archive_instance_receipt_mismatch')
+            reports[receipt] = report
+        except (ValueError, KeyError, TypeError, etree.XMLSyntaxError):
+            failures.append({'receipt_number': receipt, 'source_ids': [candidates[0]['id']],
+                             'status': 'not_checked', 'reason': 'stored_xbrl_unreadable_or_invalid'})
+    return reports, failures
+
+
 def bind_record(report, row, company, scope, period, amount, pointer):
     code = row['account_id']
     # 계정 코드 접두사 제거/문자열 유사도/명칭 허용쌍으로 개념을 바꾸지 않는다.
@@ -412,7 +436,7 @@ class XbrlMappingService:
         if old:
             return self.batch(old[0]) | {'reused': True}
         archives = [s for s in sources if s['metadata']['reporting_period'].get('operation') == 'xbrl']
-        reports = {s['metadata']['receipt_number']: bundle(self.store, sources, s['id']) for s in archives}
+        reports, report_failures = load_reports(self.store, sources)
         records = []
         excluded_statement_rows = 0
         target_ids = {code: account for account in ACCOUNT_RULES for code in ACCOUNT_IDS[account]}
@@ -462,9 +486,11 @@ class XbrlMappingService:
                     'account':current['account'],'scope':current['scope'],**compare_concepts(current,previous)})
         covered = Counter((r['receipt_number'],r['scope'],r['account']) for r in records)
         missing_coverage = [{'receipt':receipt,'scope':scope,'account':account}
-            for receipt in reports for scope in ('OFS','CFS') for account in ACCOUNT_RULES
+            for receipt in {s['metadata'].get('receipt_number') for s in archives}
+            for scope in ('OFS','CFS') for account in ACCOUNT_RULES
             if not covered[(receipt,scope,account)]]
         summary = {'version': VERSION, 'report_count': len(reports), 'record_count': len(records),
+            'report_failures': report_failures, 'requested_report_count': len(archives),
             'concept_counts': dict(Counter(r['concept_status'] for r in records)),
             'excluded_statement_rows':excluded_statement_rows,'missing_current_account_coverage':missing_coverage,
             'concept_link_counts':dict(Counter(r['status'] for r in links)),

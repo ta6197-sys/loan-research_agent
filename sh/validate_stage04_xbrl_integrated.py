@@ -56,7 +56,7 @@ def main():
     numeric=NumericValidationService(store).validate_run(run)
     (target/'numeric_batch.json').write_text(safe_payload(numeric))
     ref=reference_comparison(store,numeric,ROOT/'doc/finance/cases/sangsin_brake')
-    acceptance=assess_stage04(numeric,ref,optional_balance_dates=('2023-06-30',))
+    acceptance=assess_stage04(numeric,ref,optional_balance_dates=('2023-06-30',),store=store)
     for name,data in [('reference_comparison.json',ref),('acceptance.json',acceptance)]:
         (target/name).write_text(safe_payload(data))
     unchanged=hashlib.sha256((ORIGINAL/'session.db').read_bytes()).hexdigest()==before

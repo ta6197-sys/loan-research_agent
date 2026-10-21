@@ -6,7 +6,7 @@ from .document_extractor import normalize_label, number
 from .note_checks import SCALES, ACCOUNTS
 from .note_context import NoteContext
 
-VERSION='borrowing-details-1.0'
+VERSION='borrowing-details-1.1'
 RULE='V12_borrowing_details'
 
 
@@ -56,7 +56,9 @@ def horizontal(table):
             cells=[c for c in row['cells'] if group['column']<=c['column']<group['column']+group['colspan']]
             numeric=[c for c in cells if number(c['text']) is not None]
             if len(numeric)!=1 or any(c['text'] for c in cells if c not in numeric):
-                missing.append({'name':group['text'],'reason':'missing_or_ambiguous_amount','locations':[c['location'] for c in cells]});continue
+                missing.append({'name':group['text'],'name_location':group['location'],
+                    'reason':'missing_or_ambiguous_amount','locations':[c['location'] for c in cells],
+                    'raw_values':[c['text'] for c in cells]});continue
             components.append(item(group,numeric[0],table['unit']))
         classification={}
         if family=='long':
@@ -96,7 +98,9 @@ def vertical(table):
             if not lender or row['row']>=until or not purpose or not purpose['text'] or not value:
                 missing.append({'reason':'unresolved_lender_or_purpose','row':row['row']});continue
             if amount(value,table['unit']) is None:
-                missing.append({'name':lender['text']+' '+purpose['text'],'reason':'missing_amount','location':value['location']});continue
+                missing.append({'name':lender['text']+' '+purpose['text'],'name_location':lender['location'],
+                    'purpose_location':purpose['location'],'reason':'missing_amount','location':value['location'],
+                    'raw_values':[value['text']]});continue
             component=item(lender,value,table['unit'],lender['text']+' '+purpose['text'])
             component['purpose_location']=purpose['location'];components.append(component)
         if len(totals)!=1 or totals[0][1] is None:continue

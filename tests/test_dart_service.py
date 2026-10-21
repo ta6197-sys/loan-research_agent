@@ -155,6 +155,7 @@ class DartServiceTests(unittest.IsolatedAsyncioTestCase):
 class FinanceMCPTests(unittest.IsolatedAsyncioTestCase):
     async def test_real_stdio_registration_and_safe_missing_key(self):
         from agent.finance.runtime import create_finance_client
+        from agent.finance.tool_policy import FINANCE_TOOL_INPUTS
         with tempfile.TemporaryDirectory() as tmp,patch.dict(os.environ,{'OPENDART_API_KEY':''}):
             client=create_finance_client(Path(tmp)/'session.db',Path(tmp)/'sources')
             await client.start()
@@ -165,6 +166,7 @@ class FinanceMCPTests(unittest.IsolatedAsyncioTestCase):
                                   'extract_source','search_source','read_fragment','validate_numbers',
                                   'dart_xbrl','dart_taxonomy','validate_account_mapping'},
                                  {tool.name for tool in tools.tools})
+                self.assertEqual(set(FINANCE_TOOL_INPUTS), {tool.name for tool in tools.tools})
                 result=await client.call_finance('search_companies',{'query':'synthetic'})
                 self.assertEqual('missing_configuration',result['status'])
                 self.assertFalse(client._flaky_pending)

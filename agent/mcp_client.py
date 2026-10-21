@@ -22,6 +22,8 @@ from langsmith import traceable
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+from agent.finance.tool_policy import checked_finance_arguments
+
 SERVER_DIR = Path(__file__).parent.parent
 DEFAULT_SERVER_SCRIPTS = {
     "ops": SERVER_DIR / "mcp_server.py",
@@ -82,8 +84,14 @@ class MCPClient:
             self._stack = None
             self.sessions = {}
 
-    @traceable(run_type="tool", name="mcp.call_tool")
     async def call_tool(self, name: str, arguments: dict, server: str = "ops") -> dict:
+        if server == 'finance':
+            # 금융 자료는 추적되는 학습용 일반 호출 경로로 보내지 않는다.
+            return {'status': 'tool_not_allowed', 'retryable': False}
+        return await self._call_legacy_tool(name, arguments, server)
+
+    @traceable(run_type="tool", name="mcp.call_tool")
+    async def _call_legacy_tool(self, name: str, arguments: dict, server: str) -> dict:
         if self._flaky_pending and name == "get_monitoring_status":
             self._flaky_pending = False
             raise asyncio.TimeoutError("simulated transient timeout (Wave 9 demo)")
@@ -93,6 +101,10 @@ class MCPClient:
 
     async def call_finance(self, name: str, arguments: dict) -> dict:
         """금융 도구에는 학습용 실패 시뮬레이션/외부 추적 데코레이터를 적용하지 않는다."""
+        try:
+            arguments = checked_finance_arguments(name, arguments)
+        except ValueError as error:
+            return {'status': str(error), 'retryable': False}
         async with self._lock:
             result = await self.sessions['finance'].call_tool(name, arguments, read_timeout_seconds=1800)
         if getattr(result, 'is_error', getattr(result, 'isError', False)):

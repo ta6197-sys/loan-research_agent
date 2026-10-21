@@ -89,7 +89,7 @@ async def main(output_root=None):
     reference=reference_comparison(store,batch,case)
     (target/'reference_comparison.json').write_text(safe_payload(reference))
     require(all(sha(ROOT/name)==value for name,value in protected.items()),'protected_source_changed')
-    acceptance=assess_stage04(batch,reference)
+    acceptance=assess_stage04(batch,reference,store=store)
     (target/'acceptance.json').write_text(safe_payload(acceptance))
     output={'acceptance':acceptance,'run_id':run_id,'batch_id':result['batch_id'],'summary':batch['summary'],
             'external_data_requests':0,'model_calls':0,'new_mcp_process_readback':True,'source_case_unchanged':True,

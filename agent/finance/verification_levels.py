@@ -2,8 +2,9 @@
 from decimal import Decimal
 from itertools import combinations
 from .borrowing_details import RULE as DETAIL_RULE, assess_detail, vector
+from .xbrl_borrowing import native_profile_vector,valid_augmentation
 
-VERSION='borrowing-verification-levels-1.2'
+VERSION='borrowing-verification-levels-1.3'
 DIMENSIONS=('source_amount','detail_total','composition_identity','reclassification','lender_allocation')
 STATES={'pass','fail','not_checked','not_applicable'}
 
@@ -15,7 +16,10 @@ def usage_scope(dimensions):
     if full is not None or positive is not None:
         if not full or not positive or any(x.get('status') not in STATES for x in (full,positive)):
             raise ValueError('invalid_scoped_composition_identity')
-        basis=('all_disclosed_items' if full['status']=='pass' else 'positive_balance_items' if positive['status']=='pass' else 'none')
+        native=identity.get('native_disclosure_balance_items')
+        if native and native.get('status') not in STATES:raise ValueError('invalid_native_identity')
+        basis=('all_disclosed_items' if full['status']=='pass' else 'positive_balance_items' if positive['status']=='pass'
+               else 'native_disclosure_balance_items' if native and native['status']=='pass' else 'none')
         identity_pass=basis!='none';all_items_match=full['status']=='pass'
     else:
         basis=None;identity_pass=identity['status']=='pass';all_items_match=identity_pass
@@ -30,11 +34,11 @@ def usage_scope(dimensions):
 
 
 def review_levels(review,records):
-    d=review['data'];balance_policy=d.get('version')=='composition-review-1.2';account=d['account'];observations=d['observations'];details=[v for v in records if v.get('rule_id')==DETAIL_RULE]
+    d=review['data'];native_policy=d.get('version')=='composition-review-1.3';balance_policy=d.get('version') in {'composition-review-1.2','composition-review-1.3'};account=d['account'];observations=d['observations'];details=[v for v in records if v.get('rule_id')==DETAIL_RULE]
     dimensions={k:{'status':'not_checked','evidence_ids':[]} for k in DIMENSIONS}
     dimensions['source_amount']={'status':'pass' if observations and all(o.get('numeric_validation_id') for o in observations) else 'not_checked',
                                  'evidence_ids':[o['numeric_validation_id'] for o in observations]}
-    used=[];vectors=[];profile_vectors=[];missing=False;identity_missing=False;detail_bad=False;reclass_bad=False;reclass_missing=False
+    used=[];vectors=[];profile_vectors=[];effective_vectors=[];native_vectors=[];raw_missing=False;missing=False;identity_missing=False;detail_bad=False;reclass_bad=False;reclass_missing=False
     for observation in observations:
         candidates=[v for v in details if v['data'].get('source_id')==observation['source_id']
                     and v['data'].get('account_fact_ids',{}).get(account)==observation['fact_id']
@@ -45,10 +49,14 @@ def review_levels(review,records):
             detail_bad|=checks['detail_total']['status']=='fail'
             missing|=checks['detail_total']['status']=='not_checked'
             names=[c['name'] for c in data['components']]
-            complete=bool(names) and not data.get('unresolved') and len(set(n for n,a in vector(data['components'])))==len(names)
+            complete=bool(names) and not data.get('unresolved') and len(set(n for n,a in vector(data['components'])))==len(names) and valid_augmentation(data)
             identity_missing|=not complete
             if complete:
-                current_vector=vector(data['components']);vectors.append(current_vector);profile_vectors.append((candidate['id'],current_vector))
+                original=data.get('source_observation',data)
+                raw_missing|=bool(original.get('unresolved'))
+                current_vector=vector(original['components']);vectors.append(current_vector);profile_vectors.append((candidate['id'],current_vector))
+                effective_vectors.append((candidate['id'],vector(data['components'])))
+            native_vectors.append((candidate['id'],native_profile_vector(data)))
             if Decimal(data['account_amounts'][account])!=Decimal(observation['value']):detail_bad=True
             if account!='short_term_borrowings':
                 reclass_bad|=checks['reclassification']['status']=='fail'
@@ -58,7 +66,7 @@ def review_levels(review,records):
     names_equal=bool(vectors) and all(v==vectors[0] for v in vectors)
     codes={o.get('official_account_id') for o in observations};values={Decimal(o['value']) for o in observations}
     equal=names_equal and len(codes)==1 and None not in codes and len(values)==1 and len({o['source_id'] for o in observations})>=2
-    identity='not_checked' if identity_missing else ('pass' if equal else 'fail')
+    identity='not_checked' if identity_missing or raw_missing else ('pass' if equal else 'fail')
     differences=[]
     for (left,a),(right,b) in combinations(profile_vectors,2):
         if a==b:continue
@@ -69,7 +77,7 @@ def review_levels(review,records):
                                          'limitation':'정확한 명칭·금액의 일치 여부이며 대출의 실제 경제적 동일성/상이성을 추정한 판정은 아님','evidence_ids':evidence,'basis':'all_explicit_components_exact_names_and_amounts_same_context',
                                          'numeric_equality_alone_sufficient':False}
     if balance_policy:
-        positive_vectors=[(identifier,[(name,value) for name,value in values if value>0]) for identifier,values in profile_vectors]
+        positive_vectors=[(identifier,[(name,value) for name,value in values if value>0]) for identifier,values in effective_vectors]
         nonnegative=all(value>=0 for identifier,values in profile_vectors for name,value in values)
         available=bool(positive_vectors) and all(values for identifier,values in positive_vectors) and nonnegative
         context_equal=len(codes)==1 and None not in codes and len(values)==1 and len({o['source_id'] for o in observations})>=2
@@ -91,13 +99,22 @@ def review_levels(review,records):
         dimension['status']='pass' if identity=='pass' else balance_status
         dimension['basis']='all_disclosed_items' if identity=='pass' else 'positive_balance_items'
         dimension['limitation']='명시적 0원 항목을 원문과 함께 보존한다. 양수 잔액 일치를 계약 항목 전체·은행별 상환 일정의 일치로 확대하지 않는다.'
+        if native_policy:
+            available_native=bool(native_vectors) and not identity_missing and all(v for _,v in native_vectors)
+            native_equal=available_native and context_equal and all(v==native_vectors[0][1] for _,v in native_vectors)
+            native_status='not_checked' if not available_native else 'pass' if native_equal else 'fail'
+            dimension['native_disclosure_balance_items']={'status':native_status,'evidence_ids':evidence,
+                'basis':'same_context_complete_items_individually_bound_to_each_disclosure',
+                'contract_or_bank_identity_verified':False}
+            if dimension['status']!='pass' and native_status=='pass':
+                dimension['status']='pass';dimension['basis']='native_disclosure_balance_items'
     dimensions['reclassification']={'status':'not_applicable' if account=='short_term_borrowings' else (
         'fail' if reclass_bad else 'not_checked' if reclass_missing else 'pass'),
         'evidence_ids':[] if account=='short_term_borrowings' else evidence,
         'reason':'short_term_account' if account=='short_term_borrowings' else 'gross_current_deduction_noncurrent_account_totals_only'}
     dimensions['lender_allocation']={'status':'not_applicable' if account=='short_term_borrowings' else 'not_checked',
                                      'evidence_ids':[],'reason':'long_term_current_noncurrent_allocation_not_applicable' if account=='short_term_borrowings' else 'per_lender_current_noncurrent_allocations_not_confirmed'}
-    return {'version':VERSION if balance_policy else 'borrowing-verification-levels-1.1','dimensions':dimensions,'usage_scope':usage_scope(dimensions)}
+    return {'version':VERSION if native_policy else 'borrowing-verification-levels-1.2' if balance_policy else 'borrowing-verification-levels-1.1','dimensions':dimensions,'usage_scope':usage_scope(dimensions)}
 
 
 def confirmed_caption_link(a,b,reviews,records):

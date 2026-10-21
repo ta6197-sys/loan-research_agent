@@ -4,7 +4,7 @@ from uuid import uuid4
 from .document_extractor import normalize_label
 from .verification_levels import review_levels
 
-VERSION='composition-review-1.2'
+VERSION='composition-review-1.3'
 RULE='V12_account_composition_review'
 ACCOUNTS={'short_term_borrowings','current_long_term_borrowings','long_term_borrowings'}
 
@@ -49,6 +49,10 @@ def composition_reviews(facts,validations,detail_records=()):
                 review['data']['reason']='positive_balance_components_and_required_reclassification_confirmed'
                 review['data']['use_status']='account_balance_totals_only'
                 review['data']['limitation']='양수 잔액 구성과 필요한 계정 재분류만 확인함. 명시적 0원 항목과 전체 항목 차이는 보존하며 계약 전체·은행별 상환 일정·사채 부재 전체 확인으로 확대하지 않음'
+            elif levels['usage_scope'].get('account_total_identity_basis')=='native_disclosure_balance_items':
+                review['data']['reason']='individually_bound_disclosure_balance_components_confirmed'
+                review['data']['use_status']='account_balance_totals_only'
+                review['data']['limitation']='각 공시의 원문·XBRL 항목과 빠짐없는 잔액·재분류에 한정한 연결. 원문 차이·미확인은 보존하며 은행 법인·계약·상환 일정의 동일성은 확인하지 않음'
     return results
 
 

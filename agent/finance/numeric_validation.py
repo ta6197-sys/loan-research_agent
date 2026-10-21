@@ -21,7 +21,7 @@ from .borrowing_composition import reconcile_composition, link_same_period_compo
 from .scope_observations import observe_scope, unchanged_scope_support
 from .consolidation_checks import VERSION as SCOPE_CHANGE_VERSION, collect_disclosed_changes, blocking_changes
 
-POLICY_VERSION='numeric-validation-1.26'
+POLICY_VERSION='numeric-validation-1.27'
 UNIT_SCALE={'원':'1','천원':'1000','백만원':'1000000','억원':'100000000'}
 ACCOUNT_IDS={
     'revenue':{'ifrs-full_Revenue'},
@@ -375,6 +375,11 @@ class NumericValidationService:
         detail_records=[]
         for sid,source in documents.items():
             detail_records+=collect_details(source,contents[sid],identities[sid],tables[sid],facts,validations,self._raw_check)
+        # XBRL 매핑이 이 모듈의 계정 코드를 참조하므로 호출 시점에만 가져온다.
+        from .xbrl_mapping import load_reports
+        from .xbrl_borrowing import attach_evidence,native_usage_counts
+        native_reports,native_report_failures=load_reports(self.store,sources)
+        attach_evidence(detail_records,native_reports,{s['id']:s for s in sources})
         composition_review_records=composition_reviews(facts,validations,detail_records)
         additional_links=link_same_period_compositions(facts,validations,compositions,composition_review_records,detail_records,composition_links)
         composition_links+=additional_links
@@ -451,6 +456,8 @@ class NumericValidationService:
                  'rule_scope':{'V01_V07_V13_V18':'per_fact_checks','V08_V11':'calculations',
                     'V12':'per_group_evidence' if compositions or composition_links else 'not_checked','latest_correction_history':'checked' if audit['status']=='pass' else 'not_checked','consolidation_scope_changes':'per_comparison_evidence' if scope_observations else 'not_checked','V14_V17_V19':'not_checked_report_stage',
                     'V20':'immutable_versions','V21':'local_only_no_model','V22':'no_forced_pass'}}
+        summary['native_borrowing_evidence']=native_usage_counts(detail_records)
+        summary['native_xbrl_report_failures']=native_report_failures
         batch_id=uuid4().hex
         reused=False
         with self.store.connection(write=True) as conn:

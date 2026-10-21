@@ -28,7 +28,7 @@ def main():
     (target/'batch.json').write_text(safe_payload(batch))
     reference=reference_comparison(store,batch,ROOT/'doc/finance/cases/sangsin_brake')
     (target/'reference_comparison.json').write_text(safe_payload(reference))
-    acceptance=assess_stage04(batch,reference,optional_balance_dates=('2023-06-30',))
+    acceptance=assess_stage04(batch,reference,optional_balance_dates=('2023-06-30',),store=store)
     (target/'acceptance.json').write_text(safe_payload(acceptance))
     unchanged=hashlib.sha256(original.read_bytes()).hexdigest()==original_hash
     output={'acceptance':acceptance,'batch_id':batch['id'],'run_id':metadata['run_id'],'summary':batch['summary'],

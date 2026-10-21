@@ -12,8 +12,9 @@ from .account_equivalence import verified_alias_pair
 from .document_extractor import normalize_label
 from .scope_observations import RULE as SCOPE_OBSERVATION_RULE, unchanged_scope_support
 from .consolidation_checks import RULE as SCOPE_CHANGE_RULE, blocking_changes
+from .xbrl_borrowing import valid_augmentation,replay_native_details
 
-VERSION='stage04-acceptance-1.13'
+VERSION='stage04-acceptance-1.14'
 PERIODS=('2023FY','2024FY','2025FY','2025H1','2026H1')
 SCOPES=('OFS','CFS')
 FLOW_ACCOUNTS={'revenue','operating_profit','net_profit','operating_cashflow'}
@@ -83,9 +84,11 @@ def _linked_composition_group(link,by_validation,by_fact):
 
 
 
-def _detail_valid(record,by_fact):
+def _detail_valid(record,by_fact,native_replay=None):
     d=record.get('data',{})
     try:
+        if not valid_augmentation(d):return False
+        if 'source_observation' in d and (native_replay is None or native_replay.get(record['id'])!=d):return False
         checks=assess_detail(d)
         if checks!=d.get('checks'):return False
         states=[v['status'] for v in checks.values()]
@@ -243,7 +246,7 @@ def _completion_sections(batch, reference, gaps, failures):
     return sections
 
 
-def assess_stage04(batch,reference,*,optional_balance_dates=()):
+def assess_stage04(batch,reference,*,optional_balance_dates=(),store=None):
     """0: 정한 회귀 조건 통과(미검증 별도), 1: 오류/필수 누락/예상 밖 보류.
 
     이 판정은 자료 자체의 금융적 진실이나 조사 전체의 완료를 인증하지 않는다.
@@ -263,6 +266,12 @@ def assess_stage04(batch,reference,*,optional_balance_dates=()):
     validations=batch.get('validations',[])
     by_fact={v['fact_id']:v for v in validations if v.get('fact_id')}
     by_validation={v.get('id'):v for v in validations}
+    native_replay={}
+    if any('source_observation' in v.get('data',{}) for v in validations):
+        if store is not None:
+            try:native_replay=replay_native_details(store,batch)
+            except (ValueError,KeyError,TypeError,DecimalException):
+                failures.append({'reason':'native_borrowing_original_replay_failed'})
     if not by_fact:failures.append({'reason':'no_numeric_validations'})
     for item in items:
         identity={k:item.get(k) for k in ('period','scope','account')}
@@ -296,7 +305,7 @@ def assess_stage04(batch,reference,*,optional_balance_dates=()):
                    for rule,x in checks.items()):
                 failures.append({'reason':'unresolved_numeric_check','validation_id':v.get('id')})
             reviews=[r for r in validations if r.get('rule_id')==COMPOSITION_REVIEW_RULE
-                     and r.get('data',{}).get('version') in {'composition-review-1.1','composition-review-1.2'}
+                     and r.get('data',{}).get('version') in {'composition-review-1.1','composition-review-1.2','composition-review-1.3'}
                      and v['fact_id'] in r['data'].get('affected_fact_ids',[])]
             if reviews or d.get('composition_verification_levels') is not None:
                 if (len(reviews)!=1 or d.get('composition_verification_levels')!=reviews[0]['data'].get('verification_levels')
@@ -315,10 +324,10 @@ def assess_stage04(batch,reference,*,optional_balance_dates=()):
                 if not valid_composition:failures.append({'reason':'borrowing_composition_link_missing_or_invalid','validation_id':v.get('id')})
             if checks.get('V12',{}).get('status')=='not_checked':gap('borrowing_note_composition',validation_id=v.get('id'))
         elif v.get('rule_id')==DETAIL_RULE:
-            if not _detail_valid(v,by_fact):failures.append({'reason':'borrowing_detail_evidence_invalid','validation_id':v.get('id')})
+            if not _detail_valid(v,by_fact,native_replay):failures.append({'reason':'borrowing_detail_evidence_invalid','validation_id':v.get('id')})
             elif status not in {'pass','not_checked'}:failures.append({'reason':'borrowing_detail_status_invalid','validation_id':v.get('id')})
         elif v.get('rule_id')==COMPOSITION_REVIEW_RULE:
-            if d.get('version') in {'composition-review-1.1','composition-review-1.2'} or status=='pass':
+            if d.get('version') in {'composition-review-1.1','composition-review-1.2','composition-review-1.3'} or status=='pass':
                 if not _review_valid(v,by_validation,by_fact):failures.append({'reason':'independent_composition_verification_invalid','validation_id':v.get('id')})
             if status=='not_checked' and d.get('reason')=='bond_inclusion_caption_scope_requires_component_confirmation':
                 gap('account_composition_requires_confirmation',validation_id=v.get('id'))
