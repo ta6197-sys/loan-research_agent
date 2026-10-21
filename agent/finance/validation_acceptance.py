@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal, DecimalException
 
 from .extraction_service import ACCOUNT_RULES
-from .composition_review import RULE as COMPOSITION_REVIEW_RULE, affected_reviews
+from .composition_review import RULE as COMPOSITION_REVIEW_RULE, affected_reviews, calculation_composition_usage
 from .borrowing_details import RULE as DETAIL_RULE, assess_detail
 from .verification_levels import review_levels, confirmed_caption_link
 from .borrowing_composition import RULE as COMPOSITION_RULE, LINK_RULE, verify_three_caption_subtotal, total
@@ -13,7 +13,7 @@ from .document_extractor import normalize_label
 from .scope_observations import RULE as SCOPE_OBSERVATION_RULE, unchanged_scope_support
 from .consolidation_checks import RULE as SCOPE_CHANGE_RULE, blocking_changes
 
-VERSION='stage04-acceptance-1.11'
+VERSION='stage04-acceptance-1.13'
 PERIODS=('2023FY','2024FY','2025FY','2025H1','2026H1')
 SCOPES=('OFS','CFS')
 FLOW_ACCOUNTS={'revenue','operating_profit','net_profit','operating_cashflow'}
@@ -296,7 +296,7 @@ def assess_stage04(batch,reference,*,optional_balance_dates=()):
                    for rule,x in checks.items()):
                 failures.append({'reason':'unresolved_numeric_check','validation_id':v.get('id')})
             reviews=[r for r in validations if r.get('rule_id')==COMPOSITION_REVIEW_RULE
-                     and r.get('data',{}).get('version')=='composition-review-1.1'
+                     and r.get('data',{}).get('version') in {'composition-review-1.1','composition-review-1.2'}
                      and v['fact_id'] in r['data'].get('affected_fact_ids',[])]
             if reviews or d.get('composition_verification_levels') is not None:
                 if (len(reviews)!=1 or d.get('composition_verification_levels')!=reviews[0]['data'].get('verification_levels')
@@ -318,7 +318,7 @@ def assess_stage04(batch,reference,*,optional_balance_dates=()):
             if not _detail_valid(v,by_fact):failures.append({'reason':'borrowing_detail_evidence_invalid','validation_id':v.get('id')})
             elif status not in {'pass','not_checked'}:failures.append({'reason':'borrowing_detail_status_invalid','validation_id':v.get('id')})
         elif v.get('rule_id')==COMPOSITION_REVIEW_RULE:
-            if d.get('version')=='composition-review-1.1' or status=='pass':
+            if d.get('version') in {'composition-review-1.1','composition-review-1.2'} or status=='pass':
                 if not _review_valid(v,by_validation,by_fact):failures.append({'reason':'independent_composition_verification_invalid','validation_id':v.get('id')})
             if status=='not_checked' and d.get('reason')=='bond_inclusion_caption_scope_requires_component_confirmation':
                 gap('account_composition_requires_confirmation',validation_id=v.get('id'))
@@ -364,6 +364,9 @@ def assess_stage04(batch,reference,*,optional_balance_dates=()):
                     or 'result' in d):
                 failures.append({'reason':'account_composition_withholding_missing_or_invalid','calculation_id':c.get('id')})
                 continue
+        expected_usage=calculation_composition_usage(c,validations)
+        if d.get('composition_usage')!=expected_usage:
+            failures.append({'reason':'calculation_composition_usage_missing_or_invalid','calculation_id':c.get('id')})
         if status=='pass':
             if formula in BORROWING_SUBTOTALS:
                 composition=by_validation.get(d.get('composition_validation_id'))

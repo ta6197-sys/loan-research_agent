@@ -278,7 +278,7 @@ class ResearchStore(SourceRecovery):
             parts = urlsplit(value.url)
             if parts.scheme not in ("http", "https") or not parts.hostname or parts.fragment:
                 raise ValueError("공개 HTTP(S) 원문 주소만 저장할 수 있습니다.")
-        rights = {"dart": "public_disclosure", "official_ir": "public_disclosure",
+        rights = {"dart": "public_disclosure", "official_ir": "public_disclosure", "official_standard": "public_reference",
                   "user": "user_authorized", "synthetic": "synthetic"}
         if value.rights_status != rights[value.kind]:
             raise ValueError("출처와 이용 구분이 일치하지 않습니다.")

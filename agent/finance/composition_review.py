@@ -4,7 +4,7 @@ from uuid import uuid4
 from .document_extractor import normalize_label
 from .verification_levels import review_levels
 
-VERSION='composition-review-1.1'
+VERSION='composition-review-1.2'
 RULE='V12_account_composition_review'
 ACCOUNTS={'short_term_borrowings','current_long_term_borrowings','long_term_borrowings'}
 
@@ -45,6 +45,10 @@ def composition_reviews(facts,validations,detail_records=()):
             review['data']['reason']='exact_detail_composition_and_required_reclassification_confirmed'
             review['data']['use_status']='account_totals_only'
             review['data']['limitation']='상세 대출 구성과 필요한 계정 재분류만 확인함. 은행별 상환 배분·사채 부재 전체를 확인한 것으로 확대하지 않음'
+            if levels['usage_scope'].get('account_total_identity_basis')=='positive_balance_items':
+                review['data']['reason']='positive_balance_components_and_required_reclassification_confirmed'
+                review['data']['use_status']='account_balance_totals_only'
+                review['data']['limitation']='양수 잔액 구성과 필요한 계정 재분류만 확인함. 명시적 0원 항목과 전체 항목 차이는 보존하며 계약 전체·은행별 상환 일정·사채 부재 전체 확인으로 확대하지 않음'
     return results
 
 
@@ -54,11 +58,32 @@ def affected_reviews(inputs,reviews):
             and ids & set(v.get('data',{}).get('affected_fact_ids',[]))]
 
 
+def calculation_composition_usage(calculation,reviews):
+    formula=calculation['formula_version'].split(':')[-1]
+    if not (formula.startswith('V11_change_') or formula.startswith('V12_')):return None
+    ids={item.get('fact_id') for item in calculation['data'].get('inputs',{}).values()}
+    linked=[v for v in reviews if v.get('rule_id')==RULE and v.get('status')=='pass'
+            and ids & set(v.get('data',{}).get('affected_fact_ids',[]))]
+    if not linked:return None
+    scopes={v['id']:v['data']['verification_levels']['usage_scope'] for v in linked}
+    balance_only=any(v.get('account_total_identity_basis')=='positive_balance_items' for v in scopes.values())
+    return {'validation_ids':sorted(scopes),'usage_scopes':scopes,
+            'use_status':'account_balance_totals_only' if balance_only else 'account_totals_only',
+            'all_disclosed_items_match':all(v.get('all_disclosed_items_match',True) for v in scopes.values()),
+            'per_lender_repayment_analysis_verified':False}
+
+
 def withhold_affected_calculations(calculations,reviews):
     for calculation in calculations:
         formula=calculation['formula_version'].split(':')[-1]
         if not (formula.startswith('V11_change_') or formula.startswith('V12_')):continue
-        data=calculation['data'];affected=affected_reviews(data.get('inputs',{}),reviews)
+        data=calculation['data']
+        usage=calculation_composition_usage(calculation,reviews)
+        if usage:
+            data['composition_usage']=usage
+            if usage['use_status']=='account_balance_totals_only':
+                data.setdefault('limitations',[]).append('양수 잔액 구성만 확인한 계정 합계 계산. 공시 항목 전체·계약 전체·은행별 상환 배분의 동일성을 의미하지 않음')
+        affected=affected_reviews(data.get('inputs',{}),reviews)
         if not affected:continue
         calculation['status']='not_checked'
         if 'result' in data:data['unverified_arithmetic_result']=data.pop('result')

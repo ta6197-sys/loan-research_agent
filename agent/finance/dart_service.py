@@ -7,6 +7,7 @@ from datetime import date
 from email.utils import parsedate_to_datetime
 import hashlib
 import io
+import httpx
 import json
 import os
 from pathlib import Path
@@ -124,7 +125,7 @@ class DartService:
     def _save(self, run_id, operation, params, response, receipt=None):
         url = ('https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + receipt if receipt else
                'https://opendart.fss.or.kr/api/' + {'company':'company.json','disclosures':'list.json',
-                                                 'financials':'fnlttSinglAcntAll.json'}[operation])
+                                                 'financials':'fnlttSinglAcntAll.json','taxonomy':'xbrlTaxonomy.json'}[operation])
         published = date.fromisoformat(receipt[:8]).isoformat() if receipt else None
         return self.store.save_source(run_id, SourceInput(
             kind='dart', title='OpenDART ' + operation, publisher='금융감독원 OpenDART',
@@ -272,7 +273,7 @@ class DartService:
                 'financial_verification':'not_performed',
                 'limitation':'API 응답 확보만 완료. 원문 열/기간/단위/범위 대조는 수행 전입니다.'}
 
-    def _receipt_known(self, run_id, receipt):
+    def _receipt_known(self, run_id, receipt, report_code=None):
         run, basis, research = self._run_context(run_id)
         with self.store.connection() as conn:
             rows = conn.execute('SELECT s.* FROM research_sources s JOIN research_runs r ON s.run_id=r.id WHERE r.basis_id=?',
@@ -283,20 +284,107 @@ class DartService:
             if op not in {'disclosures','financials'}:
                 continue
             data = json.loads(self.store.source_content(source['id']))
+            data = data.get('response', data)
             for entry in data.get('list',[]):
                 if (entry.get('rcept_no') == receipt
-                        and entry.get('corp_code') == research['company'].get('corp_code')):
+                        and entry.get('corp_code') == research['company'].get('corp_code')
+                        and (report_code is None or entry.get('reprt_code') == report_code)):
                     return date.fromisoformat(receipt[:8]).isoformat() <= basis['public_cutoff']
         return False
+
+    async def taxonomy_reference(self, run_id, url, referring_source_id):
+        """보고서가 직접 참조하는 DART 택사노미 파일만 키 없이 확보한다."""
+        from urllib.parse import urlsplit, urljoin, unquote
+        self._run_context(run_id)
+        referrer = self.store.get_source(referring_source_id)
+        if referrer['run_id'] != run_id:
+            raise DartFailure('source_outside_run')
+        def allowed(value):
+            p = urlsplit(value)
+            return (p.scheme in {'http','https'} and p.hostname == 'dart.fss.or.kr'
+                    and p.port in {None,80,443} and not p.username and not p.password
+                    and not p.query and not p.fragment
+                    and p.path.startswith('/Resource/Taxonomy/ifrs/')
+                    and '..' not in unquote(p.path).split('/') and chr(92) not in unquote(p.path))
+        if not allowed(url):
+            raise DartFailure('invalid_reference')
+        # 선언된 URI를 실제 원문 속성에서 확인한다. 임의 URL 수집 도구로 사용하지 않는다.
+        from lxml import etree
+        raw = self.store.source_content(referring_source_id)
+        if b'<!DOCTYPE' in raw.upper() or b'<!ENTITY' in raw.upper():
+            raise DartFailure('unsafe_document')
+        doc = etree.fromstring(raw,etree.XMLParser(resolve_entities=False,no_network=True))
+        declared = set(doc.xpath('//@*[local-name()="href" or local-name()="schemaLocation"]'))
+        if url not in {v.split('#')[0] for v in declared}:
+            raise DartFailure('reference_not_declared')
+        # 공개 파일 전송도 HTTPS 사용. 원래 선언 URI는 별도로 보존한다.
+        current = 'https:' + url[5:] if url.startswith('http:') else url
+        for _ in range(3):
+            self._snapshot(run_id,'taxonomy_reference_reserved',{
+                'last_taxonomy_reference':{'declared_uri':url,'retrieved_uri':current}},reserve=True)
+            async with httpx.AsyncClient(transport=self.http.transport,trust_env=False,follow_redirects=False,timeout=30) as client:
+                async with client.stream('GET',current) as response:
+                    if 300 <= response.status_code < 400:
+                        candidate=urljoin(current,response.headers.get('location',''))
+                        if candidate==current or not allowed(candidate) or not candidate.startswith('https://'):
+                            raise DartFailure('unexpected_redirect')
+                        current=candidate
+                        continue
+                    if response.status_code!=200:
+                        raise DartFailure('reference_http_error')
+                    content=bytearray()
+                    async for chunk in response.aiter_bytes():
+                        if len(content)+len(chunk)>self.max_response_bytes:
+                            raise DartFailure('response_limit')
+                        content.extend(chunk)
+            if self.http._key and self.http._key.encode() in content:
+                raise DartFailure('sensitive_response')
+            parsed=xml_root(bytes(content))
+            if parsed.tag not in {'{http://www.w3.org/2001/XMLSchema}schema',
+                                  '{http://www.xbrl.org/2003/linkbase}linkbase'}:
+                raise DartFailure('parse_error')
+            source=self.store.save_source(run_id,SourceInput(kind='dart',title='DART 공식 택사노미 참조',
+                publisher='금융감독원 DART',url=current,retrieved_at=now(),
+                reporting_period={'operation':'taxonomy_reference','declared_uri':url,
+                                  'referring_source_id':referring_source_id},
+                media_type='application/xml',rights_status='public_disclosure'),bytes(content))
+            return {'status':'ok','source_id':source['id'],'declared_uri':url,
+                    'retrieved_uri':current,'content_hash':source['content_hash']}
+        raise DartFailure('unexpected_redirect')
+
+    async def taxonomy(self, run_id, statement):
+        self._run_context(run_id)
+        params = {'sj_div':statement}
+        response = await self._request('taxonomy',params,run_id)
+        rows = response.data.get('list')
+        if (not isinstance(rows,list) or not rows
+                or any(not isinstance(row,dict) or not row.get('account_id')
+                       or row.get('sj_div') != statement for row in rows)):
+            raise DartFailure('parse_error')
+        source = self._save(run_id,'taxonomy',params,response)
+        return {'status':'ok','source_id':source['id'],'row_count':len(rows),
+                'financial_verification':'not_performed',
+                'limitation':'공식 사전 확보. 과거 보고서 적용 버전·전체 관계는 별도 확인 필요'}
+
+    async def xbrl(self, run_id, receipt, report_code):
+        if (not re.fullmatch(r'\d{14}',receipt)
+                or not self._receipt_known(run_id,receipt,report_code)):
+            raise DartFailure('receipt_not_in_research')
+        params = {'rcept_no':receipt,'reprt_code':report_code}
+        response = await self._request('xbrl',params,run_id)
+        return self._save_archive(run_id,'xbrl',params,response,receipt)
 
     async def document(self, run_id, receipt):
         if not re.fullmatch(r'\d{14}',receipt) or not self._receipt_known(run_id,receipt):
             raise DartFailure('receipt_not_in_research')
         params = {'rcept_no':receipt}
         response = await self._request('document',params,run_id)
+        return self._save_archive(run_id,'document',params,response,receipt)
+
+    def _save_archive(self, run_id, operation, params, response, receipt):
         members = zip_members(response.content,max_expanded_bytes=self.max_expanded_bytes,
                               max_members=self.max_members)
-        source = self._save(run_id,'document',params,response,receipt)
+        source = self._save(run_id,operation,params,response,receipt)
         manifest = []
         for name,content in members:
             media_type = 'text/html' if re.search(rb'<html|<!doctype\s+html',content[:2048],re.I) else 'application/xml'
@@ -304,7 +392,7 @@ class DartService:
                 kind='dart',title='공시 원문 ' + name,publisher='금융감독원 OpenDART',
                 url='https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + receipt,
                 receipt_number=receipt,published_at=date.fromisoformat(receipt[:8]).isoformat(),retrieved_at=now(),
-                reporting_period={'operation':'document_member','archive_source_id':source['id'],'member_name':name},
+                reporting_period={'operation':operation+'_member','archive_source_id':source['id'],'member_name':name},
                 media_type=media_type,rights_status='public_disclosure'),content)
             manifest.append({'source_id':member['id'],'name':name,'content_hash':member['content_hash'],
                              'byte_size':member['byte_size'],'media_type':media_type})
@@ -324,12 +412,15 @@ class DartService:
                         raise DartFailure('writing_reserve_reached')
                     self._deadline = started + remaining - run['budget']['writing_reserve_seconds']
                 functions = {'search_companies':self.search_companies,'company':self.company,
-                             'disclosures':self.disclosures,'financials':self.financials,'document':self.document}
+                             'disclosures':self.disclosures,'financials':self.financials,'document':self.document,
+                             'xbrl':self.xbrl,'taxonomy':self.taxonomy,'taxonomy_reference':self.taxonomy_reference}
                 if name not in functions:
                     raise DartFailure('invalid_request')
                 return await functions[name](**arguments)
             except DartFailure as error:
                 return error.public()
+            except httpx.HTTPError:
+                return {'status':'network_error','retryable':True}
             except (ValueError, TypeError, KeyError):
                 return {'status':'invalid_response_or_input','retryable':False}
             finally:

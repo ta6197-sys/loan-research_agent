@@ -56,7 +56,7 @@ class SourceRecovery:
                     parent=self._one(conn,'research_sources',metadata['supersedes_id'])
                     _,other=self._context(conn,parent['run_id'])
                     if other['research_id']!=basis['research_id']:raise ValueError('source_research_mismatch')
-                category='official' if metadata['kind'] in ('dart','official_ir') else 'provided'
+                category='official' if metadata['kind'] in ('dart','official_ir','official_standard') else 'provided'
                 relative=Path(basis['research_id'])/category/source_id/(content_hash+'.bin')
                 temporary=relative.parent/('.pending-'+source_id)
                 stamp=now()
@@ -89,7 +89,7 @@ class SourceRecovery:
         if safe_payload(value.model_dump(mode='json'))!=entry['metadata_json']:raise IntegrityFailure('source_write_metadata_mismatch')
         with self.connection() as conn:
             _,basis=self._context(conn,entry['run_id'])
-        category='official' if metadata['kind'] in ('dart','official_ir') else 'provided'
+        category='official' if metadata['kind'] in ('dart','official_ir','official_standard') else 'provided'
         expected=Path(basis['research_id'])/category/entry['id']/(entry['content_hash']+'.bin')
         if entry['storage_key']!=expected.as_posix() or entry['temporary_key']!=(expected.parent/('.pending-'+entry['id'])).as_posix():
             raise IntegrityFailure('source_write_path_mismatch')

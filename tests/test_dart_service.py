@@ -162,7 +162,8 @@ class FinanceMCPTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual({'finance'},set(client.sessions))
                 tools=await client.sessions['finance'].list_tools()
                 self.assertEqual({'search_companies','dart_company','dart_disclosures','dart_financials','dart_document',
-                                  'extract_source','search_source','read_fragment','validate_numbers'},
+                                  'extract_source','search_source','read_fragment','validate_numbers',
+                                  'dart_xbrl','dart_taxonomy','validate_account_mapping'},
                                  {tool.name for tool in tools.tools})
                 result=await client.call_finance('search_companies',{'query':'synthetic'})
                 self.assertEqual('missing_configuration',result['status'])

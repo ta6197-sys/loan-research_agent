@@ -21,7 +21,7 @@ from .borrowing_composition import reconcile_composition, link_same_period_compo
 from .scope_observations import observe_scope, unchanged_scope_support
 from .consolidation_checks import VERSION as SCOPE_CHANGE_VERSION, collect_disclosed_changes, blocking_changes
 
-POLICY_VERSION='numeric-validation-1.22'
+POLICY_VERSION='numeric-validation-1.26'
 UNIT_SCALE={'원':'1','천원':'1000','백만원':'1000000','억원':'100000000'}
 ACCOUNT_IDS={
     'revenue':{'ifrs-full_Revenue'},
@@ -307,6 +307,9 @@ class NumericValidationService:
         documents={};apis=[];manifests=[];facts=[];contents={};identities={};excluded=[];tables={}
         for source in sources:
             meta=source['metadata'];media=meta['media_type'];operation=meta['reporting_period'].get('operation')
+            if operation in {'xbrl_member','taxonomy_reference'} or meta['kind']=='official_standard':
+                excluded.append({'source_id':source['id'],'reason':'xbrl_checked_by_separate_concept_mapping_service'})
+                continue
             if media not in ('application/xml','text/xml','text/html') and not (media=='application/json' and operation=='financials'):continue
             member=meta['reporting_period'].get('member_name');receipt=meta.get('receipt_number')
             if operation=='document_member' and member and receipt and Path(member).name not in {receipt+'.xml',receipt+'.html',receipt+'.htm'}:
@@ -437,7 +440,7 @@ class NumericValidationService:
         rule_counts=defaultdict(Counter)
         for v in validations:
             for rule,check_result in v['data'].get('checks',{}).items():rule_counts[rule][check_result['status']]+=1
-        summary={'borrowing_detail_counts':dict(Counter(v['status'] for v in detail_records)),'resolved_account_composition_review_count':sum(v['status']=='pass' for v in composition_review_records),'open_account_composition_review_count':sum(v['status']=='not_checked' for v in composition_review_records),'cross_source_composition_link_count':len(composition_links),'borrowing_composition_count':len(compositions),'disclosed_consolidation_changes':{'version':SCOPE_CHANGE_VERSION,'detected_count':len(scope_changes),'validation_ids':[v['id'] for v in scope_changes],'absence_observation_count':sum(v['data']['absence_observed_within_reporting_period'] for v in scope_observations),'scope_observation_ids':[v['id'] for v in scope_observations]},'borrowing_note_amount_counts':dict(Counter(n['status'] for n in notes)),'disclosure_history_audit':audit,'excluded_sources':excluded,'rule_status_counts':{k:dict(v) for k,v in rule_counts.items()},'account_coverage':coverage,'validation_counts':dict(Counter(x['status'] for x in validations)),
+        summary={'balance_only_composition_review_count':sum(v['data']['use_status']=='account_balance_totals_only' for v in composition_review_records),'borrowing_detail_counts':dict(Counter(v['status'] for v in detail_records)),'resolved_account_composition_review_count':sum(v['status']=='pass' for v in composition_review_records),'open_account_composition_review_count':sum(v['status']=='not_checked' for v in composition_review_records),'cross_source_composition_link_count':len(composition_links),'borrowing_composition_count':len(compositions),'disclosed_consolidation_changes':{'version':SCOPE_CHANGE_VERSION,'detected_count':len(scope_changes),'validation_ids':[v['id'] for v in scope_changes],'absence_observation_count':sum(v['data']['absence_observed_within_reporting_period'] for v in scope_observations),'scope_observation_ids':[v['id'] for v in scope_observations]},'borrowing_note_amount_counts':dict(Counter(n['status'] for n in notes)),'disclosure_history_audit':audit,'excluded_sources':excluded,'rule_status_counts':{k:dict(v) for k,v in rule_counts.items()},'account_coverage':coverage,'validation_counts':dict(Counter(x['status'] for x in validations)),
                  'calculation_counts':dict(Counter(x['status'] for x in calculations)),
                  'fact_count':len(facts),'source_count':len(manifests),
                  'external_requests':0,'model_calls':0,'report_publication_available':False,

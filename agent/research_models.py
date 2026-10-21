@@ -58,7 +58,7 @@ class ResearchInput(BasisInput):
 
 
 class SourceInput(Contract):
-    kind: Literal["dart", "official_ir", "user", "synthetic"]
+    kind: Literal["dart", "official_ir", "official_standard", "user", "synthetic"]
     title: str = Field(min_length=1)
     publisher: str = Field(min_length=1)
     url: str | None = None
@@ -67,7 +67,8 @@ class SourceInput(Contract):
     retrieved_at: str
     reporting_period: dict = Field(default_factory=dict)
     media_type: str = "application/octet-stream"
-    rights_status: Literal["public_disclosure", "user_authorized", "synthetic"]
+    rights_status: Literal["public_disclosure", "public_reference", "user_authorized", "synthetic"]
+    usage_restrictions: list[str] = Field(default_factory=list)
     allow_external_model: bool = False
     allow_external_trace: bool = False
     supersedes_id: str | None = None

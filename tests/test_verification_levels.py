@@ -12,18 +12,19 @@ COVER='<COMPANY-NAME AREGCIK="00129642">회사</COMPANY-NAME><TU AUNIT="PERIODFR
 ACCOUNTS=('short_term_borrowings','current_long_term_borrowings','long_term_borrowings')
 
 
-def fixture(second_amount='60',current='(30)',short_caption='유동 차입금(사채 포함)'):
+def fixture(second_amount='60',current='(30)',short_caption='유동 차입금(사채 포함)',zero_component_in=None):
     facts=[];validations=[];details=[]
     for source_id in ('a','b'):
         caption='유동 차입금' if source_id=='a' else short_caption
         second=second_amount if source_id=='b' else '60'
-        body=''.join('<TR><TE>'+label+'</TE><TE>'+a+'</TE><TE>'+b+'</TE><TE>'+total+'</TE></TR>'
+        extra=source_id==zero_component_in
+        body=''.join('<TR><TE>'+label+'</TE><TE>'+a+'</TE><TE>'+b+'</TE>'+('<TE>'+('0' if a or b else '')+'</TE>' if extra else '')+'<TE>'+total+'</TE></TR>'
             for label,a,b,total in [(caption,'40',second,'100'),('장기차입금','40','60','100'),
                 ('비유동차입금(사채 포함)의 유동성 대체 부분','','',current),
                 ('비유동차입금(사채 포함)의 비유동성 부분','','','70')])
         raw=('<DOCUMENT>'+COVER+'<TABLE-GROUP ACLASS="{XBRL}NT_S_DETAIL"><P>당기</P><P>(단위 : 원)</P><TABLE><THEAD>'
-             '<TR><TH ROWSPAN="2">구분</TH><TH COLSPAN="2">차입금명칭</TH><TH ROWSPAN="2">차입금명칭 합계</TH></TR>'
-             '<TR><TH>A은행 대출</TH><TH>B은행 대출</TH></TR></THEAD><TBODY>'+body+'</TBODY></TABLE></TABLE-GROUP></DOCUMENT>').encode()
+             '<TR><TH ROWSPAN="2">구분</TH><TH COLSPAN="'+str(3 if extra else 2)+'">차입금명칭</TH><TH ROWSPAN="2">차입금명칭 합계</TH></TR>'
+             '<TR><TH>A은행 대출</TH><TH>B은행 대출</TH>'+('<TH>C은행 종료대출</TH>' if extra else '')+'</TR></THEAD><TBODY>'+body+'</TBODY></TABLE></TABLE-GROUP></DOCUMENT>').encode()
         import hashlib
         source={'id':source_id,'content_hash':hashlib.sha256(raw).hexdigest()}
         for account,value in zip(ACCOUNTS,('100','30','70')):

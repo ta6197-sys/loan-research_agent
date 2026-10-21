@@ -36,6 +36,8 @@ ENDPOINTS = {
     "disclosures": ("list.json", {"corp_code", "bgn_de", "end_de", "last_reprt_at", "page_no", "page_count"}),
     "financials": ("fnlttSinglAcntAll.json", {"corp_code", "bsns_year", "reprt_code", "fs_div"}),
     "document": ("document.xml", {"rcept_no"}),
+    "xbrl": ("fnlttXbrl.xml", {"rcept_no", "reprt_code"}),
+    "taxonomy": ("xbrlTaxonomy.json", {"sj_div"}),
 }
 
 
@@ -110,6 +112,10 @@ def validate_params(operation, params):
     if "corp_code" in params and not re.fullmatch(r"\d{8}", str(params["corp_code"])):
         raise DartFailure("invalid_request")
     if "rcept_no" in params and not re.fullmatch(r"\d{14}", str(params["rcept_no"])):
+        raise DartFailure("invalid_request")
+    if operation == "xbrl" and params["reprt_code"] not in {"11011", "11012", "11013", "11014"}:
+        raise DartFailure("invalid_request")
+    if operation == "taxonomy" and params["sj_div"] not in ({f"BS{i}" for i in range(1,5)} | {f"IS{i}" for i in range(1,5)} | {f"CIS{i}" for i in range(1,5)} | {f"DCIS{i}" for i in range(1,9)} | {f"CF{i}" for i in range(1,5)} | {"SCE1","SCE2"}):
         raise DartFailure("invalid_request")
     if operation == "financials":
         if (not re.fullmatch(r"\d{4}", str(params["bsns_year"])) or int(params["bsns_year"]) < 2015
@@ -196,9 +202,9 @@ class DartHTTP:
 
     @staticmethod
     def _decode(content, operation):
-        if operation in {"corporations", "document"} and content.startswith(b"PK\x03\x04"):
+        if operation in {"corporations", "document", "xbrl"} and content.startswith(b"PK\x03\x04"):
             return DartResponse(content, "application/zip")
-        if operation in {"corporations", "document"}:
+        if operation in {"corporations", "document", "xbrl"}:
             root = xml_root(content)
             code = root.findtext("status")
             if code is None or not re.fullmatch(r'\d{3}',code):

@@ -90,5 +90,29 @@ async def dart_document(run_id: str, receipt: str) -> dict:
     return await service.call('document',dict(run_id=run_id,receipt=receipt))
 
 
+@mcp.tool()
+async def dart_xbrl(run_id: str, receipt: str, report_code: str) -> dict:
+    """동일 조사에서 접수번호·보고서 종류를 확인한 XBRL ZIP과 구성 파일을 저장한다."""
+    return await service.call('xbrl',dict(run_id=run_id,receipt=receipt,report_code=report_code))
+
+
+@mcp.tool()
+async def dart_taxonomy(run_id: str, statement: str) -> dict:
+    """공식 계정 사전 원본을 확보한다. 과거 적용 버전 확인과 구분한다."""
+    return await service.call('taxonomy',dict(run_id=run_id,statement=statement))
+
+
+@mcp.tool()
+async def validate_account_mapping(run_id: str) -> dict:
+    """저장된 XBRL만으로 개념·문맥·금액을 독립 대조한다. 외부 요청·모델 호출 없음."""
+    from agent.finance.xbrl_mapping import XbrlMappingService
+    from lxml import etree
+    try:
+        result=await asyncio.to_thread(XbrlMappingService(service.store).validate_run,run_id)
+        return {'status':'ok','batch_id':result['id'],'reused':result['reused'],**result['summary']}
+    except (ValueError,KeyError,etree.XMLSyntaxError):
+        return {'status':'validation_failed','reason':'stored_xbrl_not_validated'}
+
+
 if __name__ == '__main__':
     mcp.run(transport='stdio',show_banner=False)
