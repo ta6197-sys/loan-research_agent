@@ -28,7 +28,9 @@
 
 ## OpenAI 전환 준비
 
-사용자가 OpenAI API 사용을 선택했다. 기존 `.env`는 보존하고 Git 제외 `.env.openai.local`에 빈 `OPENAI_API_KEY=`만 준비했다(파일 권한 600). 키는 채팅/커밋/배포에 넣지 않는다. 표준 변수명은 [공식 OpenAI Quickstart](https://developers.openai.com/api/docs/quickstart)를 따른다. 현재 금융 경로는 여전히 로컬 모델이며 이 파일을 자동으로 읽지 않는다. 모델과 외부 전송 자료 범위를 확인한 뒤 전용 연결·예산/오류/출력 검증을 적용해야 한다. 새 OpenAI 호출은 아직 0회다.
+사용자가 OpenAI API 사용을 선택했고 `.env.openai.local`에 키를 입력했다(파일 권한 600, Git 제외). 키는 채팅/커밋/배포에 넣지 않는다. 표준 변수명은 [공식 OpenAI Quickstart](https://developers.openai.com/api/docs/quickstart)를 따른다.
+
+`agent/finance/openai_model.py`는 기본 경로를 바꾸지 않는다. `FINANCE_MODEL_BACKEND=openai`와 `FINANCE_ALLOW_EXTERNAL_MODEL=true`가 함께 있어야만 이 파일을 읽고, `sh/run_research_openai.sh`가 그 설정과 비용·전송 범위 확인을 제공한다. 기본은 계속 로컬 `qwen3.5:2b`다. OpenAI 입력은 `model_evidence` 중 `verified`/`withheld`의 `evidence_id`·`state`·`text`로 제한하며 `data` 상태(사용자 답변/첨부), 원문 파일, URL, DB 경로와 키는 보내지 않는다. 응답은 Structured Outputs JSON 스키마와 기존 `checked_draft`로 같은 인용문 복사·보류 전부 보존·질문 수치 출처를 검사한다. 예산 예약 전에는 요청하지 않고, 네트워크 프록시·리다이렉트·도구 호출은 쓰지 않는다. 모의 전송·출력·차단 시험을 추가했으며 실제 OpenAI 호출·비용·외부 자료 요청은 아직 0회다.
 
 ## 일정 한계
 

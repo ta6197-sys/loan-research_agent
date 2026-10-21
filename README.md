@@ -8,7 +8,7 @@
 
 **후속 보완:** 사업 내용·첨부 처리·계획 변경/보관함의 구현과 검증은 [로컬 PoC 마무리 기록](doc/finance/IMPLEMENTATION_LOCAL_POC_FINAL.md)을 먼저 확인한다. [중간 커밋 당시 상태](doc/finance/CHECKPOINT_20261021.md)와 아래 이전 검증 기록은 보존한다.
 
-**OpenAI 전환 준비:** 사용자가 OpenAI API로 진행하기로 선택했다. 키 입력 위치는 Git 제외 `.env.openai.local`의 `OPENAI_API_KEY=`다. 기존 `.env`는 유지하며 금융 경로는 아직 이 파일을 읽거나 OpenAI를 호출하지 않는다. 모델·전송 범위 확인과 연결 검증 후 활성화한다.
+**OpenAI 금융 초안(명시 실행):** 키는 Git 제외 `.env.openai.local`의 `OPENAI_API_KEY=`에만 둔다. 기본 금융 경로는 계속 로컬 `qwen3.5:2b`이며 키 존재만으로 바뀌지 않는다. `bash sh/run_research_openai.sh`에서 비용·전송 범위를 확인하고 승인하면 `gpt-5-mini`(환경 변수 `OPENAI_FINANCE_MODEL`로 변경 가능)를 사용한다. 전송 대상은 이미 검증된 금융 수치 문장과 보류 항목의 ID·설명뿐이며 원문 파일·사용자 답변·첨부·DB 경로·키는 제외한다. 응답은 JSON 스키마와 동일한 근거/보류 출력 검사 뒤에만 게시 후보가 된다. 실제 OpenAI 호출 횟수는 아직 0회다.
 
 다시 제공된 `927db8d` 시점의 후속 목록은 [최신 작업 대조](doc/finance/NEXT_WORK_STATUS_20261021.md)를 따른다. 4단계 잔여 검증을 완료했고, 사용자 선택에 따라 [5단계 회사 입력부터 첫 초안](doc/finance/IMPLEMENTATION_STAGE05_COMPANY_INPUT.md)까지 상신브레이크 보관 자료로 연결했다. 보관 사례의 초안/후속/복구 구현을 일반 신규 기업 자동 조사 전체의 완료로 해석하지 않는다.
 
