@@ -100,3 +100,4 @@ flowchart TD
 - [평가 자료](doc/finance/evaluation/README.md): 기대 결과와 평가 방식
 - [결정 기록](doc/finance/design/DECISIONS.md): 사용자 승인 사항
 - [OpenDART 준비](doc/finance/DART_SETUP.md): 일반 기업 수집을 위한 키와 제한
+- [구현 후 재확인](doc/finance/POST_IMPLEMENTATION_CHECKLIST.md): 시연·배포·확대 전 체크리스트
