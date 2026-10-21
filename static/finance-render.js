@@ -22,7 +22,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
           key: item.id,
           class: _normalizeClass(["research-item", {selected: research?.id === item.id}]),
           onClick: $event => (openResearch(item.id))
-        }, [_createElementVNode("strong", null, _toDisplayString(item.company.name), 1), _createElementVNode("small", null, "저장된 조사 열기")], 10, ["onClick"]))
+        }, [_createElementVNode("strong", null, _toDisplayString(item.company.name), 1), _createElementVNode("small", null, _toDisplayString(dateTime(item.created_at)) + " · 저장된 조사 열기", 1)], 10, ["onClick"]))
       }), 128)),
       _createElementVNode("details", null, [_createElementVNode("summary", null, "보관함 (" + _toDisplayString(archives.length) + ")", 1), _createElementVNode("p", { class: "hint" }, "원문과 이전 판을 보존합니다."), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(archives, (item) => {
         return (_openBlock(), _createElementBlock("button", {

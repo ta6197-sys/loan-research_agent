@@ -5,7 +5,7 @@
     <button class="primary full" @click="newResearch">＋ 새 조사</button>
     <p class="sidebar-label">저장된 조사 <span>{{ researches.length }}</span></p>
     <button v-for="item in researches" :key="item.id" class="research-item" :class="{selected: research?.id === item.id}" @click="openResearch(item.id)">
-      <strong>{{ item.company.name }}</strong><small>저장된 조사 열기</small>
+      <strong>{{ item.company.name }}</strong><small>{{ dateTime(item.created_at) }} · 저장된 조사 열기</small>
     </button>
     <details><summary>보관함 ({{ archives.length }})</summary><p class="hint">원문과 이전 판을 보존합니다.</p><button v-for="item in archives" :key="item.id" @click="restoreResearch(item.id)" :disabled="busy">{{ item.company.name }} 복원</button></details>
     <div class="sidebar-foot"><span class="dot" :class="{remote:health?.finance_model_backend==='openai'}"></span> {{ modelBackendLabel }}<br><small>{{ modelBackendDetail }}</small><a href="/legacy">기존 실습 화면</a></div>
