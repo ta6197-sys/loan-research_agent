@@ -30,7 +30,7 @@
 
 사용자가 OpenAI API 사용을 선택했고 `.env.openai.local`에 키를 입력했다(파일 권한 600, Git 제외). 키는 채팅/커밋/배포에 넣지 않는다. 표준 변수명은 [공식 OpenAI Quickstart](https://developers.openai.com/api/docs/quickstart)를 따른다.
 
-`agent/finance/openai_model.py`는 기본 경로를 바꾸지 않는다. `FINANCE_MODEL_BACKEND=openai`와 `FINANCE_ALLOW_EXTERNAL_MODEL=true`가 함께 있어야만 이 파일을 읽고, `sh/run_research_openai.sh`가 그 설정과 비용·전송 범위 확인을 제공한다. 기본은 계속 로컬 `qwen3.5:2b`다. OpenAI 입력은 `model_evidence` 중 `verified`/`withheld`의 `evidence_id`·`state`·`text`로 제한하며 `data` 상태(사용자 답변/첨부), 원문 파일, URL, DB 경로와 키는 보내지 않는다. 응답은 Structured Outputs JSON 스키마와 기존 `checked_draft`로 같은 인용문 복사·보류 전부 보존·질문 수치 출처를 검사한다. 예산 예약 전에는 요청하지 않고, 네트워크 프록시·리다이렉트·도구 호출은 쓰지 않는다. 모의 전송·출력·차단 시험을 추가했으며 실제 OpenAI 호출·비용·외부 자료 요청은 아직 0회다.
+`agent/finance/openai_model.py`는 기본 경로를 바꾸지 않는다. `FINANCE_MODEL_BACKEND=openai`와 `FINANCE_ALLOW_EXTERNAL_MODEL=true`가 함께 있어야만 이 파일을 읽고, `sh/run_research_openai.sh`가 그 설정과 비용·전송 범위 확인을 제공한다. 기본은 계속 로컬 `qwen3.5:2b`다. OpenAI 입력은 `model_evidence` 중 `verified`/`withheld`의 `evidence_id`·`state`·`text`로 제한하며 `data` 상태(사용자 답변/첨부), 원문 파일, URL, DB 경로와 키는 보내지 않는다. 각 입력 수치의 원본 `allow_external_model` 허가가 모두 있어야 하며, 하나라도 없으면 API 요청·예산 예약 전에 `withheld_by_source_policy`로 끝낸다. 현재 상신브레이크 보관 원문은 이 허가가 모두 꺼져 있어 실제 금융 문장의 원격 전송을 허용하지 않는다. 응답은 Structured Outputs JSON 스키마와 기존 `checked_draft`로 같은 인용문 복사·보류 전부 보존·질문 수치 출처를 검사한다. 네트워크 프록시·리다이렉트·도구 호출은 쓰지 않는다. 모의 전송·출력·차단 시험을 추가했다. 2026-10-21에 합성 `verified`/`withheld` 문장 2개만 `gpt-5-mini`로 1회 전송해 Structured Outputs·사후 검증을 통과했다(1,487 토큰). 실제 금융 자료·원문·외부 금융 자료 요청은 0회다.
 
 ## 일정 한계
 

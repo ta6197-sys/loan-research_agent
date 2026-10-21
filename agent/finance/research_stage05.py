@@ -97,6 +97,15 @@ class Stage05Service:
             if state.get('model_status'):
                 return {'model':state['model'],'model_status':state['model_status']}
             evidence=state['context']['model_evidence']
+            if getattr(self.model,'requires_external_model_permission',False):
+                policy=state['context'].get('external_model_policy',{})
+                if not policy.get('allowed',False):
+                    result={'model':{'rejected_attempts':[], 'external_model_policy':{
+                        'allowed':False,'reason':policy.get('reason','source_external_model_permission_missing'),
+                        'blocked_source_count':policy.get('blocked_source_count',0)}},
+                            'model_status':'withheld_by_source_policy'}
+                    self.journal.account('external_model_withheld_saved',phase='written',updates=result,progress=True)
+                    return result
             attempts=list(self.journal.state.get('attempt_errors',[]))
             feedback=self.journal.state.get('validation_feedback')
             while self.journal.attempts()<3:
@@ -153,7 +162,11 @@ class Stage05Service:
                     content['questions'].append({**question,'reason':' / '.join(q['reason'] for q in related),
                         'requested_information':' / '.join(q['requested_information'] for q in related),
                         'status':'answered_unverified' if any(q['status']=='answered_unverified' for q in related) else 'unresolved'})
-            if state['model_status']!='validated':content['limitations'].append('모델 설명·질문은 미작성/거부 상태다. 검증된 수치·근거와 미확인 범위를 우선 제공한다.')
+            if state['model_status']!='validated':
+                reason=('원문별 외부 모델 이용 허가가 없어 원격 모델 호출을 하지 않았다.'
+                        if state['model_status']=='withheld_by_source_policy'
+                        else '모델 설명·질문은 미작성/거부 상태다. 검증된 수치·근거와 미확인 범위를 우선 제공한다.')
+                content['limitations'].append(reason)
             report=self._publish(run_id,request_key,content,batch['id'])
             return {'report':report}
 

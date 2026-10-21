@@ -52,6 +52,7 @@ def _remote_evidence(evidence):
 
 class OpenAIFinanceModel:
     """구조화 출력과 사후 검증을 함께 사용하는 좁은 금융 초안 모델 계약."""
+    requires_external_model_permission = True
 
     def __init__(self, model="gpt-5-mini", *, api_key=None, transport=None):
         if not re.fullmatch(r"[A-Za-z0-9._:-]{1,100}", model):

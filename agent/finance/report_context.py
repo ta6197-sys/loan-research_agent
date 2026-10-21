@@ -144,9 +144,13 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
             'limitation':'보관한 공시의 검색·확인 범위다. 검색 결과 없음이나 발췌 일부를 공시 전체의 내용 부재/검토 완료로 바꾸지 않는다.'})
     evidence=[]
     preferred=('revenue','operating_profit','operating_cashflow','cash','inventory','receivables')
+    model_source_ids=set()
     for account in preferred:
         row=next(r for r in rows if r['scope']=='OFS' and r['end']=='2026-06-30' and r['account']==account)
         if row['status']=='verified':
+            # 이전 합성/복구 시험의 행은 source_ids 이전 계약을 사용한다.
+            # 그 경우 권한 없는 원격 전송으로 승격하지 않고 빈 집합으로 남긴다.
+            model_source_ids.update(row.get('source_ids',[]))
             period=row['period'];label=(period['start']+'~'+period['end']+' 누적') if period.get('kind')=='duration' else row['end']+' 말'
             evidence.append({'evidence_id':'F_'+account,'state':'verified',
                 'text':f"{research['company']['name']}의 {label} 별도 {row['label']}은 {row['value']}원이다.",
@@ -183,6 +187,15 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
                         or any(section['id'] in ISSUE_SECTIONS[q] for q in o['question_ids'])],
                     'finding':'보관 공시를 재검색하고 기존 원문·수치 검증을 재실행했다. 사용자 설명의 독립 검증·외부 신규 수집은 수행하지 않았다.'}
     evidence+=unknowns
+    source_by_id={source['id']:source for source in sources}
+    disallowed_source_ids=sorted(source_id for source_id in model_source_ids
+        if not source_by_id.get(source_id,{}).get('metadata',{}).get('allow_external_model',False))
+    external_model_policy={
+        'allowed':bool(model_source_ids) and not disallowed_source_ids,
+        'model_evidence_source_count':len(model_source_ids),
+        'blocked_source_count':len(disallowed_source_ids),
+        'reason':None if model_source_ids and not disallowed_source_ids else 'source_external_model_permission_missing',
+    }
     return {'run_id':run['id'],'evidence_run_id':evidence_run['id'],'basis_id':basis['id'],'company':research['company'],
         'parent_report_id':parent['id'] if parent else None,
         'followup_input_ids':trigger.get('followup_input_ids',[]),'user_observations':observations,
@@ -190,6 +203,7 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         'purpose':basis['data']['purpose'],'public_cutoff':basis['data']['public_cutoff'],
         'numeric_batch_id':batch['id'],'mapping_batch_id':mapping['id'],
         'sections':sections,'financial_rows':rows,'charts':charts(rows,batch,mapping),'model_evidence':evidence,
+        'external_model_policy':external_model_policy,
         'public_findings':public_findings,'business_review':business_review,
         'unknowns':unknowns,'interpretations':[],
         'limitations':['보관 사례를 이용한 사전조사 초안이며 실제 대출 신청·승인 판단이 아니다.',

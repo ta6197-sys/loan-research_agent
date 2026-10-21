@@ -27,6 +27,10 @@ class FakeLocalModel:
         return {'draft':output,'usage':{'model_calls':1}}
 
 
+class RemoteModel(FakeLocalModel):
+    requires_external_model_permission=True
+
+
 class Stage05WorkflowTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.root=Path(self.tmp.name)
@@ -85,6 +89,12 @@ class Stage05WorkflowTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0,model.calls);self.assertEqual('published',report['status'])
         self.assertEqual('unavailable_or_rejected',report['content']['model_status'])
         self.assertTrue(report['content']['confirmed_facts']);self.assertTrue(report['content']['unknowns'])
+
+    async def test_remote_model_is_withheld_when_source_disallows_external_use(self):
+        model=RemoteModel();report=await self.execute(model=model)
+        self.assertEqual(0,model.calls)
+        self.assertEqual('withheld_by_source_policy',report['content']['model_status'])
+        self.assertEqual('source_external_model_permission_missing',report['content']['model']['external_model_policy']['reason'])
 
     async def test_stopped_or_simultaneous_run_is_not_started(self):
         for status in ('stopped','running'):
