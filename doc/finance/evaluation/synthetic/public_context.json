@@ -1,0 +1,25 @@
+{
+  "synthetic": true,
+  "not_about_sangsin_brake": true,
+  "company_label": "검증용 가상 제조기업 A",
+  "company_code": null,
+  "official_source": false,
+  "usage": "오직 후속 입력·충돌·버전 갱신 시험. 실제 기업 보고서·평가 결과에 병합 금지.",
+  "basis_date": "2026-10-20",
+  "provided_reference_facts": [
+    {
+      "id": "FAKE-CFO",
+      "label": "영업현금흐름",
+      "period": "2026H1",
+      "scope": "OFS",
+      "value_krw": "-20000000"
+    },
+    {
+      "id": "FAKE-AR",
+      "label": "매출채권",
+      "balance_date": "2026-06-30",
+      "scope": "OFS",
+      "value_krw": "100000000"
+    }
+  ]
+}

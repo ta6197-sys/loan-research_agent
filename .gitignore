@@ -1,0 +1,28 @@
+.env
+.venv/
+session.db
+__pycache__/
+*.log
+session.db-*
+data/research/
+.DS_Store
+
+# Local credentials and SQLite runtime artifacts
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Preserve financial case originals and real-data evaluation locally
+doc/finance/cases/
+doc/finance/evaluation/*.json
+doc/finance/evaluation/EXPECTED_RESULTS.md
+
+# Existing training screenshots and local diagram artifacts
+doc/image_usecase/
+doc/image_usecase_openai/
+.archify/
