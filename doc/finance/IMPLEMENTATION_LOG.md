@@ -11,7 +11,7 @@
 ## 0단계 — 읽은 문서와 현재 환경
 
 - 기획: `PROJECT_PLAN.md`, `PROJECT_BRIEF.md`.
-- 설계: `design/README.md`, `DECISIONS.md`, `FINAL_REVIEW.md`, `IMPLEMENTATION_HANDOFF.md`.
+- 설계: `../../README.md`, `DECISIONS.md`, `FINAL_REVIEW.md`, `IMPLEMENTATION_HANDOFF.md`.
 - 연결 명세: `FUNCTIONAL_SPEC.md`, `RESEARCH_WORKFLOW.md`, `DATA_AND_EVIDENCE.md`, `ARCHITECTURE_AND_API.md`, `RUNTIME_AND_MODEL_POLICY.md`, `UX_AND_REPORT.md`, `VALIDATION_AND_EVALUATION.md`, `COMPARISON_POLICY_RESEARCH.md`.
 - 사례와 이용 제한: `NCS_REVIEW.md`, 상신브레이크 `CASE_REPORT.md`, `RESEARCH_LOG.md`, `financial_evidence.json`의 구조.
 - Python 3.11.15, SQLite 3.53.4, FastAPI 0.146.0, Uvicorn 0.54.0, Pydantic 2.13.5, python-dotenv 1.2.2 확인.

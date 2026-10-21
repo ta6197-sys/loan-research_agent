@@ -72,6 +72,67 @@ flowchart TD
 - 보고서 화면, 버전 비교, 한글 PDF와 Markdown·차트·근거 목록 ZIP 출력
 - 고정 절차와 에이전트의 보관 사례·합성 실패 평가
 
+## 설계와 평가
+
+### 설계 범위
+
+- 개인 PC의 사용자 1명과 공개 공시를 확보할 수 있는 상장 제조기업
+- 기업 식별, 사업·매출 구조, 재무상태·수익성, 현금흐름·운전자본, 차입·유동성, 공시 부담·신뢰성, 대출 목적·상환재원의 일곱 항목
+- 확인 사실·해석·미확인·추가 질문을 분리한 보고서와 근거 추적
+
+상세 설계는 [결정 기록](doc/finance/design/DECISIONS.md), [기능 명세](doc/finance/design/FUNCTIONAL_SPEC.md), [조사 흐름](doc/finance/design/RESEARCH_WORKFLOW.md), [데이터·근거 설계](doc/finance/design/DATA_AND_EVIDENCE.md), [API 설계](doc/finance/design/ARCHITECTURE_AND_API.md), [검증 기준](doc/finance/design/VALIDATION_AND_EVALUATION.md)에 보존합니다.
+
+### 평가 구성도
+
+```mermaid
+flowchart LR
+    SRC[보관 공시 원문·XBRL] --> EXP[기대 결과표·원문 위치]
+    SYN[합성 후속·실패 시나리오] --> EXP
+    EXP --> RUN[고정 절차 / 에이전트 실행]
+    RUN --> OUT[보고서·근거·실행 이력]
+    OUT --> CHECK[수치·근거·미확인·복구 대조]
+    CHECK --> RESULT[평가 기록]
+```
+
+### 평가 워크플로
+
+```mermaid
+flowchart TD
+    A[기대 수치·근거·금지 해석 준비] --> B[동일 조건으로 실행]
+    B --> C[보고서와 실행 이력 수집]
+    C --> D{게시 수치와 근거가 일치?}
+    D -->|예| E[미확인·질문·복구 동작 확인]
+    D -->|아니오| F[실패 기록과 재현 조건 보존]
+    E --> G[평가 결과 기록]
+    F --> G
+```
+
+평가 기준은 [기대 결과표](doc/finance/evaluation/EXPECTED_RESULTS.md), [비교용 JSON](doc/finance/evaluation/expected_results.json), [원문 확인 기록](doc/finance/evaluation/REFERENCE_VERIFICATION.json), [원문 해시 목록](doc/finance/evaluation/source_manifest.json)에 있습니다. 고정 절차와 에이전트는 같은 자료·모델·예산으로 각각 3회 비교하며, 정당한 보류와 공개 항목 누락을 분리합니다.
+
+### 합성 후속 입력 평가
+
+```mermaid
+flowchart LR
+    BASE[public_context.json<br/>가상 제조기업 A] --> CASE[S01 · S02 · S03]
+    CASE --> INPUT[사용자 답변·정정 입력]
+    INPUT --> AGENT[조사·검증 흐름]
+    AGENT --> OUTPUT[새 보고서 판·이력]
+    EXPECT[followup_cases.json<br/>기대 변화·금지 사항] --> REVIEW[출력 대조]
+    OUTPUT --> REVIEW
+```
+
+```mermaid
+flowchart TD
+    A[초기 가상 문맥 준비] --> B[시나리오 하나 선택]
+    B --> C[TXT 입력을 답변·정정으로 전달]
+    C --> D[관련 항목 재조사·검증]
+    D --> E[새 보고서 판 생성]
+    E --> F[expected_changes·must_not·실행 이력 대조]
+    F --> G[결과 기록]
+```
+
+합성 자료는 실제 기업 자료가 아닙니다. [S01 회수 일부 확인](doc/finance/evaluation/synthetic/S01_collection.txt), [S02 용도·조건 추가](doc/finance/evaluation/synthetic/S02_loan_purpose.txt), [S03 숫자 충돌](doc/finance/evaluation/synthetic/S03_conflicting_cfo.txt)은 같은 초기 문맥에서 각각 독립 실행합니다.
+
 ## 보안과 운영 경계
 
 | 영역 | 현재 적용 | 남은 한계 |
@@ -96,8 +157,7 @@ flowchart TD
 
 ## 문서 안내
 
-- [설계 문서](doc/finance/design/README.md): 확정 요구와 구조 설계
-- [평가 자료](doc/finance/evaluation/README.md): 기대 결과와 평가 방식
+- [설계·평가 안내](#설계와-평가): 확정 요구와 평가 기준
 - [결정 기록](doc/finance/design/DECISIONS.md): 사용자 승인 사항
 - [OpenDART 준비](doc/finance/DART_SETUP.md): 일반 기업 수집을 위한 키와 제한
 - [구현 후 재확인](doc/finance/POST_IMPLEMENTATION_CHECKLIST.md): 시연·배포·확대 전 체크리스트
