@@ -30,6 +30,9 @@ class FakeLocalModel:
 class RemoteModel(FakeLocalModel):
     requires_external_model_permission=True
 
+    def __init__(self,override=False):
+        super().__init__();self.allow_archived_public_override=override
+
 
 class Stage05WorkflowTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
@@ -95,6 +98,13 @@ class Stage05WorkflowTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0,model.calls)
         self.assertEqual('withheld_by_source_policy',report['content']['model_status'])
         self.assertEqual('source_external_model_permission_missing',report['content']['model']['external_model_policy']['reason'])
+
+    async def test_user_approved_override_only_allows_archived_public_evidence(self):
+        self.context['external_model_policy']={'allowed':False,'archived_public_only':True,
+            'blocked_source_count':1,'reason':'source_external_model_permission_missing'}
+        model=RemoteModel(override=True);report=await self.execute(model=model)
+        self.assertEqual(1,model.calls);self.assertEqual('validated',report['content']['model_status'])
+        self.assertEqual('user_approved_archived_public_override',report['content']['model']['external_model_policy']['permission_mode'])
 
     async def test_stopped_or_simultaneous_run_is_not_started(self):
         for status in ('stopped','running'):

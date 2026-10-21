@@ -99,10 +99,13 @@ class Stage05Service:
             evidence=state['context']['model_evidence']
             if getattr(self.model,'requires_external_model_permission',False):
                 policy=state['context'].get('external_model_policy',{})
-                if not policy.get('allowed',False):
+                override=(getattr(self.model,'allow_archived_public_override',False)
+                          and policy.get('archived_public_only',False))
+                if not (policy.get('allowed',False) or override):
                     result={'model':{'rejected_attempts':[], 'external_model_policy':{
                         'allowed':False,'reason':policy.get('reason','source_external_model_permission_missing'),
-                        'blocked_source_count':policy.get('blocked_source_count',0)}},
+                        'blocked_source_count':policy.get('blocked_source_count',0),
+                        'archived_public_override':False}},
                             'model_status':'withheld_by_source_policy'}
                     self.journal.account('external_model_withheld_saved',phase='written',updates=result,progress=True)
                     return result
@@ -117,7 +120,10 @@ class Stage05Service:
                     result=await self.model.draft(evidence,before_request=reserve,timeout=max(.01,timeout),validation_feedback=feedback)
                     returned=True
                     checked_draft(result['draft'],evidence)
-                    result={'model':{**result,'rejected_attempts':attempts},'model_status':'validated'}
+                    result={'model':{**result,'rejected_attempts':attempts,
+                        'external_model_policy':{'allowed':True,
+                            'permission_mode':'source_metadata' if policy.get('allowed') else 'user_approved_archived_public_override'}},
+                            'model_status':'validated'}
                     self.journal.account('draft_saved',phase='written',updates=result,progress=True)
                     return result
                 except ExecutionDeadline:raise

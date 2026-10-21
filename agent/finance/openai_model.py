@@ -54,12 +54,13 @@ class OpenAIFinanceModel:
     """구조화 출력과 사후 검증을 함께 사용하는 좁은 금융 초안 모델 계약."""
     requires_external_model_permission = True
 
-    def __init__(self, model="gpt-5-mini", *, api_key=None, transport=None):
+    def __init__(self, model="gpt-5-mini", *, api_key=None, transport=None, allow_archived_public_override=False):
         if not re.fullmatch(r"[A-Za-z0-9._:-]{1,100}", model):
             raise ValueError("unverified_finance_model")
         self.model = model
         self.api_key = api_key if api_key is not None else os.environ.get("OPENAI_API_KEY", "")
         self.transport = transport
+        self.allow_archived_public_override = allow_archived_public_override
         if not self.api_key or self.api_key == "sk-...":
             raise ValueError("openai_api_key_missing")
 
@@ -85,7 +86,9 @@ class OpenAIFinanceModel:
                 "name": "grounded_finance_draft", "strict": True,
                 "schema": GroundedDraft.model_json_schema(),
             }},
-            "max_completion_tokens": 2048,
+            # 짧은 근거 목록인데도 추론 토큰으로 JSON이 잘리지 않도록 최소 추론과 여유를 준다.
+            "reasoning_effort": "minimal",
+            "max_completion_tokens": 4096,
         }
         started = time.monotonic()
         await before_request()
@@ -128,4 +131,7 @@ def finance_model_from_environment(project_root):
     api_key = os.environ.get("OPENAI_API_KEY", "")
     if local_env.exists():
         api_key = dotenv_values(local_env).get("OPENAI_API_KEY", "")
-    return OpenAIFinanceModel(os.environ.get("OPENAI_FINANCE_MODEL", "gpt-5-mini"), api_key=api_key)
+    return OpenAIFinanceModel(
+        os.environ.get("OPENAI_FINANCE_MODEL", "gpt-5-mini"), api_key=api_key,
+        allow_archived_public_override=os.environ.get("FINANCE_ALLOW_ARCHIVED_PUBLIC_EXTERNAL_MODEL", "false") == "true",
+    )

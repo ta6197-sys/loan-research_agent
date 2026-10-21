@@ -190,8 +190,13 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
     source_by_id={source['id']:source for source in sources}
     disallowed_source_ids=sorted(source_id for source_id in model_source_ids
         if not source_by_id.get(source_id,{}).get('metadata',{}).get('allow_external_model',False))
+    archived_public_only=bool(model_source_ids) and all(
+        source_by_id.get(source_id,{}).get('metadata',{}).get('kind') in {'dart','official_standard'}
+        and source_by_id.get(source_id,{}).get('metadata',{}).get('rights_status') in {'public_disclosure','public_reference'}
+        for source_id in model_source_ids)
     external_model_policy={
         'allowed':bool(model_source_ids) and not disallowed_source_ids,
+        'archived_public_only':archived_public_only,
         'model_evidence_source_count':len(model_source_ids),
         'blocked_source_count':len(disallowed_source_ids),
         'reason':None if model_source_ids and not disallowed_source_ids else 'source_external_model_permission_missing',

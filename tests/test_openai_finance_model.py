@@ -28,6 +28,7 @@ class OpenAIFinanceModelTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual("https", request.url.scheme); self.assertEqual("api.openai.com", request.url.host)
             self.assertTrue(reserved); self.assertEqual("Bearer test-key-12345678", request.headers["authorization"])
             payload = json.loads(request.content); self.assertFalse(payload["store"]); self.assertNotIn("tools", payload)
+            self.assertEqual("minimal", payload["reasoning_effort"]); self.assertEqual(4096, payload["max_completion_tokens"])
             self.assertTrue(payload["response_format"]["json_schema"]["strict"])
             evidence = json.loads(payload["messages"][1]["content"])["evidence"]
             self.assertEqual(["F_cash", "U_borrowing"], [item["evidence_id"] for item in evidence])
