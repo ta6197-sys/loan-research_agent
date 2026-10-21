@@ -1,14 +1,8 @@
 #!/usr/bin/env bash
 #
-# all_total_vue — web_demo_server.py(브라우저 채팅 화면, 이 실습의 "프론트엔드" 역할)를
-# 띄우는 스크립트.
-#
-# 이 실습엔 별도 npm/Next.js 프론트엔드가 없고, web_demo_server.py + web_chat.html
-# 조합이 그 역할을 한다 — server.py(8100, 백엔드)는 건드리지 않고, web_chat.html을
-# 같은 출처(origin)로 띄운 뒤 /chat, /chat/stream 요청을 8100으로 프록시해주는
-# 아주 얇은 레이어다(브라우저 CORS 제약을 피하기 위함).
-# web_chat.html 내부만 바닐라 JS 대신 Vue 3(CDN 글로벌 빌드, 빌드 단계 없음)로
-# 되어 있다는 점이 all_total과 다르다.
+# 금융 모드는 로컬 Vue 금융 화면, legacy 모드는 기존 실습 채팅을 제공한다.
+# 금융: 먼저 bash sh/run_research.sh 실행. Vue/폰트는 프로젝트의 고정 파일이다.
+# 금융 템플릿 변경 시 node sh/build_finance_ui.cjs로 미리 컴파일한다.
 #
 # ⚠️ 먼저 run_agent_openai.sh / run_agent_ollma.sh / run.sh 등으로 백엔드(8100)를
 # 띄워둔 상태여야 한다 — 백엔드 없이 이 스크립트만 띄우면 채팅 화면은 열리지만
@@ -27,6 +21,7 @@ cd "$(dirname "$0")/.."
 if ! curl -s --max-time 2 http://127.0.0.1:8100/health >/dev/null 2>&1; then
     echo "ERROR: 백엔드(http://127.0.0.1:8100)가 응답하지 않습니다."
     echo "  먼저 다른 터미널에서 아래 중 하나로 백엔드를 띄우세요:"
+    echo "    bash sh/run_research.sh    (금융 조사, 로컬 전용)"
     echo "    ./sh/run_agent_openai.sh   (실제 OpenAI API, 과금)"
     echo "    ./sh/run_agent_ollma.sh    (로컬 Ollama)"
     echo "    ./sh/run.sh                (fake 모드, 통합 테스트)"
@@ -61,10 +56,10 @@ cat <<EOF
 
 ################################################################
  프론트엔드가 떠 있습니다 → http://localhost:8600
- (web_chat.html을 띄우고 /chat·/chat/stream을 백엔드 8100으로 프록시)
+ (금융 모드: 금융 보고서 / legacy 모드: 기존 실습 채팅)
 ################################################################
 
-브라우저에서 http://localhost:8600 접속해 바로 채팅해볼 수 있습니다.
+브라우저에서 http://localhost:8600 접속해 저장된 조사와 보고서를 확인합니다.
 종료하려면 이 터미널에서 Ctrl+C.
 EOF
 

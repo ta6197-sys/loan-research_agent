@@ -20,9 +20,16 @@ async def mcp_probe(target, expected):
     try:
         result=await client.call_finance('validate_account_mapping',{'run_id':expected['run_id']})
         assert result['status']=='ok' and result['reused']
-        assert result['batch_id']==expected['batch_id']
-        assert result['amount_counts']=={'pass':52}
-        return {'status':result['status'],'reused':result['reused'],'batch_id':result['batch_id']}
+        mapping_id=expected.get('mapping_batch_id') or expected['batch_id']
+        mapping_summary=expected.get('mapping_summary') or expected['summary']
+        assert result['batch_id']==mapping_id
+        assert result['amount_counts']==mapping_summary['amount_counts']
+        output={'status':result['status'],'reused':result['reused'],'batch_id':result['batch_id']}
+        if expected.get('numeric_batch_id'):
+            numeric=await client.call_finance('validate_numbers',{'run_id':expected['run_id']})
+            assert numeric['status']=='ok' and numeric['reused'] and numeric['batch_id']==expected['numeric_batch_id']
+            output['numeric_batch_id']=numeric['batch_id']
+        return output
     finally:await client.stop()
 
 
@@ -31,7 +38,8 @@ def http_once(target, expected):
         sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
     env=dict(os.environ,APP_MODE='research',APP_DB_PATH=str(target/'session.db'),
              APP_SOURCE_ROOT=str(target/'sources'),OPENDART_API_KEY='',
-             LANGCHAIN_TRACING_V2='false',LANGSMITH_TRACING='false',ALLOW_EXTERNAL_TRACE='false')
+             LANGCHAIN_TRACING_V2='false',LANGSMITH_TRACING='false',APP_ALLOW_EXTERNAL_TRACE='false',
+             APP_ALLOW_EXTERNAL_MODEL='false')
     child=subprocess.Popen([sys.executable,'-m','uvicorn','server:app','--host','127.0.0.1','--port',str(port),
                             '--log-level','error'],cwd=ROOT,env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
@@ -44,12 +52,21 @@ def http_once(target, expected):
                 break
             except OSError:time.sleep(.1)
         assert health and health['llm_backend']=='disabled'
-        with urlopen(f'http://127.0.0.1:{port}/validation-batches/'+expected['batch_id'],timeout=10) as response:
+        mapping_id=expected.get('mapping_batch_id') or expected['batch_id']
+        mapping_summary=expected.get('mapping_summary') or expected['summary']
+        with urlopen(f'http://127.0.0.1:{port}/validation-batches/'+mapping_id,timeout=10) as response:
             batch=json.load(response)
-        assert batch['summary']==expected['summary']
-        assert len(batch['validations'])==52
+        assert batch['summary']==mapping_summary
+        assert len(batch['validations'])==mapping_summary['record_count']
+        numeric_count=None
+        if expected.get('numeric_batch_id'):
+            with urlopen(f'http://127.0.0.1:{port}/validation-batches/'+expected['numeric_batch_id'],timeout=10) as response:
+                numeric=json.load(response)
+            saved=json.loads((target/'numeric_batch.json').read_text());saved.pop('reused',None)
+            assert numeric==saved
+            numeric_count=len(numeric['validations'])
         return {'pid':child.pid,'stored_record_count':len(batch['validations']),
-                'summary_equal':True,'llm_backend':health['llm_backend']}
+                'numeric_record_count':numeric_count,'summary_equal':True,'llm_backend':health['llm_backend']}
     finally:
         child.terminate()
         try:child.wait(timeout=10)
@@ -57,7 +74,7 @@ def http_once(target, expected):
 
 
 def main():
-    target=sorted((BASE/'analysis').glob('*/result.json'))[-1].parent
+    target=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else sorted((BASE/'analysis').glob('*/result.json'))[-1].parent
     expected=json.loads((target/'result.json').read_text())
     os.environ['OPENDART_API_KEY']=''
     os.environ['LANGCHAIN_TRACING_V2']='false'

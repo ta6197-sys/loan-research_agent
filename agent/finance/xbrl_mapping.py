@@ -47,7 +47,9 @@ def parse_with_evidence(content):
         copy=content[:match.start()]+content[match.end():]
         if b'XBRLConsultingFirm:' in copy:raise ValueError('vendor_namespace_is_used')
         # 표준 XML 파서의 원문 트리와 엄격 파싱 복사본의 모든 태그/속성/문자열을 대조한다.
-        original=standard_etree.fromstring(content)
+        try:original=standard_etree.fromstring(content)
+        except standard_etree.ParseError:
+            raise ValueError('vendor_namespace_original_xml_invalid') from None
         parsed=etree.fromstring(copy,parser())
         def signature(root):
             return [(n.tag,sorted(n.attrib.items()),n.text,n.tail) for n in root.iter() if isinstance(n.tag,str)]
@@ -180,6 +182,7 @@ def borrowing_note_candidate(instance, node, definition, ctx, un, definitions, l
 def bundle(store, sources, archive_id):
     members = [s for s in sources if s['metadata']['reporting_period'].get('archive_source_id') == archive_id
                and s['metadata']['reporting_period'].get('operation') == 'xbrl_member']
+    members.sort(key=lambda s:s['id'])
     parsed_members = {s['id']:parse_with_evidence(store.source_content(s['id'])) for s in members}
     roots = {sid:value[0] for sid,value in parsed_members.items()}
     parser_adjustments = [{'source_id':s['id'],'content_hash':s['content_hash'],**parsed_members[s['id']][1]}

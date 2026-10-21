@@ -85,6 +85,11 @@ def proof_shape(proof):
 
 def native_profile_vector(data):
     """전체 구성이 확인된 경우에만 공시 구성요소 ID로 잔액을 대조한다."""
+    try:return _native_profile_vector(data)
+    except (KeyError,TypeError,ValueError,IndexError,AttributeError,DecimalException):return None
+
+
+def _native_profile_vector(data):
     components=data.get('components',[]);pool=data.get('xbrl_profile_pool')
     if not components or pool is None or data.get('unresolved'):return None
     if not valid_augmentation(data) or any(not binding_valid(c,data) for c in components):return None
@@ -107,6 +112,11 @@ def native_profile_vector(data):
 
 
 def valid_augmentation(data):
+    try:return _valid_augmentation(data)
+    except (KeyError,TypeError,ValueError,IndexError,AttributeError,DecimalException):return False
+
+
+def _valid_augmentation(data):
     original=data.get('source_observation')
     if original is None:return not any(k in data for k in ('xbrl_evidence_policy','xbrl_profile_pool','resolved_unresolved_items'))
     if data.get('xbrl_evidence_policy')!=VERSION:return False
@@ -200,7 +210,7 @@ def replay_native_details(store,batch):
     if not records:return {}
     with store.connection() as conn:
         sources={s['id']:s for s in (row_data(r) for r in conn.execute(
-            'SELECT * FROM research_sources WHERE run_id=?',(batch['run_id'],)))}
+            'SELECT * FROM research_sources WHERE run_id=? ORDER BY id',(batch['run_id'],)))}
     reports,_=load_reports(store,list(sources.values()))
     service=NumericValidationService(store);result={}
     validations=[v for v in batch['validations'] if v.get('rule_id')=='numeric_fact']

@@ -87,6 +87,19 @@ async def lifespan(app: FastAPI):
     db_path = Path(os.environ.get("APP_DB_PATH", str(DB_PATH)))
     source_root = Path(os.environ.get("APP_SOURCE_ROOT", str(DB_PATH.parent / "data/research")))
     app.state.research_store = ResearchStore(db_path, source_root)
+    from agent.finance.research_followup import FollowupService
+    app.state.followups = FollowupService(app.state.research_store)
+    from agent.finance.cached_case import CachedCaseLibrary,preferred_manifest
+    case_manifest=preferred_manifest(Path(__file__).resolve().parent)
+    app.state.case_library = None
+    app.state.case_library_status = 'not_registered'
+    if case_manifest.exists():
+        try:
+            app.state.case_library=CachedCaseLibrary(Path(__file__).resolve().parent,case_manifest)
+            app.state.case_library_status='ready'
+        except (ValueError,OSError):app.state.case_library_status='unavailable'
+    from agent.finance.research_runtime import ResearchRuntime
+    app.state.research_runtime = ResearchRuntime(app.state.research_store,app.state.followups,case_library=app.state.case_library)
     session_store = SqliteSessionStore(db_path)
     app.state.session_store = session_store
     app.state.instance_id = id(app.state.research_store)
@@ -121,9 +134,12 @@ async def lifespan(app: FastAPI):
             app.state.deps = deps
             app.state.graph = build_graph(deps) if deps.version == "v2" else None
             app.state.instance_id = id(deps)
+        if mode == 'research':app.state.research_runtime.start()
         yield
     finally:
         try:
+            await app.state.research_runtime.close()
+            await app.state.followups.close()
             if finance is not None:
                 await finance.stop()
             if mcp is not None:
@@ -185,12 +201,18 @@ def require_legacy():
 @app.get("/health")
 async def health():
     if app.state.mode == "research":
-        return {"status": "ok", "mode": "research", "implementation_stage": "4",
+        return {"status": "ok", "mode": "research", "implementation_stage": "7_cached_case",
                 "storage": "sqlite", "execution_available": False,
                 "llm_backend": "disabled", "external_trace_enabled": False,
                 "finance_mcp": app.state.finance_status,
                 "local_extraction_available": app.state.finance_status == "connected",
                 "numeric_validation_available": app.state.finance_status == "connected",
+                "cached_case_draft_available": True,
+                "cached_case_start_available": app.state.case_library is not None,
+                "case_library_status": app.state.case_library_status,
+                "cached_case_followup_available": True,
+                "durable_execution_available": True,
+                "worker_active": app.state.research_runtime.active,
                 "instance_id": app.state.instance_id, "creation_count": CREATION_COUNT}
     return {"status": "ok", "instance_id": app.state.instance_id,
             "creation_count": CREATION_COUNT,

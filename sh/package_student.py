@@ -14,7 +14,7 @@ PRIVATE_DIRECTORIES = {
 }
 PRIVATE_PATTERNS = (
     '*.db', '*.db-*', '*.sqlite', '*.sqlite-*', '*.sqlite3', '*.sqlite3-*',
-    '*.log', '*.pem', '*.key', '*.zip',
+    '*.log', '*.pem', '*.key', '*.zip', '*.research-worker.lock',
 )
 
 
@@ -26,6 +26,8 @@ def excluded(relative):
     if name == '.DS_Store' or name == '.env' or name.startswith('.env.'):
         return parts != ('.env.example',)
     if any(fnmatch(name, pattern) for pattern in PRIVATE_PATTERNS):
+        return True
+    if parts[:2] in {('output','pdf'),('tmp','pdfs')}:
         return True
     if parts[:2] == ('data', 'research'):
         return True

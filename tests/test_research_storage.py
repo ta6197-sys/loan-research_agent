@@ -88,7 +88,7 @@ class StoreTests(unittest.TestCase):
         with closing(sqlite3.connect(self.db)) as conn, conn:
             self.assertEqual(before, conn.execute("SELECT rowid,* FROM messages").fetchall())
             self.assertEqual(schema, conn.execute("SELECT sql FROM sqlite_master WHERE name='messages'").fetchone())
-            self.assertEqual([(1,), (2,), (3,)], conn.execute("SELECT version FROM research_migrations ORDER BY version").fetchall())
+            self.assertEqual([(1,), (2,), (3,), (4,), (5,)], conn.execute("SELECT version FROM research_migrations ORDER BY version").fetchall())
             self.assertEqual([], conn.execute("PRAGMA foreign_key_check").fetchall())
         self.assertEqual(self.research, reopened.get_research(self.research["id"]))
         session = SqliteSessionStore(self.db)

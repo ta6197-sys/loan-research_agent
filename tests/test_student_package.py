@@ -25,7 +25,7 @@ class StudentPackageTests(unittest.TestCase):
     def test_private_files_excluded_and_code_example_and_synthetic_fixtures_kept(self):
         private = (
             '.env', '.env.local', '.env.backup', 'nested/.env.example', 'nested/.env',
-            'session.db', 'nested/custom.sqlite3', 'custom.db-wal', 'custom.sqlite-shm',
+            'output/pdf/report.pdf', 'tmp/pdfs/page.png', 'session.db', 'session.db.research-worker.lock', 'nested/custom.sqlite3', 'custom.db-wal', 'custom.sqlite-shm',
             'private.key', 'private.pem', 'previous.zip', '.aws/credentials', '.git/config',
             '.codex/config.toml', '.agents/local.txt', 'data/research/raw.xml',
             'doc/finance/cases/company/raw.xml', 'doc/finance/evaluation/actual.json',

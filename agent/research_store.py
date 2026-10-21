@@ -119,13 +119,13 @@ class ResearchStore(SourceRecovery):
             tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             if "research_migrations" in tables:
                 versions = [r[0] for r in conn.execute("SELECT version FROM research_migrations ORDER BY version")]
-                if versions not in ([1], [1, 2], [1, 2, 3]):
+                if versions not in ([1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5]):
                     raise IntegrityFailure("지원하지 않는 조사 DB 버전입니다. 기존 DB는 변경하지 않았습니다.")
             else:
                 if any(name.startswith("research_") for name in tables):
                     raise IntegrityFailure("미완성 조사 스키마를 발견했습니다. 기존 DB를 보존합니다.")
                 versions = []
-            for version, filename in ((1, "research_schema.sql"), (2, "research_schema_v2.sql"), (3, "research_schema_v3.sql")):
+            for version, filename in ((1, "research_schema.sql"), (2, "research_schema_v2.sql"), (3, "research_schema_v3.sql"), (4, "research_schema_v4.sql"), (5, "research_schema_v5.sql")):
                 if version in versions:
                     continue
                 statement = ""
@@ -147,7 +147,17 @@ class ResearchStore(SourceRecovery):
     def _context(self, conn, run_id):
         run = self._one(conn, "research_runs", run_id)
         basis = self._one(conn, "research_bases", run["basis_id"])
+        self.require_visible(conn,basis['research_id'])
         return run, basis
+
+    @staticmethod
+    def is_archived(conn,research_id):
+        row=conn.execute("SELECT kind FROM research_events WHERE research_id=? AND kind IN ('research_archived','research_restored') ORDER BY sequence DESC LIMIT 1",(research_id,)).fetchone()
+        return bool(row and row['kind']=='research_archived')
+
+    @classmethod
+    def require_visible(cls,conn,research_id):
+        if cls.is_archived(conn,research_id):raise NotFound('보관함에 있는 조사입니다. 복원 후 열람해주세요.')
 
     @staticmethod
     def _event(conn, research_id, basis_id, run_id, kind, payload):
@@ -158,9 +168,9 @@ class ResearchStore(SourceRecovery):
         conn.execute("INSERT INTO research_events VALUES (?,?,?,?,?,?,?)",
                      (research_id, sequence, basis_id, run_id, kind, safe_payload(payload), now()))
 
-    def create_research(self, value: ResearchInput):
+    def create_research(self, value: ResearchInput, *, initial_trigger=None):
         data = value.model_dump(mode="json")
-        request_hash = digest(safe_payload(data).encode())
+        request_hash = digest(safe_payload(data if initial_trigger is None else {"input":data,"initial_trigger":initial_trigger}).encode())
         with self.connection(write=True) as conn:
             previous = conn.execute("SELECT * FROM research_researches WHERE request_key=?",
                                     (value.request_key,)).fetchone()
@@ -174,9 +184,9 @@ class ResearchStore(SourceRecovery):
             basis = BasisInput.model_validate({k: data[k] for k in BasisInput.model_fields})
             conn.execute("INSERT INTO research_bases VALUES (?,?,?,?,?)",
                          (basis_id, research_id, 1, encode(basis.model_dump(mode="json")), now()))
-            self._insert_run(conn, run_id, basis_id, None, {"kind": "initial"}, value.budget)
+            self._insert_run(conn, run_id, basis_id, None, initial_trigger or {"kind": "initial"}, value.budget)
             self._event(conn, research_id, basis_id, run_id, "research_created",
-                        {"stage": "storage_only", "automatic_execution_available": False})
+                        {"stage": "cached_case_queued" if initial_trigger else "storage_only", "automatic_execution_available":bool(initial_trigger)})
             return self._research(conn, research_id)
 
     @staticmethod
@@ -191,6 +201,7 @@ class ResearchStore(SourceRecovery):
         data = safe_payload(value.model_dump(mode="json"))
         with self.connection(write=True) as conn:
             self._one(conn, "research_researches", research_id)
+            self.require_visible(conn,research_id)
             version = conn.execute("SELECT MAX(version) FROM research_bases WHERE research_id=?",
                                    (research_id,)).fetchone()[0]
             if version != expected_version:
@@ -205,6 +216,7 @@ class ResearchStore(SourceRecovery):
         """후속 실행 저장용 내부 계약. 실제 대기열 실행/입력 병합은 6~7단계다."""
         with self.connection(write=True) as conn:
             basis = self._one(conn, "research_bases", basis_id)
+            self.require_visible(conn,basis['research_id'])
             if previous_run_id:
                 _, old_basis = self._context(conn, previous_run_id)
                 if old_basis["research_id"] != basis["research_id"]:
@@ -216,6 +228,7 @@ class ResearchStore(SourceRecovery):
             return row_data(self._one(conn, "research_runs", run_id))
 
     def _research(self, conn, research_id):
+        self.require_visible(conn,research_id)
         research = row_data(self._one(conn, "research_researches", research_id))
         research["bases"] = [row_data(r) for r in conn.execute(
             "SELECT * FROM research_bases WHERE research_id=? ORDER BY version", (research_id,))]
@@ -224,10 +237,14 @@ class ResearchStore(SourceRecovery):
             "WHERE b.research_id=? ORDER BY r.created_at,r.id", (research_id,))]
         research["reports"] = [row_data(r) for r in conn.execute(
             "SELECT * FROM research_reports WHERE research_id=? ORDER BY version", (research_id,))]
+        for report in research['reports']:
+            self._publication_status(conn,report)
         research["cumulative_usage"] = {
             key: sum(run["usage"][key] for run in research["runs"]) for key in Usage.model_fields
         }
         research["execution_available"] = False
+        from .finance.research_lifecycle import paused
+        research['paused']=paused(conn,research_id)
         return research
 
     def get_research(self, research_id):
@@ -237,10 +254,11 @@ class ResearchStore(SourceRecovery):
     def list_researches(self):
         with self.connection() as conn:
             return [row_data(r) for r in conn.execute(
-                "SELECT * FROM research_researches ORDER BY created_at,id")]
+                "SELECT * FROM research_researches ORDER BY created_at,id") if not self.is_archived(conn,r['id'])]
 
     def get_run(self, run_id):
         with self.connection() as conn:
+            self._context(conn,run_id)
             run = row_data(self._one(conn, "research_runs", run_id))
             run["snapshots"] = [row_data(r) for r in conn.execute(
                 "SELECT * FROM research_snapshots WHERE run_id=? ORDER BY revision", (run_id,))]
@@ -290,11 +308,13 @@ class ResearchStore(SourceRecovery):
 
     def get_source(self, source_id):
         with self.connection() as conn:
-            return row_data(self._one(conn, "research_sources", source_id))
+            source=self._one(conn, "research_sources", source_id);self._context(conn,source['run_id'])
+            return row_data(source)
 
     def source_content(self, source_id):
         with self.connection() as conn:
             source = self._one(conn, "research_sources", source_id)
+            self._context(conn,source['run_id'])
             path = (self.source_root / source["storage_key"]).resolve()
             if not path.is_relative_to(self.source_root):
                 raise IntegrityFailure("원문 저장 경로가 유효하지 않습니다.")
@@ -384,9 +404,20 @@ class ResearchStore(SourceRecovery):
     def get_report(self, report_id):
         with self.connection() as conn:
             report = row_data(self._one(conn, "research_reports", report_id))
+            self.require_visible(conn,report['research_id'])
             report["evidence_ids"] = [r[0] for r in conn.execute(
                 "SELECT fact_id FROM research_report_evidence WHERE report_id=? ORDER BY fact_id", (report_id,))]
+            self._publication_status(conn,report)
             return report
+
+    @staticmethod
+    def _publication_status(conn,report):
+        publication=conn.execute('SELECT * FROM research_report_publications WHERE report_id=?',(report['id'],)).fetchone()
+        if publication:
+            publication=row_data(publication)
+            if publication['content_hash']!=digest(safe_payload(report['content']).encode()):
+                raise IntegrityFailure('게시 보고서 내용이 저장된 검증 해시와 다릅니다.')
+            report['stored_status']=report['status'];report['status']='published';report['publication']=publication
 
     def events(self, research_id, after=0):
         with self.connection() as conn:
