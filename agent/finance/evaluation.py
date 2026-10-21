@@ -60,6 +60,8 @@ def grade_report(report,reference):
         matches=[v for v in item['needles'] if v in snippets]
         finding=next((f for f in context.get('public_findings',[]) if f['id']==item['id'] and f['status']=='verified_excerpt'),None)
         quoted=' '.join(q.get('quote','') for q in (finding or {}).get('quotes',[]))
+        if item['id']=='business_structure':
+            quoted=' '.join(f.get('quote',{}).get('quote','') for f in context.get('business_review',{}).get('items',[]) if f.get('status')=='verified_excerpt')
         quoted_matches=[v for v in item['needles'] if v in quoted]
         quoted_complete=bool(item['needles']) and len(quoted_matches)==len(item['needles'])
         narrative.append({'id':item['id'],'section':item['section'],

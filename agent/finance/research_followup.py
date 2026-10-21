@@ -182,6 +182,7 @@ class FollowupService:
 
     def stop(self, research_id):
         with self.store.connection(write=True) as conn:
+            self.store.require_visible(conn,research_id)
             self.store._one(conn, 'research_researches', research_id)
             conn.execute("UPDATE research_runs SET status='stopped' WHERE basis_id IN "
                 "(SELECT id FROM research_bases WHERE research_id=?) AND status IN ('queued','running','stopping','interrupted')", (research_id,))

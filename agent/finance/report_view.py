@@ -43,6 +43,13 @@ def build_view(store,report_id):
     report=store.get_report(report_id)
     if report['status']!='published':raise Conflict('게시된 보고서만 화면·출력에 사용합니다.')
     content=report['content'];context=content['context'];run=store.get_run(report['run_id'])
+    for observation in context.get('user_observations',[]):
+        for attachment in observation.get('attachments',[]):
+            source=store.get_source(attachment['source_id'])
+            source_run=store.get_run(source['run_id'])
+            if (source_run['basis_id']!=run['basis_id'] or source['metadata']['kind']!='user'
+                    or digest(store.source_content(source['id']))!=attachment['hash']):
+                raise IntegrityFailure('report_attachment_original_mismatch')
     evidence={};raw={};rows=[]
     confirmed=set(report['evidence_ids'])
     for item in context['financial_rows']:

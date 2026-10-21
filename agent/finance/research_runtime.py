@@ -104,6 +104,7 @@ class ResearchRuntime:
                 if self.store.get_run(self.current_run)['status'] in {'stopped','stopping'}:
                     self.current.cancel();await asyncio.gather(self.current,return_exceptions=True)
         with self.store.connection(write=True) as conn:
+            self.store.require_visible(conn,research_id)
             self.store._one(conn,'research_researches',research_id)
             old=conn.execute("SELECT payload_json FROM research_events WHERE research_id=? AND kind='research_resumed' "
                 "AND json_extract(payload_json,'$.request_key')=?",(research_id,key)).fetchone()

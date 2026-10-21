@@ -25,7 +25,7 @@ from agent.finance.report_exports import ReportExports
 
 def main():
     source=Path(sys.argv[1]).resolve()
-    if not source.is_relative_to(ROOT/'data/research/validation_stage06'):raise ValueError('analysis_required')
+    if not any(source.is_relative_to(ROOT/'data/research'/folder) for folder in ('validation_stage06','validation_stage08')):raise ValueError('analysis_required')
     before={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in source.rglob('*') if p.is_file()}
     tag=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid4().hex[:8]
     target=ROOT/'data/research/validation_stage08'/tag;target.mkdir(parents=True)
@@ -33,7 +33,11 @@ def main():
     shutil.copytree(source/'sources',target/'sources')
     store=ResearchStore(target/'session.db',target/'sources')
     with store.connection() as conn:ids=[r[0] for r in conn.execute('SELECT id FROM research_reports ORDER BY version')]
-    report_id=ids[-1];view=build_view(store,report_id);service=ReportExports(store)
+    if len(sys.argv)>2:
+        with store.connection() as conn:report_id=conn.execute('SELECT id FROM research_reports WHERE version=?',(int(sys.argv[2]),)).fetchone()[0]
+    else:report_id=ids[-1]
+    previous_id=ids[ids.index(report_id)-1]
+    view=build_view(store,report_id);service=ReportExports(store)
     pdf=service.create(report_id,'pdf');bundle=service.create(report_id,'markdown_zip')
     assert pdf['view_hash']==bundle['view_hash']==view['view_hash']
     _,pdf_bytes=service.download(pdf['id']);reader=PdfReader(io.BytesIO(pdf_bytes));all_text='\n'.join(p.extract_text() for p in reader.pages)
@@ -48,8 +52,11 @@ def main():
         for name in archive.namelist():assert '..' not in Path(name).parts and not name.startswith('/')
         md=archive.read('report.md').decode();assert str(ROOT) not in md
         assert len([p for p in archive.namelist() if p.endswith('.svg')])==2
-    comparison=compare_views(build_view(store,ids[3]),view)
-    assert comparison['financial_changes']==[] and comparison['added_user_input_count']==2
+    comparison=compare_views(build_view(store,previous_id),view)
+    assert comparison['financial_changes']==[] and comparison['added_user_input_count']>=1
+    if view.get('business_review'):
+        assert len(view['business_review'])==7 and all(i.get('quote') for i in view['business_review'])
+        assert len(view['minimum_review'])==7
     output=ROOT/'output/pdf';output.mkdir(parents=True,exist_ok=True)
     artifact=output/('sangsin-brake-v'+str(view['version'])+'-'+tag+'.pdf');artifact.write_bytes(pdf_bytes)
     (target/'view.json').write_text(safe_payload(view));(target/'report.zip').write_bytes(zip_bytes)
@@ -76,7 +83,7 @@ def main():
                     r=client.post('/reports/'+report_id+'/exports',json={'format':kind});r.raise_for_status()
                     assert r.json()==expected
                     downloaded=client.get(r.json()['download_url']);downloaded.raise_for_status();assert downloaded.content==raw
-                r=client.get('/reports/'+report_id+'/compare/'+ids[3]);r.raise_for_status();assert r.json()==comparison
+                r=client.get('/reports/'+report_id+'/compare/'+previous_id);r.raise_for_status();assert r.json()==comparison
                 processes.append(process.pid)
             process.terminate();process.wait(timeout=15);process=None
     finally:

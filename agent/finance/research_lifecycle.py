@@ -44,7 +44,9 @@ class ResearchLifecycle:
             if company.get('corp_code')!='00129642' or data['public_cutoff']!='2026-10-20':raise Conflict('다른 기업/기준일은 새 자료 수집 범위를 먼저 정해야 합니다.')
             latest=conn.execute('SELECT r.* FROM research_runs r JOIN research_bases b ON r.basis_id=b.id WHERE b.research_id=? ORDER BY r.created_at DESC,r.id DESC LIMIT 1',(research_id,)).fetchone()
             if data['purpose']==value.purpose and json.loads(latest['trigger_json']).get('focus_sections',[])==value.focus_sections:
-                return {'request_key':value.request_key,'status':'unchanged','run_id':latest['id'],'basis_id':basis['id'],'basis_version':basis['version']}
+                receipt={'request_key':value.request_key,'payload_hash':hashed,'status':'unchanged','run_id':latest['id'],'basis_id':basis['id'],'basis_version':basis['version']}
+                self.store._event(conn,research_id,basis['id'],latest['id'],'plan_change_received',receipt)
+                return receipt
             data['purpose']=value.purpose;data=BasisInput.model_validate(data).model_dump(mode='json')
             bid=uuid4().hex;rid=uuid4().hex;version=basis['version']+1
             conn.execute('INSERT INTO research_bases VALUES (?,?,?,?,?)',(bid,research_id,version,safe_payload(data),now()))

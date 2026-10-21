@@ -421,6 +421,7 @@ class ResearchStore(SourceRecovery):
 
     def events(self, research_id, after=0):
         with self.connection() as conn:
+            self.require_visible(conn,research_id)
             self._one(conn, "research_researches", research_id)
             return [row_data(r) for r in conn.execute(
                 "SELECT * FROM research_events WHERE research_id=? AND sequence>? ORDER BY sequence",

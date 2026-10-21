@@ -34,16 +34,19 @@ def archived_researches(request: Request):
 
 @router.post('/researches/{research_id}/archive')
 async def archive_research(research_id: str,request: Request):
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 변경해주세요.')
     return await ResearchLifecycle(request.app.state.research_store).archive(research_id,request.app.state.research_runtime)
 
 
 @router.post('/researches/{research_id}/restore')
 def restore_research(research_id: str,request: Request):
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 변경해주세요.')
     return ResearchLifecycle(request.app.state.research_store).restore(research_id)
 
 
 @router.post('/researches/{research_id}/plan',status_code=202)
 async def change_research_plan(research_id: str,value: PlanInput,request: Request):
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 변경해주세요.')
     service=ResearchLifecycle(request.app.state.research_store,getattr(request.app.state,'case_library',None))
     receipt=await asyncio.to_thread(service.change_plan,research_id,value)
     if receipt['status']=='queued':request.app.state.research_runtime.schedule()
@@ -70,6 +73,7 @@ async def stage_attachment_bundle(research_id: str,request: Request):
 
 @router.get('/researches/{research_id}/attachment-bundles/{bundle_id}')
 def attachment_bundle(research_id: str,bundle_id: str,request: Request):
+    request.app.state.research_store.get_research(research_id)
     service=AttachmentService(request.app.state.research_store)
     return service.public(service.get(bundle_id,research_id))
 

@@ -14,3 +14,4 @@ lxml>=6.1
 reportlab==5.0.1
 
 pypdf==6.21.1
+python-multipart==0.0.32

@@ -24,7 +24,7 @@ from agent.research_store import Conflict,IntegrityFailure,digest,safe_payload
 from .report_view import build_view,chart_svg,text
 
 ROOT=Path(__file__).resolve().parents[2]
-RENDERER='finance-export-1.2'
+RENDERER='finance-export-1.3'
 FONT_LOCK=threading.Lock()
 
 
@@ -167,11 +167,12 @@ def pdf(view):
             [para('상태: '+('답변 수신·검증 전' if q.get('status')=='answered_unverified' else '미해결'),small),Spacer(1,6)]))
     story += [PageBreak(),para('조사 기준·일곱 항목의 확인 범위',heading)]
     for item in view.get('minimum_review',[]):
-        story += [para(item['title'],heading),para(item['observed'],small),para('남은 부분: '+item['remaining'],small)]
+        story.append(KeepTogether([para(item['title'],heading),para(item['observed'],small),para('남은 부분: '+item['remaining'],small)]))
     for item in view.get('business_review',[]):
-        story += [para(item['title'],heading),para(item['limitation'],small)]
-        if item.get('quote'):story.append(para(item['quote']['text']+' ['+item['quote']['id']+']',small))
-        else:story.append(para('원문 인용 확인 보류',small))
+        block=[para(item['title'],heading),para(item['limitation'],small)]
+        if item.get('quote'):block.append(para(item['quote']['text']+' ['+item['quote']['id']+']',small))
+        else:block.append(para('원문 인용 확인 보류',small))
+        story.append(KeepTogether(block))
     for finding in view.get('public_findings',[]):
         story += [para(finding['title'],heading),para(finding['limitation'],small)]
         if finding['status']!='verified_excerpt':story.append(para('원문 인용 확인 보류: 자료 부재·범위·다중 후보를 확인해야 합니다.'))

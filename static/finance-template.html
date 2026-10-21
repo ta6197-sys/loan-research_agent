@@ -7,6 +7,7 @@
     <button v-for="item in researches" :key="item.id" class="research-item" :class="{selected: research?.id === item.id}" @click="openResearch(item.id)">
       <strong>{{ item.company.name }}</strong><small>저장된 조사 열기</small>
     </button>
+    <details><summary>보관함 ({{ archives.length }})</summary><p class="hint">원문과 이전 판을 보존합니다.</p><button v-for="item in archives" :key="item.id" @click="restoreResearch(item.id)" :disabled="busy">{{ item.company.name }} 복원</button></details>
     <div class="sidebar-foot"><span class="dot"></span> 로컬 전용<br><small>외부 모델 · 외부 추적 꺼짐</small><a href="/legacy">기존 실습 화면</a></div>
   </aside>
   <main class="main-pane">
@@ -25,8 +26,10 @@
       </form>
     </section>
     <template v-else>
-      <div class="research-header"><div><p class="eyebrow">운전자금 사전조사 · {{ scopeLabel }}</p><h1>{{ research.company.name }} <small>{{ research.company.stock_code }}</small></h1><p>{{ research.bases[0]?.data.purpose }}</p></div>
-        <div class="header-actions"><button v-if="canStop" @click="stop" :disabled="busy">조사 중단</button><button v-if="canResume" @click="resume" :disabled="busy">같은 조사 재개</button><button @click="refresh">새로고침</button></div></div>
+      <div class="research-header"><div><p class="eyebrow">운전자금 사전조사 · {{ scopeLabel }}</p><h1>{{ research.company.name }} <small>{{ research.company.stock_code }}</small></h1><p>{{ research.bases.at(-1)?.data.purpose }}</p></div>
+        <div class="header-actions"><button v-if="canStop" @click="stop" :disabled="busy">조사 중단</button><button v-if="canResume" @click="resume" :disabled="busy">같은 조사 재개</button><button @click="editPlan" :disabled="busy">계획 변경</button><button @click="archiveResearch" :disabled="busy">보관함으로 이동</button><button @click="refresh">새로고침</button></div></div>
+      <form v-if="planOpen" class="start-card" @submit.prevent="savePlan"><h2>조사 계획 변경</h2><label>조사 목적<textarea v-model="planPurpose" required maxlength="2000"></textarea></label><p>우선 확인할 항목 (나머지 항목도 조사합니다)</p><label v-for="item in planSections" :key="item[0]" class="check"><input type="checkbox" v-model="planFocus" :value="item[0]">{{ item[1] }}</label><p class="hint">상신브레이크·2026-10-20 기준을 유지합니다. 현재 실행과 이전 판을 보존하고 새 계획을 대기합니다. 중단 중이면 재개 전 실행하지 않습니다.</p><button class="primary" :disabled="busy">새 계획 저장</button></form>
+      <div v-if="message" class="alert success" role="status">{{ message }}</div>
       <div class="progress-strip" role="status"><span class="status-dot" :class="{running:activeRun?.status==='running'}"></span><strong>{{ runLabel }}</strong><span>{{ phaseLabel }}</span><span class="usage">모델 {{ activeRun?.usage?.model_calls || 0 }} / {{ activeRun?.budget?.model_calls || 20 }}회 · 실행 {{ activeRun?.usage?.execution_seconds || 0 }}초</span></div>
       <div v-if="!view" class="empty-report"><h2>{{ activeRun?.status === 'stopped' ? '조사를 중단했습니다.' : '근거를 확인하고 있습니다.' }}</h2><p>일곱 항목을 조사하고 원문·수치 검증을 마친 뒤 첫 초안을 게시합니다.</p><ol class="plan"><li v-for="title in sectionTitles" :key="title">{{ title }}</li></ol><p class="hint">브라우저를 닫아도 서버의 조사는 계속됩니다. 명시 중단은 재개 전 유지됩니다.</p><div v-if="limited" class="alert">{{ limited.limitation }}</div></div>
       <template v-else>
