@@ -132,7 +132,12 @@ def build_view(store,report_id):
         'report_hash':report['publication']['content_hash'],'published_at':report['publication']['published_at'],
         'company':{k:text(context['company'].get(k)) for k in ('name','corp_code','stock_code')},
         'purpose':text(context['purpose']),'public_cutoff':context['public_cutoff'],'financial_confirmation':'incomplete',
-        'model_status':content['model_status'],'facts':[{'text':text(f['text']),'evidence_id':f['evidence_id']}
+        'model_status':content['model_status'],
+        'model':{
+            'name':text(content.get('model',{}).get('usage',{}).get('model','')),
+            'external_model_policy':content.get('model',{}).get('external_model_policy',{}),
+        },
+        'facts':[{'text':text(f['text']),'evidence_id':f['evidence_id']}
             for f in content.get('model',{}).get('draft',{}).get('facts',[])],
         'interpretations':[text(x) for x in content.get('interpretations',[])],
         'unknowns':[{'id':u['evidence_id'],'text':text(u['text']),'status':u.get('status','unresolved')} for u in context['unknowns']],

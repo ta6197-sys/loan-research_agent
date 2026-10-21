@@ -32,10 +32,10 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
         }, _toDisplayString(item.company.name) + " 복원", 9, ["onClick", "disabled"]))
       }), 128))]),
       _createElementVNode("div", { class: "sidebar-foot" }, [
-        _createElementVNode("span", { class: "dot" }),
-        _createTextVNode(" 로컬 전용"),
+        _createElementVNode("span", { class: _normalizeClass(["dot", {remote:health?.finance_model_backend==='openai'}]) }, null, 2),
+        _createTextVNode(" " + _toDisplayString(modelBackendLabel), 1),
         _createElementVNode("br"),
-        _createElementVNode("small", null, "외부 모델 · 외부 추적 꺼짐"),
+        _createElementVNode("small", null, _toDisplayString(modelBackendDetail), 1),
         _createElementVNode("a", { href: "/legacy" }, "기존 실습 화면")
       ])
     ]), _createElementVNode("main", { class: "main-pane" }, [_createElementVNode("header", { class: "topbar" }, [_createElementVNode("span", null, "기업 운전자금 사전조사"), _createElementVNode("span", { class: "pill" }, "공개 자료 · 개발 검증 사례")]), error
@@ -158,7 +158,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
             _createElementVNode("span", { class: _normalizeClass(["status-dot", {running:activeRun?.status==='running'}]) }, null, 2),
             _createElementVNode("strong", null, _toDisplayString(runLabel), 1),
             _createElementVNode("span", null, _toDisplayString(phaseLabel), 1),
-            _createElementVNode("span", { class: "usage" }, "모델 " + _toDisplayString(activeRun?.usage?.model_calls || 0) + " / " + _toDisplayString(activeRun?.budget?.model_calls || 20) + "회 · 실행 " + _toDisplayString(activeRun?.usage?.execution_seconds || 0) + "초", 1)
+            _createElementVNode("span", { class: "usage" }, _toDisplayString(modelBackendLabel) + " · 모델 " + _toDisplayString(activeRun?.usage?.model_calls || 0) + " / " + _toDisplayString(activeRun?.budget?.model_calls || 20) + "회 · 실행 " + _toDisplayString(activeRun?.usage?.execution_seconds || 0) + "초", 1)
           ]),
           (!view)
             ? (_openBlock(), _createElementBlock("div", {
@@ -208,6 +208,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                     _createElementVNode("div", { class: "report-title" }, [_createElementVNode("p", { class: "eyebrow" }, "RESEARCH BRIEF / " + _toDisplayString(view.version) + "판", 1), _createElementVNode("h2", null, _toDisplayString(view.company.name) + " 사전조사 초안", 1), _createElementVNode("p", null, "공개 기준 " + _toDisplayString(view.public_cutoff) + " · 별도 주 / 연결 보조", 1)]),
                     _createElementVNode("div", { class: "summary-grid" }, [_createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "게시 수치"), _createElementVNode("strong", null, [_createTextVNode(_toDisplayString(verifiedCount) + " ", 1), _createElementVNode("small", null, "확인")])]), _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "사용 보류"), _createElementVNode("strong", null, [_createTextVNode(_toDisplayString(withheldCount) + " ", 1), _createElementVNode("small", null, "항목")])]), _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "남은 쟁점"), _createElementVNode("strong", null, [_createTextVNode(_toDisplayString(view.unknowns.length) + " ", 1), _createElementVNode("small", null, "묶음")])])]),
                     _createElementVNode("div", { class: "callout" }, "이 보고서는 공개 자료에 기반한 초안입니다. 대출 승인·거절·등급을 판단하지 않으며, 자료 미확인을 구현 완료와 구분합니다."),
+                    _createElementVNode("div", { class: _normalizeClass(["model-card", {blocked:view.model_status==='withheld_by_source_policy',validated:view.model_status==='validated'}]) }, [_createElementVNode("strong", null, "초안 모델 · " + _toDisplayString(reportModelLabel), 1), _createElementVNode("p", null, _toDisplayString(reportModelDetail), 1), _createElementVNode("small", null, "모델 상태: " + _toDisplayString(view.model_status) + " · 금융 확인 상태: 미완료", 1)], 2),
                     _createElementVNode("section", null, [_createElementVNode("h3", null, [_createTextVNode("핵심 요약 "), _createElementVNode("span", { class: "section-tag" }, "확인 사실")]), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(view.facts, (fact) => {
                       return (_openBlock(), _createElementBlock("p", {
                         class: "fact-line",

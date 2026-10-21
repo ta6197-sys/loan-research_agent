@@ -1,0 +1,18 @@
+.dot.remote { background: #b99445; }
+
+.model-card {
+  margin-top: 14px;
+  padding: 13px 17px;
+  border: 1px solid #dbe6f1;
+  border-left: 3px solid #6491c1;
+  border-radius: 6px;
+  background: #f6f9fc;
+  color: #526d89;
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.model-card p { margin: 5px 0; }
+.model-card small { display: block; }
+.model-card.validated { border-left-color: #5a9b7d; background: #f1f8f4; }
+.model-card.blocked { border-left-color: #c59b44; background: #fdf9ee; }
