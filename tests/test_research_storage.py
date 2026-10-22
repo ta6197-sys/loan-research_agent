@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import socket
 import sqlite3
+import stat
 import subprocess
 import sys
 import tempfile
@@ -164,6 +165,23 @@ class StoreTests(unittest.TestCase):
         (self.sources / key).write_bytes(b"modified")
         with self.assertRaises(IntegrityFailure):
             self.store.source_content(source["id"])
+
+    def test_database_and_source_files_are_owner_only(self):
+        source, _, _ = self.make_fact()
+        with self.store.connection() as conn:
+            key = conn.execute("SELECT storage_key FROM research_sources WHERE id=?", (source["id"],)).fetchone()[0]
+        raw = self.sources / key
+        self.assertEqual(0o600, stat.S_IMODE(self.db.stat().st_mode))
+        self.assertEqual(0o700, stat.S_IMODE(self.sources.stat().st_mode))
+        self.assertEqual(0o600, stat.S_IMODE(raw.stat().st_mode))
+        self.assertEqual(0o700, stat.S_IMODE(raw.parent.stat().st_mode))
+        os.chmod(self.db, 0o644)
+        os.chmod(raw, 0o644)
+        os.chmod(raw.parent, 0o755)
+        ResearchStore(self.db, self.sources)
+        self.assertEqual(0o600, stat.S_IMODE(self.db.stat().st_mode))
+        self.assertEqual(0o600, stat.S_IMODE(raw.stat().st_mode))
+        self.assertEqual(0o700, stat.S_IMODE(raw.parent.stat().st_mode))
 
     def test_different_research_or_basis_cannot_mix_evidence(self):
         _, fragment, fact = self.make_fact()

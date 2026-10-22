@@ -84,12 +84,19 @@ class LocalBoundaryTests(unittest.TestCase):
                 with TestClient(server.app, base_url='http://127.0.0.1:8100') as client:
                     for headers in ({'Origin': 'https://external.test'},
                                     {'Origin': 'null'}, {'Sec-Fetch-Site': 'cross-site'}):
-                        self.assertEqual(403, client.post('/researches', json={}, headers=headers).status_code)
+                        rejected = client.post('/researches', json={}, headers=headers)
+                        self.assertEqual(403, rejected.status_code)
+                        self.assertEqual('nosniff', rejected.headers['x-content-type-options'])
+                        self.assertEqual('DENY', rejected.headers['x-frame-options'])
                     self.assertEqual([], client.get('/researches').json()['items'])
                     self.assertEqual(400, client.get('/health', headers={'Host': 'external.test'}).status_code)
                     response = client.get('/health', headers={'Origin': 'http://localhost:8600'})
                     self.assertEqual(200, response.status_code)
                     self.assertEqual('no-store', response.headers['cache-control'])
+                    self.assertEqual('nosniff', response.headers['x-content-type-options'])
+                    self.assertEqual('DENY', response.headers['x-frame-options'])
+                    self.assertEqual('no-referrer', response.headers['referrer-policy'])
+                    self.assertIn('camera=()', response.headers['permissions-policy'])
                     self.assertFalse(response.json()['execution_available'])
                     self.assertFalse(response.json()['external_trace_enabled'])
 

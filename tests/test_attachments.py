@@ -2,6 +2,7 @@
 import io
 import json
 from pathlib import Path
+import stat
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -95,6 +96,10 @@ class AttachmentFlowTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_multiple_files_one_input_one_run_and_old_report_preserved(self):
         bundle=self.bundle();self.assertEqual(2,len(bundle['files']))
+        folder=self.attachments.path(bundle['bundle_id'])
+        self.assertEqual(0o700,stat.S_IMODE(folder.stat().st_mode))
+        self.assertEqual(0o600,stat.S_IMODE((folder/'manifest.json').stat().st_mode))
+        self.assertEqual(0o600,stat.S_IMODE((folder/'0.txt').stat().st_mode))
         self.assertEqual(bundle,self.bundle());value=self.value(attachment_bundle_id=bundle['bundle_id'])
         receipt=self.service.receive(self.rid,value);again=self.service.receive(self.rid,value)
         self.assertEqual(receipt['run_id'],again['run_id'])

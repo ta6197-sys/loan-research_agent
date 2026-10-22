@@ -9,6 +9,7 @@ import tempfile
 import threading
 import os
 import zipfile
+from pypdf import PdfReader, PdfWriter
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
@@ -24,7 +25,7 @@ from agent.research_store import Conflict,IntegrityFailure,digest,safe_payload
 from .report_view import build_view,chart_svg,text
 
 ROOT=Path(__file__).resolve().parents[2]
-RENDERER='finance-export-1.3'
+RENDERER='finance-export-1.4'
 FONT_LOCK=threading.Lock()
 
 
@@ -143,7 +144,7 @@ def markdown_zip(view):
     return output.getvalue()
 
 
-def pdf(view):
+def legacy_pdf(view):
     with FONT_LOCK:
         for name,file in [('FinanceKorean','NanumGothic-Regular.ttf'),('FinanceKoreanBold','NanumGothic-Bold.ttf')]:
             if name not in pdfmetrics.getRegisteredFontNames():pdfmetrics.registerFont(TTFont(name,str(ROOT/'static/fonts'/file)))
@@ -239,6 +240,44 @@ def pdf(view):
         title=view['company']['name']+' 사전조사 '+str(view['version'])+'판',author='로컬 금융 사전조사',pageCompression=1)
     doc.build(story,onFirstPage=footer,onLaterPages=footer,canvasmaker=partial(canvas.Canvas,invariant=1))
     return output.getvalue()
+
+
+def pdf(view):
+    """정식 신용등급을 주장하지 않는 사전조사 표지를 상세 보고서 앞에 붙인다."""
+    with FONT_LOCK:
+        for name,file in [('FinanceKorean','NanumGothic-Regular.ttf'),('FinanceKoreanBold','NanumGothic-Bold.ttf')]:
+            if name not in pdfmetrics.getRegisteredFontNames():pdfmetrics.registerFont(TTFont(name,str(ROOT/'static/fonts'/file)))
+    body=ParagraphStyle('SurveyBody',fontName='FinanceKorean',fontSize=9,leading=14,wordWrap='CJK',textColor=colors.HexColor('#253746'))
+    small=ParagraphStyle('SurveySmall',parent=body,fontSize=7.2,leading=10)
+    title=ParagraphStyle('SurveyTitle',parent=body,fontName='FinanceKoreanBold',fontSize=28,leading=38,textColor=colors.HexColor('#123b66'))
+    heading=ParagraphStyle('SurveyHeading',parent=body,fontName='FinanceKoreanBold',fontSize=16,leading=24,textColor=colors.HexColor('#123b66'),spaceAfter=8)
+    section=ParagraphStyle('SurveySection',parent=body,fontName='FinanceKoreanBold',fontSize=12,leading=18,textColor=colors.HexColor('#123b66'),spaceBefore=8,spaceAfter=5)
+    def para(value,style=body):return Paragraph(escape(text(value)).replace('\n','<br/>'),style)
+    navy=colors.HexColor('#123b66');pale=colors.HexColor('#eaf3f9');line=colors.HexColor('#b9cad8');green=colors.HexColor('#0a7a5a');amber=colors.HexColor('#a96915')
+    def table(headers,rows,widths):
+        data=[[para(h,small) for h in headers]]+[[para(c,small) for c in row] for row in rows]
+        result=Table(data,colWidths=widths,repeatRows=1,hAlign='LEFT')
+        result.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),pale),('GRID',(0,0),(-1,-1),.35,line),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)]));return result
+    def card(label,value,detail,color):
+        return Table([[para(label,small)],[para(value,ParagraphStyle('SurveyMetric',parent=body,fontName='FinanceKoreanBold',fontSize=20,leading=25,textColor=color))],[para(detail,small)]],colWidths=[160],style=TableStyle([('BOX',(0,0),(-1,-1),.6,line),('LINEABOVE',(0,0),(-1,0),4,color),('LEFTPADDING',(0,0),(-1,-1),10),('RIGHTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),8),('BOTTOMPADDING',(0,0),(-1,-1),8)]))
+    def banner(label):
+        return Table([[para(label,ParagraphStyle('SurveyWhite',parent=small,textColor=colors.white)),para(view['company']['name']+' 사전조사',ParagraphStyle('SurveyWhiteRight',parent=small,textColor=colors.white,alignment=2))]],colWidths=[310,197],style=TableStyle([('BACKGROUND',(0,0),(-1,-1),navy),('LEFTPADDING',(0,0),(-1,-1),9),('RIGHTPADDING',(0,0),(-1,-1),9),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]))
+    verified=sum(1 for r in view['financial_rows'] if r['status']=='verified');withheld=sum(1 for r in view['financial_rows'] if r['status']!='verified')
+    story=[Spacer(1,62),para('PUBLIC DISCLOSURE–BASED',small),para('기업 사전조사서',title),para('공개 공시 기반 금융·사업 조사 결과',ParagraphStyle('SurveyCoverSub',parent=body,fontName='FinanceKoreanBold',fontSize=15,leading=22,textColor=colors.HexColor('#1c78b4'))),Spacer(1,38),
+        table(['구분','내용'],[['대상 기업',view['company']['name']+' ('+view['company']['stock_code']+')'],['공개 기준일',view['public_cutoff']],['보고서 판',str(view['version'])+'판 · 게시본'],['조사 목적',view['purpose']],['조사 성격','정식 신용평가·대출심사 이전의 공개 자료 사전조사']],[110,397]),Spacer(1,20),para('이 문서는 확인 가능한 공개 공시와 원문 근거를 정리한 사전조사서입니다. 신용등급, 대출 승인·거절, 상환 가능성 또는 내부 심사 결론을 제시하지 않습니다.',body),PageBreak(),banner('Ⅰ. 조사 요약'),Spacer(1,15),para('조사 결과 한눈에 보기',heading),para('확인된 공개 수치와 원문 인용을 먼저 제시하고, 근거가 부족한 부분은 미확인으로 분리합니다.',small),Spacer(1,9),
+        Table([[card('게시 수치',str(verified),'기간·범위·단위·근거 확인',green),card('사용 보류',str(withheld),'추정·대체 없이 보류',amber),card('남은 쟁점',str(len(view['unknowns'])),'담당자 또는 추가 자료 확인 필요',amber)]],colWidths=[169,169,169],style=TableStyle([('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),8)])),Spacer(1,16),para('핵심 확인 사실',section)]
+    story += [para('• '+f['text'],small) for f in view['facts'][:6]] or [para('별도의 검증된 요약 문장은 없습니다.',small)]
+    story += [para('내부 심사 전 추가 확인',section)]
+    for i,q in enumerate(view['questions'],1):story += [para(f'{i:02d}. '+q['question'],small),para('요청 자료: '+q['requested_information'],small)]
+    story += [para('보고서 사용 범위',section),table(['사용 가능한 내용','사용할 수 없는 내용'],[['검증된 공개 수치, 공시 원문 인용, 조사 범위, 미확인 항목, 추가 확인 질문','신용등급, 대출 승인·거절, 한도·금리·담보 판단, 상환 가능성 확정, 미검증 내부자료의 사실화']],[253,254]),Spacer(1,10),para('다음 쪽부터는 같은 게시본의 상세 조사 보고서와 수치표·근거 부록입니다.',small)]
+    front=io.BytesIO()
+    def footer(c,doc):
+        c.saveState();c.setFillColor(navy);c.rect(0,A4[1]-18,A4[0],18,fill=1,stroke=0);c.setFont('FinanceKorean',7);c.setFillColor(colors.HexColor('#55697b'));c.drawString(44,23,'공개 공시 기반 기업 사전조사서 · 금융 확인 미완료 유지');c.drawRightString(A4[0]-44,23,str(doc.page));c.restoreState()
+    SimpleDocTemplate(front,pagesize=A4,leftMargin=44,rightMargin=44,topMargin=42,bottomMargin=40,title=view['company']['name']+' 기업 사전조사서',author='로컬 금융 사전조사').build(story,onFirstPage=footer,onLaterPages=footer,canvasmaker=partial(canvas.Canvas,invariant=1))
+    writer=PdfWriter()
+    for page in PdfReader(front).pages:writer.add_page(page)
+    for page in PdfReader(io.BytesIO(legacy_pdf(view))).pages:writer.add_page(page)
+    output=io.BytesIO();writer.write(output);return output.getvalue()
 
 
 class ReportExports:

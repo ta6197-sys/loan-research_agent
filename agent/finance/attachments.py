@@ -52,7 +52,7 @@ class AttachmentService:
                     raise ValueError('known_secret_in_attachment')
             descriptors.append({'name':name,'hash':digest(raw),'size':len(raw)})
         identity={'research_id':research_id,'parent_report_id':parent_report_id,'files':descriptors}
-        bundle=digest(safe_payload(identity).encode());destination=self.path(bundle);self.root.mkdir(exist_ok=True,parents=True)
+        bundle=digest(safe_payload(identity).encode());destination=self.path(bundle);self.store._private_directory(self.root)
         with self.store._source_lock(digest(('attachments:'+research_id).encode())[:32],blocking=True):
             if destination.exists():return self.public(self.get(bundle,research_id,parent_report_id))
             existing=[]
@@ -63,9 +63,9 @@ class AttachmentService:
             if len(existing)+len(files)>MAX_FILES or sum(f['size'] for f in existing)+sum(f['size'] for f in descriptors)>MAX_TOTAL:
                 raise ValueError('attachment_research_limit')
             with tempfile.TemporaryDirectory(prefix='attachment-',dir=self.root) as temp:
-                temp=Path(temp);parsed=[]
+                temp=Path(temp);self.store._private_directory(temp);parsed=[]
                 for index,((name,raw),item) in enumerate(zip(files,descriptors)):
-                    file=temp/(str(index)+TYPES_SUFFIX(name));file.write_bytes(raw)
+                    file=temp/(str(index)+TYPES_SUFFIX(name));file.write_bytes(raw);self.store._private_file(file)
                     project=Path(__file__).resolve().parents[2]
                     env={'PATH':os.defpath,'PYTHONPATH':str(project),'PYTHONIOENCODING':'utf-8',
                         'LANGCHAIN_TRACING_V2':'false','LANGSMITH_TRACING':'false'}
@@ -80,7 +80,8 @@ class AttachmentService:
                     if result['status']=='limit_exceeded':raise ValueError('attachment_'+result['reason'])
                     parsed.append({**item,'parsed':result})
                 manifest={'bundle_id':bundle,'identity':identity,'files':parsed,'parsed_hash':digest(safe_payload(parsed).encode()),'received_at':now()}
-                (temp/'manifest.json').write_text(safe_payload(manifest));os.rename(temp,destination)
+                manifest_path=temp/'manifest.json';manifest_path.write_text(safe_payload(manifest));self.store._private_file(manifest_path)
+                os.rename(temp,destination);self.store._private_directory(destination)
                 # TemporaryDirectory 종료 시 이미 옮긴 경로만 비어 있으므로 원본을 지우지 않는다.
             with self.store.connection(write=True) as conn:
                 _,basis=self.store._context(conn,parent['run_id'])

@@ -160,6 +160,15 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost
 app.include_router(research_router)
 
 
+def _local_security_headers(response):
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+    return response
+
+
 @app.middleware("http")
 async def local_request_boundary(request: Request, call_next):
     allowed = {"http://localhost:8100", "http://127.0.0.1:8100",
@@ -168,10 +177,9 @@ async def local_request_boundary(request: Request, call_next):
     cross_site_write = (request.method not in ("GET", "HEAD", "OPTIONS")
                         and request.headers.get("sec-fetch-site") == "cross-site")
     if (origin and origin not in allowed) or cross_site_write:
-        return JSONResponse({"detail": "허용되지 않은 로컬 요청 출처입니다."}, status_code=403)
+        return _local_security_headers(JSONResponse({"detail": "허용되지 않은 로컬 요청 출처입니다."}, status_code=403))
     response = await call_next(request)
-    response.headers["Cache-Control"] = "no-store"
-    return response
+    return _local_security_headers(response)
 
 
 @app.exception_handler(NotFound)
