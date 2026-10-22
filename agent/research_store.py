@@ -92,11 +92,52 @@ def row_data(row):
 
 class ResearchStore(SourceRecovery):
     def __init__(self, db_path=DB_PATH, source_root=None):
-        self.db_path = Path(db_path).resolve()
-        self.source_root = Path(source_root or DB_PATH.parent / "data/research").resolve()
+        requested_db = Path(db_path)
+        requested_root = Path(source_root or DB_PATH.parent / "data/research")
+        if requested_db.is_symlink() or requested_root.is_symlink():
+            raise IntegrityFailure("조사 저장 경로에는 심볼릭 링크를 사용할 수 없습니다.")
+        self.db_path = requested_db.resolve()
+        self.source_root = requested_root.resolve()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._migrate()
+        self._harden_local_storage_permissions()
         self.recovery_summary = self.recover_source_writes()
+
+    @staticmethod
+    def _private_mode(path, mode):
+        if path.is_symlink():
+            raise IntegrityFailure("조사 저장 경로에는 심볼릭 링크를 사용할 수 없습니다.")
+        os.chmod(path, mode)
+
+    def _private_directory(self, path):
+        path.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if not path.is_dir() or path.is_symlink():
+            raise IntegrityFailure("조사 저장 디렉터리가 안전하지 않습니다.")
+        self._private_mode(path, 0o700)
+
+    def _private_file(self, path):
+        if not path.is_file() or path.is_symlink():
+            raise IntegrityFailure("조사 저장 파일이 안전하지 않습니다.")
+        self._private_mode(path, 0o600)
+
+    def _harden_local_storage_permissions(self):
+        """로컬 단일 사용자 PoC의 저장물만 소유자 읽기/쓰기로 정리한다."""
+        for path in (self.db_path, *[Path(str(self.db_path) + suffix)
+                                    for suffix in ("-wal", "-shm", "-journal", ".research-worker.lock")]):
+            if path.exists() or path.is_symlink():
+                self._private_file(path)
+        self._private_directory(self.source_root)
+        for root, directories, files in os.walk(self.source_root, followlinks=False):
+            directory = Path(root)
+            self._private_directory(directory)
+            for name in directories:
+                # 링크를 따라가거나 권한을 바꾸지 않는다. 이후 원문 경로 검사가
+                # 해당 링크를 근거 저장에 쓰지 못하게 하고 복구 대상은 보류한다.
+                if not (directory / name).is_symlink():
+                    self._private_directory(directory / name)
+            for name in files:
+                if not (directory / name).is_symlink():
+                    self._private_file(directory / name)
 
     @contextmanager
     def connection(self, write=False):

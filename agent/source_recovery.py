@@ -28,8 +28,9 @@ class SourceRecovery:
     def _source_lock(self,source_id,blocking=False):
         if not re.fullmatch(r'[0-9a-f]{32}',source_id):raise ValueError('invalid_source_write_id')
         lock=self._safe_source_path('_source_locks/'+source_id+'.lock')
-        lock.parent.mkdir(parents=True,exist_ok=True)
+        self._private_directory(lock.parent)
         fd=os.open(lock,os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
+        os.fchmod(fd,0o600)
         acquired=False
         try:
             try:
@@ -66,12 +67,13 @@ class SourceRecovery:
                 self._event(conn,basis['research_id'],basis['id'],run_id,'source_write_started',{'source_id':source_id})
             try:
                 target=self._safe_source_path(relative);temp=self._safe_source_path(temporary)
-                target.parent.mkdir(parents=True,exist_ok=True)
+                self._private_directory(target.parent)
                 if target.exists():raise ValueError('source_write_target_already_exists')
-                with temp.open('xb') as stream:
+                fd=os.open(temp,os.O_CREAT|os.O_EXCL|os.O_WRONLY|os.O_NOFOLLOW,0o600)
+                with os.fdopen(fd,'wb') as stream:
                     stream.write(content);stream.flush();os.fsync(stream.fileno())
                 self._sync_directory(temp.parent)
-                os.replace(temp,target);self._sync_directory(target.parent)
+                os.replace(temp,target);self._private_file(target);self._sync_directory(target.parent)
                 with self.connection() as conn:
                     entry=dict(self._one(conn,'research_source_writes',source_id))
                 self._finish_source_write(entry)
@@ -153,7 +155,7 @@ class SourceRecovery:
                     if not target.exists():
                         if not temporary.exists():raise IntegrityFailure('source_write_file_missing')
                         if not self._file_matches_write(temporary,entry):raise IntegrityFailure('source_write_incomplete_temporary')
-                        os.replace(temporary,target);self._sync_directory(target.parent)
+                        os.replace(temporary,target);self._private_file(target);self._sync_directory(target.parent)
                     self._finish_source_write(entry,recovered=True)
                     summary['recovered'].append(entry['id'])
             except (ValueError,OSError,sqlite3.Error) as error:
