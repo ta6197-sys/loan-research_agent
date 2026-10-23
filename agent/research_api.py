@@ -19,6 +19,13 @@ from .finance.attachments import AttachmentService
 from .finance.research_lifecycle import ResearchLifecycle,PlanInput
 from .finance.quality_metrics import calculate as quality_metrics
 from .finance.quality_exceptions import build as quality_exceptions
+from .finance.quality_analytics import analyze as quality_analysis
+from .finance.financial_analytics import FinancialAnalyticsService
+from .finance.analysis_signals import build as analysis_signals
+from .finance.peer_dataset import build_snapshot
+from .finance.model_readiness import evaluate as model_readiness
+from .finance.anomaly_detection import detect as anomaly_detection
+from .finance.analysis_questions import build as analysis_questions
 from .research_store import Conflict
 
 router = APIRouter()
@@ -57,6 +64,56 @@ def _quality_payload(store, batch_id, report=None):
             'registry_version': quality_metrics(batch, report)['registry_version'],
             'metrics': quality_metrics(batch, report), 'exceptions': exceptions,
             'limitations': ['품질지표는 정해진 범위에서 수행한 자동 검증의 결과이며, 기업 재무정보 전체의 정확성 또는 금융기관의 신용심사 결론을 보증하지 않습니다.']}
+
+
+def _analysis_refs(item):
+    inputs = item.get('inputs', [])
+    return {'input_fact_ids': sorted({value for row in inputs for value in row.get('fact_ids', [])}),
+            'input_validation_ids': sorted({value for row in inputs for value in row.get('validation_ids', [])}),
+            'source_ids': sorted({value for row in inputs for value in row.get('source_ids', [])})}
+
+
+def _metric_contract(report_id, batch_id, item):
+    payload = {'analysis_id': 'financial:' + item['id'], 'analysis_version': 'financial-analytics-1.0',
+               'report_id': report_id, 'validation_batch_id': batch_id, 'status': item['status'],
+               'metric_id': item['id'], 'value': item.get('value'), 'period': item.get('period'),
+               'scope': item.get('scope'), 'method_version': 'financial-analytics-1.0',
+               'limitations': ['검증된 수치의 산술 분석이며 신용판단이 아닙니다.'],
+               'reason_code': item.get('reason')}
+    payload.update(_analysis_refs(item))
+    return payload
+
+
+def _financial_analysis_payload(store, report_id):
+    report = store.get_report(report_id)
+    if report['status'] != 'published':
+        raise HTTPException(409, '게시된 보고서의 분석만 조회할 수 있습니다.')
+    financial = FinancialAnalyticsService(store).report(report_id)
+    batch_id = financial['validation_batch_id']
+    signals = analysis_signals(financial)
+    # 다기업 검증 스냅샷 저장은 별도 수집 확장 단계의 결과물이다. 현재 단일 보고서는
+    # 데이터셋으로 승격하지 않으며 빈 스냅샷의 명시적 적격성 결과만 제공한다.
+    peer_snapshot = build_snapshot([])
+    readiness = model_readiness(peer_snapshot)
+    anomaly = anomaly_detection(peer_snapshot)
+    questions = analysis_questions(anomaly)
+    signal_rows = []
+    for item in signals['signals']:
+        evidence = item.get('evidence', [])
+        refs = _analysis_refs({'inputs': [ref for metric in evidence for ref in metric.get('inputs', [])]})
+        signal_rows.append({'analysis_id': 'signal:' + item['id'], 'analysis_version': signals['schema_version'],
+                            'report_id': report_id, 'validation_batch_id': batch_id, 'status': item['status'],
+                            'signal_id': item['id'], 'value': None, 'period': item.get('period'), 'scope': item.get('scope'),
+                            'method_version': signals['schema_version'], 'limitations': [item['limitation']],
+                            'reason_code': None, **refs, 'question': item['question']})
+    return {'analysis_id': 'report-analysis:' + report_id, 'analysis_version': 'report-analysis-1.0',
+            'report_id': report_id, 'validation_batch_id': batch_id, 'status': 'measured',
+            'financial_metrics': [_metric_contract(report_id, batch_id, item) for item in financial['results']],
+            'analysis_signals': signal_rows,
+            'statistical_analysis': {'status': 'insufficient_peer_data', 'reason_code': 'verified_peer_dataset_not_available',
+                                     'comparison_definition': None, 'limitations': ['비교 가능한 다기업 검증 데이터가 아직 저장되지 않았습니다.']},
+            'ml_readiness': readiness, 'anomaly_detection': anomaly, 'followup_questions': questions,
+            'limitations': financial['limitations'] + ['기존 보고서·PDF·원문·검증 배치는 변경하지 않는 읽기 모델입니다.']}
 
 
 @router.get('/research-archives')
@@ -124,9 +181,29 @@ def report_quality(report_id: str, request: Request):
     return _quality_payload(store, report['publication']['validation_batch_id'], report)
 
 
+@router.get('/reports/{report_id}/financial-analysis')
+def report_financial_analysis(report_id: str, request: Request):
+    return _financial_analysis_payload(request.app.state.research_store, report_id)
+
+
 @router.get('/validation-batches/{batch_id}/quality')
 def batch_quality(batch_id: str, request: Request):
     return _quality_payload(request.app.state.research_store, batch_id)
+
+
+@router.get('/validation-batches/{batch_id}/quality-analysis')
+def batch_quality_analysis(batch_id: str, request: Request):
+    store = request.app.state.research_store
+    batch = NumericValidationService(store).batch(batch_id)
+    run = store.get_run(batch['run_id'])
+    with store.connection() as conn:
+        basis = store._one(conn, 'research_bases', run['basis_id'])
+        research_id = basis['research_id']
+    result = quality_analysis(research_id, [batch])
+    return {'analysis_id': 'quality:' + batch_id, 'analysis_version': result['schema_version'],
+            'report_id': None, 'validation_batch_id': batch_id, 'status': result['status'],
+            'method_version': result['schema_version'], 'limitations': result.get('limitations', []),
+            'reason_code': result.get('reason'), **result}
 
 
 @router.post('/researches/{research_id}/quality-exceptions/{exception_id}/reviews', status_code=201)

@@ -421,61 +421,108 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                       }), 128))])])
                     ], 64))
                   : _createCommentVNode("", true),
-                (currentTab==='quality')
-                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_createElementVNode("h2", null, "데이터 품질"), _createElementVNode("p", { class: "muted" }, "이 품질지표는 정해진 범위에서 수행한 자동 검증의 결과이며, 기업 재무정보 전체의 정확성 또는 금융기관의 신용심사 결론을 보증하지 않습니다."), quality
-                      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_createElementVNode("div", { class: "summary-grid" }, [
-                          _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "수치 검증 대상"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.numeric_fact.total_count), 1)]),
-                          _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "통과 / 실패"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.numeric_fact.passed_count) + " / " + _toDisplayString(quality.metrics.numeric_fact.failed_count), 1)]),
-                          _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "미검증"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.numeric_fact.not_checked_count), 1)]),
-                          _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "보고서 확인 / 보류"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.report_coverage.verified_count) + " / " + _toDisplayString(quality.metrics.report_coverage.withheld_count), 1)])
-                        ]), _createElementVNode("section", null, [_createElementVNode("h3", null, "품질지표"), _createElementVNode("div", { class: "question-card" }, [
-                          _createElementVNode("p", null, [_createElementVNode("strong", null, "수치 대조 통과율"), _createTextVNode(" " + _toDisplayString(quality.metrics.amount_comparison.rate===null?'측정 불가':(quality.metrics.amount_comparison.rate*100).toFixed(1)+'%') + " · " + _toDisplayString(quality.metrics.amount_comparison.numerator) + " / " + _toDisplayString(quality.metrics.amount_comparison.denominator) + " · 정확 일치 " + _toDisplayString(quality.metrics.amount_comparison.exact_match_count) + "건 · 근거 있는 반올림 일치 " + _toDisplayString(quality.metrics.amount_comparison.rounding_match_count) + "건", 1)]),
-                          _createElementVNode("p", null, [_createElementVNode("strong", null, "원문 위치 검증 통과율"), _createTextVNode(" " + _toDisplayString(quality.metrics.source_location.rate===null?'측정 불가':(quality.metrics.source_location.rate*100).toFixed(1)+'%') + " · " + _toDisplayString(quality.metrics.source_location.numerator) + " / " + _toDisplayString(quality.metrics.source_location.denominator), 1)]),
-                          _createElementVNode("p", null, [_createElementVNode("strong", null, "보고서 수치 항목 확인율"), _createTextVNode(" " + _toDisplayString(quality.metrics.report_coverage.rate===null?'측정 불가':(quality.metrics.report_coverage.rate*100).toFixed(1)+'%') + " · " + _toDisplayString(quality.metrics.report_coverage.numerator) + " / " + _toDisplayString(quality.metrics.report_coverage.denominator), 1)]),
-                          _createElementVNode("p", null, [_createElementVNode("strong", null, "정정 이력 확인"), _createTextVNode(" " + _toDisplayString(quality.metrics.temporal_checks.disclosure_history_status), 1)])
-                        ])]), _createElementVNode("section", null, [_createElementVNode("h3", null, "예외관리"), (!quality.exceptions.length)
-                          ? (_openBlock(), _createElementBlock("div", {
-                              key: 0,
+                (currentTab==='analysis')
+                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_createElementVNode("h2", null, "재무·통계·ML 분석"), analysis
+                      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+                          _createElementVNode("p", { class: "muted" }, "검증된 수치만 쓰는 별도 읽기 분석입니다. 기존 보고서·PDF·검증 상태는 변경하지 않습니다."),
+                          _createElementVNode("div", { class: "summary-grid" }, [_createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "분석 지표"), _createElementVNode("strong", null, _toDisplayString(analysis.financial_metrics.length), 1)]), _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "확인 신호"), _createElementVNode("strong", null, _toDisplayString(analysis.analysis_signals.length), 1)]), _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "ML 상태"), _createElementVNode("strong", null, _toDisplayString(analysis.ml_readiness.training_status), 1)])]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "재무지표와 확인 항목"), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.financial_metrics.filter(item=>item.status==='supported'), (item) => {
+                            return (_openBlock(), _createElementBlock("div", {
+                              key: item.analysis_id,
                               class: "question-card"
-                            }, "현재 배치에서 품질 예외가 없습니다."))
-                          : _createCommentVNode("", true), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(quality.exceptions, (item) => {
-                          return (_openBlock(), _createElementBlock("div", {
-                            key: item.exception_id,
-                            class: "question-card"
-                          }, [
-                            _createElementVNode("h4", null, _toDisplayString(item.rule_id) + " · " + _toDisplayString(item.severity) + " · " + _toDisplayString(item.validation_status), 1),
-                            _createElementVNode("p", null, _toDisplayString(item.reason_code) + " · " + _toDisplayString(item.affected_account || '계정 미지정') + " · " + _toDisplayString(item.period?.end || item.period?.as_of || '기간 미지정'), 1),
-                            _createElementVNode("p", null, [_createElementVNode("strong", null, "권장 조치"), _createTextVNode(" " + _toDisplayString(item.suggested_action), 1)]),
-                            (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(item.reviews, (review) => {
-                              return (_openBlock(), _createElementBlock("p", {
-                                key: review.id,
-                                class: "hint"
-                              }, _toDisplayString(review.action) + " · " + _toDisplayString(review.note) + " · " + _toDisplayString(day(review.created_at)), 1))
-                            }), 128)),
-                            _createElementVNode("div", null, [_withDirectives(_createElementVNode("select", { "onUpdate:modelValue": $event => ((qualityAction) = $event) }, [
-                              _createElementVNode("option", { value: "acknowledged" }, "확인"),
-                              _createElementVNode("option", { value: "investigating" }, "조사 중"),
-                              _createElementVNode("option", { value: "evidence_requested" }, "근거 요청"),
-                              _createElementVNode("option", { value: "note_added" }, "메모 추가"),
-                              _createElementVNode("option", { value: "closed_unresolved" }, "미해결 종료")
-                            ], 8, ["onUpdate:modelValue"]), [[_vModelSelect, qualityAction]]), _withDirectives(_createElementVNode("textarea", {
-                              "onUpdate:modelValue": $event => ((qualityNote) = $event),
-                              maxlength: "1000",
-                              rows: "2",
-                              placeholder: "검토 메모를 입력하세요. 금융 검증 상태는 변경되지 않습니다."
-                            }, null, 8, ["onUpdate:modelValue"]), [[_vModelText, qualityNote]]), _createElementVNode("button", {
-                              onClick: $event => (addQualityReview(item.exception_id)),
-                              disabled: busy || !qualityNote.trim()
-                            }, "검토 기록 저장", 8, ["onClick", "disabled"])])
-                          ]))
-                        }), 128))])], 64))
+                            }, [_createElementVNode("strong", null, _toDisplayString(item.metric_id), 1), _createTextVNode(" · " + _toDisplayString(item.value) + " · " + _toDisplayString(item.period?.end || item.period?.as_of || ''), 1), _createElementVNode("p", { class: "hint" }, "원문 사실 " + _toDisplayString(item.input_fact_ids.length) + " · 검증 " + _toDisplayString(item.input_validation_ids.length), 1)]))
+                          }), 128)), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.analysis_signals, (item) => {
+                            return (_openBlock(), _createElementBlock("div", {
+                              key: item.analysis_id,
+                              class: "question-card"
+                            }, [_createElementVNode("strong", null, "추가 확인 후보"), _createElementVNode("p", null, _toDisplayString(item.question), 1), _createElementVNode("p", { class: "hint" }, _toDisplayString(item.limitations[0]), 1)]))
+                          }), 128))]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "통계·ML 비교"), _createElementVNode("div", { class: "question-card" }, [_createElementVNode("p", null, [_createElementVNode("strong", null, "비교집단"), _createTextVNode(" " + _toDisplayString(analysis.statistical_analysis.status), 1)]), (analysis.statistical_analysis.status==='insufficient_peer_data')
+                            ? (_openBlock(), _createElementBlock("p", { key: 0 }, "비교 가능한 검증 데이터가 부족하여 머신러닝 모델이 학습되지 않았습니다."))
+                            : _createCommentVNode("", true), _createElementVNode("p", { class: "hint" }, _toDisplayString(analysis.statistical_analysis.limitations[0]), 1)]), _createElementVNode("div", { class: "question-card" }, [_createElementVNode("strong", null, "ML 적격성"), _createTextVNode(" " + _toDisplayString(analysis.ml_readiness.training_status), 1), (analysis.anomaly_detection.status!=='measured')
+                            ? (_openBlock(), _createElementBlock("p", { key: 0 }, "실제 모델이 없어 합성 점수나 임의 위험등급을 표시하지 않습니다."))
+                            : _createCommentVNode("", true)])])
+                        ], 64))
+                      : (_openBlock(), _createElementBlock("p", {
+                          key: 1,
+                          class: "muted"
+                        }, "분석 결과를 불러오는 중입니다."))], 64))
+                  : _createCommentVNode("", true),
+                (currentTab==='quality')
+                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 2 }, [_createElementVNode("h2", null, "데이터 품질"), _createElementVNode("p", { class: "muted" }, "이 품질지표는 정해진 범위에서 수행한 자동 검증의 결과이며, 기업 재무정보 전체의 정확성 또는 금융기관의 신용심사 결론을 보증하지 않습니다."), quality
+                      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+                          _createElementVNode("div", { class: "summary-grid" }, [
+                            _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "수치 검증 대상"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.numeric_fact.total_count), 1)]),
+                            _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "통과 / 실패"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.numeric_fact.passed_count) + " / " + _toDisplayString(quality.metrics.numeric_fact.failed_count), 1)]),
+                            _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "미검증"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.numeric_fact.not_checked_count), 1)]),
+                            _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "보고서 확인 / 보류"), _createElementVNode("strong", null, _toDisplayString(quality.metrics.report_coverage.verified_count) + " / " + _toDisplayString(quality.metrics.report_coverage.withheld_count), 1)])
+                          ]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "품질지표"), _createElementVNode("div", { class: "question-card" }, [
+                            _createElementVNode("p", null, [_createElementVNode("strong", null, "수치 대조 통과율"), _createTextVNode(" " + _toDisplayString(quality.metrics.amount_comparison.rate===null?'측정 불가':(quality.metrics.amount_comparison.rate*100).toFixed(1)+'%') + " · " + _toDisplayString(quality.metrics.amount_comparison.numerator) + " / " + _toDisplayString(quality.metrics.amount_comparison.denominator) + " · 정확 일치 " + _toDisplayString(quality.metrics.amount_comparison.exact_match_count) + "건 · 근거 있는 반올림 일치 " + _toDisplayString(quality.metrics.amount_comparison.rounding_match_count) + "건", 1)]),
+                            _createElementVNode("p", null, [_createElementVNode("strong", null, "원문 위치 검증 통과율"), _createTextVNode(" " + _toDisplayString(quality.metrics.source_location.rate===null?'측정 불가':(quality.metrics.source_location.rate*100).toFixed(1)+'%') + " · " + _toDisplayString(quality.metrics.source_location.numerator) + " / " + _toDisplayString(quality.metrics.source_location.denominator), 1)]),
+                            _createElementVNode("p", null, [_createElementVNode("strong", null, "보고서 수치 항목 확인율"), _createTextVNode(" " + _toDisplayString(quality.metrics.report_coverage.rate===null?'측정 불가':(quality.metrics.report_coverage.rate*100).toFixed(1)+'%') + " · " + _toDisplayString(quality.metrics.report_coverage.numerator) + " / " + _toDisplayString(quality.metrics.report_coverage.denominator), 1)]),
+                            _createElementVNode("p", null, [_createElementVNode("strong", null, "정정 이력 확인"), _createTextVNode(" " + _toDisplayString(quality.metrics.temporal_checks.disclosure_history_status), 1)])
+                          ])]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "품질 분석"), qualityAnalysis
+                            ? (_openBlock(), _createElementBlock("div", {
+                                key: 0,
+                                class: "summary-grid"
+                              }, [
+                                _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "규칙 분포"), _createElementVNode("strong", null, _toDisplayString(qualityAnalysis.rule_distribution.length), 1)]),
+                                _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "계정 공백"), _createElementVNode("strong", null, _toDisplayString(qualityAnalysis.account_gaps.length), 1)]),
+                                _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "기간 공백"), _createElementVNode("strong", null, _toDisplayString(qualityAnalysis.period_coverage.length), 1)]),
+                                _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "검토 사유"), _createElementVNode("strong", null, _toDisplayString(qualityAnalysis.exception_reasons.length), 1)])
+                              ]))
+                            : _createCommentVNode("", true), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList((qualityAnalysis?.rule_distribution || []), (item) => {
+                            return (_openBlock(), _createElementBlock("div", {
+                              key: item.rule_id,
+                              class: "question-card"
+                            }, [_createElementVNode("strong", null, _toDisplayString(item.rule_id), 1), _createTextVNode(" · 통과 " + _toDisplayString(item.numerator) + " / " + _toDisplayString(item.denominator) + " · 미검증 " + _toDisplayString(item.not_checked), 1)]))
+                          }), 128))]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "예외관리"), (!quality.exceptions.length)
+                            ? (_openBlock(), _createElementBlock("div", {
+                                key: 0,
+                                class: "question-card"
+                              }, "현재 배치에서 품질 예외가 없습니다."))
+                            : _createCommentVNode("", true), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(quality.exceptions, (item) => {
+                            return (_openBlock(), _createElementBlock("div", {
+                              key: item.exception_id,
+                              class: "question-card"
+                            }, [
+                              _createElementVNode("h4", null, _toDisplayString(item.rule_id) + " · " + _toDisplayString(item.severity) + " · " + _toDisplayString(item.validation_status), 1),
+                              _createElementVNode("p", null, _toDisplayString(item.reason_code) + " · " + _toDisplayString(item.affected_account || '계정 미지정') + " · " + _toDisplayString(item.period?.end || item.period?.as_of || '기간 미지정'), 1),
+                              _createElementVNode("p", null, [_createElementVNode("strong", null, "권장 조치"), _createTextVNode(" " + _toDisplayString(item.suggested_action), 1)]),
+                              (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(item.reviews, (review) => {
+                                return (_openBlock(), _createElementBlock("p", {
+                                  key: review.id,
+                                  class: "hint"
+                                }, _toDisplayString(review.action) + " · " + _toDisplayString(review.note) + " · " + _toDisplayString(day(review.created_at)), 1))
+                              }), 128)),
+                              _createElementVNode("div", null, [_withDirectives(_createElementVNode("select", { "onUpdate:modelValue": $event => ((qualityAction) = $event) }, [
+                                _createElementVNode("option", { value: "acknowledged" }, "확인"),
+                                _createElementVNode("option", { value: "investigating" }, "조사 중"),
+                                _createElementVNode("option", { value: "evidence_requested" }, "근거 요청"),
+                                _createElementVNode("option", { value: "note_added" }, "메모 추가"),
+                                _createElementVNode("option", { value: "closed_unresolved" }, "미해결 종료")
+                              ], 8, ["onUpdate:modelValue"]), [[_vModelSelect, qualityAction]]), _withDirectives(_createElementVNode("textarea", {
+                                "onUpdate:modelValue": $event => ((qualityNote) = $event),
+                                maxlength: "1000",
+                                rows: "2",
+                                placeholder: "검토 메모를 입력하세요. 금융 검증 상태는 변경되지 않습니다."
+                              }, null, 8, ["onUpdate:modelValue"]), [[_vModelText, qualityNote]]), _createElementVNode("button", {
+                                onClick: $event => (addQualityReview(item.exception_id)),
+                                disabled: busy || !qualityNote.trim()
+                              }, "검토 기록 저장", 8, ["onClick", "disabled"])])
+                            ]))
+                          }), 128))])
+                        ], 64))
                       : (_openBlock(), _createElementBlock("p", {
                           key: 1,
                           class: "muted"
                         }, "품질지표를 불러오는 중입니다."))], 64))
                   : _createCommentVNode("", true),
                 (currentTab==='questions')
-                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 2 }, [
+                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 3 }, [
                       _createElementVNode("h2", null, "답변·정정·메모"),
                       _createElementVNode("p", { class: "muted" }, "답변은 별도 출처로 보존하고 검증 전 상태를 유지합니다. 현재 조사 중이면 다음 실행에 반영합니다."),
                       (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(view.questions, (question, index) => {
@@ -571,7 +618,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                     ], 64))
                   : _createCommentVNode("", true),
                 (currentTab==='history')
-                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 3 }, [
+                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 4 }, [
                       _createElementVNode("h2", null, "버전과 진행 이력"),
                       _createElementVNode("div", { class: "compare-controls" }, [_createElementVNode("label", null, [_createTextVNode("이전 판"), _withDirectives(_createElementVNode("select", { "onUpdate:modelValue": $event => ((compareId) = $event) }, [_createElementVNode("option", { value: "" }, "비교할 이전 판 선택"), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(reports.filter(r=>r.id!==view.report_id), (report) => {
                         return (_openBlock(), _createElementBlock("option", {
