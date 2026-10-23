@@ -160,13 +160,13 @@ class ResearchStore(SourceRecovery):
             tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             if "research_migrations" in tables:
                 versions = [r[0] for r in conn.execute("SELECT version FROM research_migrations ORDER BY version")]
-                if versions not in ([1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5]):
+                if versions not in ([1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5, 6]):
                     raise IntegrityFailure("지원하지 않는 조사 DB 버전입니다. 기존 DB는 변경하지 않았습니다.")
             else:
                 if any(name.startswith("research_") for name in tables):
                     raise IntegrityFailure("미완성 조사 스키마를 발견했습니다. 기존 DB를 보존합니다.")
                 versions = []
-            for version, filename in ((1, "research_schema.sql"), (2, "research_schema_v2.sql"), (3, "research_schema_v3.sql"), (4, "research_schema_v4.sql"), (5, "research_schema_v5.sql")):
+            for version, filename in ((1, "research_schema.sql"), (2, "research_schema_v2.sql"), (3, "research_schema_v3.sql"), (4, "research_schema_v4.sql"), (5, "research_schema_v5.sql"), (6, "research_schema_v6.sql")):
                 if version in versions:
                     continue
                 statement = ""
@@ -467,3 +467,39 @@ class ResearchStore(SourceRecovery):
             return [row_data(r) for r in conn.execute(
                 "SELECT * FROM research_events WHERE research_id=? AND sequence>? ORDER BY sequence",
                 (research_id, after))]
+
+    def add_quality_review(self, research_id, batch_id, exception_id, action, note):
+        """검토 메모만 불변 이력으로 추가한다. 검증 결과는 어떤 경우에도 갱신하지 않는다."""
+        allowed = {'acknowledged','investigating','evidence_requested','note_added','closed_unresolved'}
+        if action not in allowed or not isinstance(note, str) or len(note) > 1000:
+            raise ValueError('품질 검토 입력이 유효하지 않습니다.')
+        with self.connection(write=True) as conn:
+            self._one(conn, 'research_researches', research_id)
+            self.require_visible(conn, research_id)
+            batch = self._one(conn, 'research_validation_batches', batch_id)
+            run, basis = self._context(conn, batch['run_id'])
+            if basis['research_id'] != research_id:
+                raise Conflict('다른 조사의 검증 배치에는 검토를 남길 수 없습니다.')
+            item_id = uuid4().hex
+            conn.execute('INSERT INTO research_quality_review_events VALUES (?,?,?,?,?,?,?,?)',
+                         (item_id, research_id, batch_id, exception_id, action, note,
+                          'local_demo_operator', now()))
+            self._event(conn, research_id, basis['id'], run['id'], 'quality_exception_reviewed',
+                        {'quality_review_event_id': item_id, 'batch_id': batch_id,
+                         'exception_id': exception_id, 'action': action})
+            return row_data(self._one(conn, 'research_quality_review_events', item_id))
+
+    def quality_reviews(self, research_id, batch_id, exception_ids=None):
+        with self.connection() as conn:
+            self._one(conn, 'research_researches', research_id)
+            self.require_visible(conn, research_id)
+            batch = self._one(conn, 'research_validation_batches', batch_id)
+            _, basis = self._context(conn, batch['run_id'])
+            if basis['research_id'] != research_id:
+                raise Conflict('다른 조사의 검증 배치입니다.')
+            rows = [row_data(row) for row in conn.execute(
+                'SELECT * FROM research_quality_review_events WHERE research_id=? AND batch_id=? ORDER BY created_at,id',
+                (research_id, batch_id))]
+            if exception_ids is not None:
+                rows = [row for row in rows if row['exception_id'] in exception_ids]
+            return rows

@@ -17,6 +17,9 @@ from .finance.report_exports import ReportExports
 from typing import Literal
 from .finance.attachments import AttachmentService
 from .finance.research_lifecycle import ResearchLifecycle,PlanInput
+from .finance.quality_metrics import calculate as quality_metrics
+from .finance.quality_exceptions import build as quality_exceptions
+from .research_store import Conflict
 
 router = APIRouter()
 
@@ -27,6 +30,33 @@ class CachedDraftInput(Contract):
 
 class ExportInput(Contract):
     format: Literal['pdf','markdown_zip']
+
+
+class QualityReviewInput(Contract):
+    batch_id: str = Field(min_length=1, max_length=200)
+    action: Literal['acknowledged','investigating','evidence_requested','note_added','closed_unresolved']
+    note: str = Field(max_length=1000)
+
+
+def _quality_payload(store, batch_id, report=None):
+    batch = NumericValidationService(store).batch(batch_id)
+    run = store.get_run(batch['run_id'])
+    # 공개 메서드만 사용해 연구 ID를 얻는다. 배치는 실행 기준에 고정되어 있다.
+    with store.connection() as conn:
+        basis = store._one(conn, 'research_bases', run['basis_id'])
+        research_id = basis['research_id']
+    exceptions = quality_exceptions(research_id, batch, report)
+    reviews = store.quality_reviews(research_id, batch_id, {item['exception_id'] for item in exceptions})
+    by_exception = {}
+    for review in reviews:
+        by_exception.setdefault(review['exception_id'], []).append(review)
+    for item in exceptions:
+        item['reviews'] = by_exception.get(item['exception_id'], [])
+    return {'schema_version': 'quality-report-1.0', 'report_id': report['id'] if report else None,
+            'research_id': research_id, 'validation_batch_id': batch_id,
+            'registry_version': quality_metrics(batch, report)['registry_version'],
+            'metrics': quality_metrics(batch, report), 'exceptions': exceptions,
+            'limitations': ['품질지표는 정해진 범위에서 수행한 자동 검증의 결과이며, 기업 재무정보 전체의 정확성 또는 금융기관의 신용심사 결론을 보증하지 않습니다.']}
 
 
 @router.get('/research-archives')
@@ -83,6 +113,36 @@ def attachment_bundle(research_id: str,bundle_id: str,request: Request):
 @router.get('/reports/{report_id}/view')
 def report_view(report_id: str,request: Request):
     return build_view(request.app.state.research_store,report_id)
+
+
+@router.get('/reports/{report_id}/quality')
+def report_quality(report_id: str, request: Request):
+    store = request.app.state.research_store
+    report = store.get_report(report_id)
+    if report['status'] != 'published':
+        raise HTTPException(409, '게시된 보고서의 품질만 조회할 수 있습니다.')
+    return _quality_payload(store, report['publication']['validation_batch_id'], report)
+
+
+@router.get('/validation-batches/{batch_id}/quality')
+def batch_quality(batch_id: str, request: Request):
+    return _quality_payload(request.app.state.research_store, batch_id)
+
+
+@router.post('/researches/{research_id}/quality-exceptions/{exception_id}/reviews', status_code=201)
+def create_quality_review(research_id: str, exception_id: str, value: QualityReviewInput, request: Request):
+    store = request.app.state.research_store
+    try:
+        payload = _quality_payload(store, value.batch_id)
+        if payload['research_id'] != research_id:
+            raise HTTPException(409, '다른 조사의 검증 배치에는 검토를 남길 수 없습니다.')
+        if exception_id not in {item['exception_id'] for item in payload['exceptions']}:
+            raise HTTPException(404, '현재 검증 배치에 없는 품질 예외입니다.')
+        return store.add_quality_review(research_id, value.batch_id, exception_id, value.action, value.note)
+    except HTTPException:
+        raise
+    except (ValueError, Conflict) as error:
+        raise HTTPException(409, str(error)) from None
 
 
 @router.get('/reports/{report_id}/compare/{previous_id}')

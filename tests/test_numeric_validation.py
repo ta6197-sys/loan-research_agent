@@ -197,7 +197,7 @@ class ValidationStorageTests(ValidationFixture):
         session=SqliteSessionStore(db);self.addCleanup(session.close)
         self.assertEqual([{'role':'user','content':'보존'}],session.load('chat'))
         c=sqlite3.connect(db)
-        self.assertEqual([(1,),(2,),(3,),(4,),(5,)],c.execute('SELECT version FROM research_migrations ORDER BY version').fetchall());c.close()
+        self.assertEqual([(1,),(2,),(3,),(4,),(5,),(6,)],c.execute('SELECT version FROM research_migrations ORDER BY version').fetchall());c.close()
 
 class RegressionAndCalculationTests(ValidationFixture):
     def test_current_asset_raw_whitespace_and_inventory_alias(self):
