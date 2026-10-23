@@ -10,10 +10,10 @@ from pydantic import Field, field_validator
 from agent.research_models import Budget, Company, Contract, ResearchInput
 
 
-DEFAULT_WINDOW = {
-    "annual_years": [2023, 2024, 2025],
-    "interim_periods": ["2025-H1", "2026-H1"],
-}
+def comparison_window(cutoff):
+    latest_half_year=cutoff.year if cutoff.month>=8 else cutoff.year-1
+    return {"annual_years":list(range(cutoff.year-3,cutoff.year)),
+            "interim_periods":[f"{latest_half_year-1}-H1",f"{latest_half_year}-H1"]}
 
 
 class GeneralStartInput(Contract):
@@ -41,7 +41,7 @@ def receive(store, value: GeneralStartInput):
         company=company,
         purpose=value.purpose,
         public_cutoff=value.public_cutoff,
-        comparison_window=DEFAULT_WINDOW,
+        comparison_window=comparison_window(value.public_cutoff),
         request_key=value.request_key,
         budget=value.budget,
     )

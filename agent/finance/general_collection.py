@@ -7,6 +7,7 @@ import asyncio
 import json
 import os
 import re
+from datetime import date
 
 from agent.research_store import Conflict, now, safe_payload
 from .dart_service import DartService
@@ -33,9 +34,17 @@ def report_year(report_name, receipt):
     return int(match.group(1)) if match else int(receipt[:4])
 
 
+def comparison_targets(cutoff):
+    """기준일에서 최근 완결 3개 연간과 이용 가능한 최근 반기 2개를 계산한다."""
+    cutoff_date=date.fromisoformat(str(cutoff))
+    annual_years=tuple(range(cutoff_date.year-3,cutoff_date.year))
+    latest_half_year=cutoff_date.year if cutoff_date.month>=8 else cutoff_date.year-1
+    return [(year,'11011') for year in annual_years]+[(latest_half_year-1,'11012'),(latest_half_year,'11012')]
+
+
 def select_regular_reports(items, cutoff):
     """비교 창의 3개 연간·직전/현재 반기만 고른다. 정정본은 접수일이 가장 늦은 것을 쓴다."""
-    selected = {}
+    selected = {};targets=set(comparison_targets(cutoff))
     for item in items:
         code = report_code(item.get("report_nm"))
         receipt = str(item.get("rcept_no", ""))
@@ -44,9 +53,7 @@ def select_regular_reports(items, cutoff):
         if receipt[:8] > cutoff.replace("-", ""):
             continue
         year = report_year(item.get("report_nm"), receipt)
-        if code == "11011" and year not in {2023, 2024, 2025}:
-            continue
-        if code == "11012" and year not in {2025, 2026}:
+        if (year,code) not in targets:
             continue
         key = (year, code)
         previous = selected.get(key)
@@ -60,8 +67,7 @@ def planned_reports(disclosures, cutoff):
     """공시 목록 누락이 있어도 합의한 비교 기간의 재무 API 조회 계획은 유지한다."""
     discovered = {(item["year"], item["report_code"]): item
                   for item in select_regular_reports(disclosures, cutoff)}
-    required = [(2023, "11011"), (2024, "11011"), (2025, "11011"),
-                (2025, "11012"), (2026, "11012")]
+    required = comparison_targets(cutoff)
     return [discovered.get((year, code), {"year": year, "report_code": code,
                                            "rcept_no": None, "report_nm": None, "rcept_dt": None})
             for year, code in required]
@@ -105,14 +111,27 @@ class GeneralCollectionService:
             self.store._event(conn, basis["research_id"], basis["id"], run_id,
                               "general_collection_finished", result)
 
+    async def _all_disclosures(self, run_id, corp_code, cutoff):
+        """DART 페이지 전체를 읽되, 각 호출은 기존 실행 예산을 그대로 소비한다."""
+        first=await self.dart.disclosures(run_id,corp_code,"2023-01-01",cutoff,page_no=1,page_count=100,last_report="Y")
+        pages=[first]
+        try:total_pages=int(first.get('total_page') or 1)
+        except (TypeError,ValueError):raise ValueError('invalid_disclosure_pagination') from None
+        if not 1<=total_pages<=1000:raise ValueError('invalid_disclosure_pagination')
+        for page_no in range(2,total_pages+1):
+            pages.append(await self.dart.disclosures(run_id,corp_code,"2023-01-01",cutoff,
+                                                      page_no=page_no,page_count=100,last_report="Y"))
+        return {'items':[item for page in pages for item in page['items']],
+                'source_ids':[page['source_id'] for page in pages],
+                'page_count':len(pages),'complete':len(pages)==total_pages}
+
     async def run(self, run_id):
         basis, company = self._begin(run_id)
         corp_code = company.get("corp_code")
         try:
             identity = await self.dart.company(run_id, corp_code)
-            disclosed = await self.dart.disclosures(run_id, corp_code, "2023-01-01", basis["public_cutoff"],
-                                                    page_no=1, page_count=100, last_report="Y")
-            targets = planned_reports(disclosed["items"], basis["public_cutoff"])
+            disclosed = await self._all_disclosures(run_id,corp_code,basis["public_cutoff"])
+            targets = planned_reports(disclosed["items"],basis["public_cutoff"])
             financial_sources, archives, extracted = [], [], []
             for target in targets:
                 receipts = {target["rcept_no"]} if target["rcept_no"] else set()
@@ -134,7 +153,8 @@ class GeneralCollectionService:
                             # 이후 원문 범위 분할 추출이 필요하다는 제한으로 남긴다.
                             extracted.append({"source_id": member["source_id"], "status": "extraction_withheld",
                                               "reason": str(error)})
-            result = {"identity_source_id": identity["source_id"], "disclosures_source_id": disclosed["source_id"],
+            result = {"identity_source_id": identity["source_id"], "disclosures_source_ids": disclosed["source_ids"],
+                      "disclosures_page_count":disclosed['page_count'],
                       "target_reports": targets, "financial_requests": len(financial_sources),
                       "archive_count": len(archives), "extracted_source_count": len(extracted),
                       "financial_verification": "not_performed",
@@ -158,8 +178,7 @@ class GeneralCollectionService:
         receipt=create_collection_retry(self.store, research_id)
         run_id=receipt['run_id'];basis,company=self._begin(run_id)
         try:
-            disclosed=await self.dart.disclosures(run_id,company['corp_code'],'2023-01-01',basis['public_cutoff'],
-                                                  page_no=1,page_count=100,last_report='Y')
+            disclosed=await self._all_disclosures(run_id,company['corp_code'],basis['public_cutoff'])
             previous_run=receipt['previous_run_id']
             with self.store.connection() as conn:
                 old_receipts={receipt_number for row in conn.execute(
@@ -168,7 +187,7 @@ class GeneralCollectionService:
                     if receipt_number}
             changes=changed_regular_reports(old_receipts,disclosed['items'],basis['public_cutoff'])
             if not changes:
-                result={'freshness':'no_new_or_corrected_regular_report','checked_disclosures_source_id':disclosed['source_id'],
+                result={'freshness':'no_new_or_corrected_regular_report','checked_disclosures_source_ids':disclosed['source_ids'],
                         'checked_report_count':len(planned_reports(disclosed['items'],basis['public_cutoff'])),
                         'next_phase':'reuse_existing_published_or_verified_result'}
                 with self.store.connection(write=True) as conn:
@@ -176,13 +195,13 @@ class GeneralCollectionService:
                     trigger.update(phase='freshness_checked_no_change',collection_result=result)
                     conn.execute("UPDATE research_runs SET status='finished',trigger_json=? WHERE id=?",(safe_payload(trigger),run_id))
                     self.store._event(conn,basis_row['research_id'],basis_row['id'],run_id,'general_freshness_checked',result)
-                return {**receipt,'status':'unchanged','changes':[],'checked_disclosures_source_id':disclosed['source_id']}
+                return {**receipt,'status':'unchanged','changes':[],'checked_disclosures_source_ids':disclosed['source_ids']}
             with self.store.connection(write=True) as conn:
                 run,basis_row=self.store._context(conn,run_id);trigger=json.loads(run['trigger_json'])
                 trigger['phase']='freshness_change_detected';trigger['detected_report_changes']=changes
                 conn.execute("UPDATE research_runs SET status='queued',trigger_json=? WHERE id=?",(safe_payload(trigger),run_id))
                 self.store._event(conn,basis_row['research_id'],basis_row['id'],run_id,'general_freshness_change_detected',
-                                  {'changes':changes,'checked_disclosures_source_id':disclosed['source_id']})
+                                  {'changes':changes,'checked_disclosures_source_ids':disclosed['source_ids']})
             result=await self.run(run_id)
             return {**receipt,'status':'changed','changes':changes,'collection_result':result}
         except Exception:

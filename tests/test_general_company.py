@@ -66,6 +66,14 @@ class GeneralCompanyStartTests(unittest.TestCase):
                           (2025, "11012", None), (2026, "11012", "20260814000001")],
                          [(item["year"], item["report_code"], item["rcept_no"]) for item in targets])
 
+    def test_comparison_window_moves_with_public_cutoff(self):
+        targets=planned_reports([],"2028-03-01")
+        self.assertEqual([(2025,"11011"),(2026,"11011"),(2027,"11011"),(2026,"11012"),(2027,"11012")],
+                         [(item['year'],item['report_code']) for item in targets])
+        receipt=receive(self.store,self.value(public_cutoff="2028-03-01"))
+        basis=self.store.get_research(receipt['research_id'])['bases'][0]
+        self.assertEqual({'annual_years':[2025,2026,2027],'interim_periods':['2026-H1','2027-H1']},basis['data']['comparison_window'])
+
     def test_freshness_check_only_returns_new_or_corrected_receipts(self):
         rows=[{"report_nm":"사업보고서 (2025.12)","rcept_no":"20260318000001","rcept_dt":"20260318"},
               {"report_nm":"반기보고서 (2026.06)","rcept_no":"20260814000001","rcept_dt":"20260814"}]
