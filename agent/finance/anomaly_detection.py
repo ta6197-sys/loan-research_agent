@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 from .model_readiness import evaluate as readiness
 
-VERSION = "anomaly-detection-1.0"
+VERSION = "anomaly-detection-1.1"
 RANDOM_STATE = 20261023
 N_ESTIMATORS = 200
 MIN_TRAIN_ROWS, MIN_EVALUATION_ROWS = 30, 10
@@ -64,8 +64,9 @@ def _fit_score(train, test, features):
     x_test = np.asarray([values for _, values in test], dtype=float)
     pipeline.fit(x_train)
     scores = -pipeline.score_samples(x_test)  # 큰 값일수록 훈련 분포에서 멀다.
-    threshold = _quantile(scores, .95) if len(scores) > 1 else None
-    return pipeline, scores, threshold
+    train_scores = -pipeline.score_samples(x_train)
+    threshold = _quantile(train_scores, .95)
+    return pipeline, scores, threshold, train_scores
 
 
 def _split_time(rows):
@@ -84,14 +85,20 @@ def _split_company(rows):
 
 def _run_split(name, rows, features, splitter):
     train_rows, test_rows, detail = splitter(rows)
+    # 과거 행이라도 나중에 공개된 정정본이면 학습 시점에 사용할 수 없다.
+    training_cutoff = (min((row.get("source_public_at", row["source_receipt"][:8]).replace("-", "") for row in test_rows), default="")
+                       if name == "time_ordered" else min((row["public_cutoff"].replace("-", "") for row in rows), default=""))
+    future_train = [row for row in train_rows if row.get("source_public_at", row["source_receipt"][:8]).replace("-", "") > training_cutoff]
+    train_rows = [row for row in train_rows if row not in future_train]
     train, excluded_train = _complete(train_rows, features); test, excluded_test = _complete(test_rows, features)
+    excluded_train.extend({"row_id": _id(row), "reason": "published_after_training_cutoff"} for row in future_train)
     result = {"name": name, "split": detail, "training_row_count": len(train), "evaluation_row_count": len(test),
               "training_company_count": len({row["corp_code"] for row, _ in train}), "evaluation_company_count": len({row["corp_code"] for row, _ in test}),
               "excluded_rows": excluded_train + excluded_test}
     if detail["status"] != "measured" or len(train) < MIN_TRAIN_ROWS or len(test) < MIN_EVALUATION_ROWS:
         result.update(status="not_trained_insufficient_split_data", reason="minimum_30_training_and_10_evaluation_complete_rows_required")
         return result
-    _, scores, threshold = _fit_score(train, test, features)
+    _, scores, threshold, train_scores = _fit_score(train, test, features)
     baseline = _baseline(train, test, features)
     observations = []
     for (row, _), score in zip(test, scores):
@@ -100,7 +107,17 @@ def _run_split(name, rows, features, splitter):
                              "exploratory_anomaly": bool(score >= threshold), "baseline": baseline[_id(row)],
                              "feature_evidence": {feature: row["feature_evidence"].get(feature, []) for feature in features},
                              "limitation": "탐색적 특이성은 회계오류·부실·연체·신용위험을 뜻하지 않습니다."})
+    sensitivity = []
+    for quantile in (.90, .95, .975):
+        boundary = _quantile(train_scores, quantile)
+        candidates = sorted(_id(row) for (row, _), score in zip(test, scores) if score >= boundary)
+        sensitivity.append({"quantile": str(quantile), "threshold": str(boundary), "threshold_source": "training_scores",
+                            "candidate_count": len(candidates), "candidate_row_ids": candidates})
     return {**result, "status": "measured", "score_threshold_quantile": "0.95", "score_threshold": str(float(threshold)),
+            "threshold_source": "training_scores", "training_public_cutoff": training_cutoff,
+            "training_row_ids": [_id(row) for row, _ in train], "evaluation_row_ids": [_id(row) for row, _ in test],
+            "training_periods": sorted({row["period_end"] for row, _ in train}),
+            "training_scores": [str(float(score)) for score in train_scores], "sensitivity": sensitivity,
             "observations": sorted(observations, key=lambda item: float(item["anomaly_score"]), reverse=True)}
 
 

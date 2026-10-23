@@ -1,6 +1,8 @@
 import unittest
 
 from agent.finance.anomaly_detection import detect
+from agent.finance.anomaly_detection import _fit_score
+import numpy as np
 from agent.finance.model_evaluation import evaluate, evaluate_synthetic
 from agent.finance.peer_dataset import build_snapshot
 
@@ -18,6 +20,13 @@ def record(company, year, *, outlier=False):
 
 
 class AnomalyDetectionTests(unittest.TestCase):
+    def test_threshold_is_frozen_from_training_scores(self):
+        train = [({}, [float(index)]) for index in range(40)]
+        _, _, threshold, training_scores = _fit_score(train, [({}, [10.])], ['x'])
+        _, _, changed_threshold, _ = _fit_score(train, [({}, [1000000.])], ['x'])
+        self.assertEqual(threshold, changed_threshold)
+        self.assertEqual(threshold, float(np.quantile(training_scores, .95)))
+
     def snapshot(self):
         return build_snapshot([record(str(company).zfill(3), year, outlier=company == 29 and year == 2026)
                                for company in range(30) for year in range(2022, 2027)])
@@ -35,6 +44,13 @@ class AnomalyDetectionTests(unittest.TestCase):
         self.assertEqual((120, 30), (splits["time_ordered"]["training_row_count"], splits["time_ordered"]["evaluation_row_count"]))
         self.assertTrue(all("feature_evidence" in item for item in splits["time_ordered"]["observations"]))
         self.assertEqual(20261023, result["model"]["random_state"])
+        time = splits['time_ordered']
+        self.assertEqual('training_scores', time['threshold_source'])
+        self.assertFalse(set(time['training_row_ids']) & set(time['evaluation_row_ids']))
+        for item in time['sensitivity']:
+            self.assertEqual(item['candidate_count'], len(item['candidate_row_ids']))
+            self.assertTrue(set(item['candidate_row_ids']) <= set(time['evaluation_row_ids']))
+        self.assertEqual(result, detect(self.snapshot()))
 
     def test_unlabeled_evaluation_and_synthetic_metrics_are_explicit(self):
         result = evaluate(detect(self.snapshot()))

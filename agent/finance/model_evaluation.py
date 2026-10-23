@@ -1,5 +1,5 @@
 """라벨 없는 탐색 모델의 분할·안정성·기준선 비교와 합성 오류 평가."""
-VERSION = "model-evaluation-1.0"
+VERSION = "model-evaluation-1.1"
 
 
 def _candidates(split):
@@ -8,8 +8,9 @@ def _candidates(split):
 
 def evaluate(result):
     splits = [item for item in result.get("splits", []) if item.get("status") == "measured"]
-    sets = [_candidates(item) for item in splits]
-    overlap = len(sets[0] & sets[1]) / len(sets[0] | sets[1]) if len(sets) == 2 and sets[0] | sets[1] else None
+    common = set.intersection(*(set(item.get("evaluation_row_ids", [])) for item in splits)) if len(splits) == 2 else set()
+    sets = [_candidates(item) & common for item in splits]
+    overlap = len(sets[0] & sets[1]) / len(sets[0] | sets[1]) if common and len(sets) == 2 and sets[0] | sets[1] else None
     baseline_ml = []
     for split in splits:
         for item in split.get("observations", []):
@@ -18,9 +19,9 @@ def evaluate(result):
     return {"schema_version": VERSION, "dataset_snapshot_id": result.get("dataset_snapshot_id"),
             "status": "measured" if splits else "not_evaluated_no_trained_split", "label_status": "unlabeled_no_operational_accuracy",
             "splits": [{key: split.get(key) for key in ("name", "training_row_count", "evaluation_row_count", "training_company_count", "evaluation_company_count", "split")} for split in result.get("splits", [])],
-            "candidate_stability": {"comparison": "time_ordered_vs_company_holdout", "jaccard": overlap, "status": "unmeasured" if overlap is None else "measured"},
+            "candidate_stability": {"comparison": "time_ordered_vs_company_holdout", "common_evaluation_row_ids": sorted(common), "jaccard": overlap, "status": "unmeasured" if overlap is None else "measured"},
             "baseline_ml_comparison": baseline_ml,
-            "sensitivity": {"score_percentile_thresholds": ["0.90", "0.95", "0.975"], "model_settings": result.get("model"), "period_change": "time_ordered split reported separately"},
+            "sensitivity": {"splits": [{"name": split["name"], "results": split.get("sensitivity", [])} for split in splits], "model_settings": result.get("model"), "period_change": "time_ordered split reported separately"},
             "top_case_evidence_review": [{"row_id": item["row_id"], "feature_evidence": item["feature_evidence"]} for split in splits for item in split.get("observations", [])[:5]],
             "limitations": ["정답 라벨이 없어 실제 운영 정확도·부도 예측 성능을 산출하지 않습니다.", "합성 오류 평가는 실제 금융 부실·오류 탐지 성능으로 표시하지 않습니다."]}
 

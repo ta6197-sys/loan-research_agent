@@ -4,6 +4,13 @@ from agent.finance.model_evaluation import evaluate, evaluate_synthetic
 
 
 class ModelEvaluationTests(unittest.TestCase):
+    def test_different_evaluation_populations_are_not_compared(self):
+        result = evaluate({'splits': [
+            {'name': 'time', 'status': 'measured', 'evaluation_row_ids': ['a'], 'observations': []},
+            {'name': 'company', 'status': 'measured', 'evaluation_row_ids': ['b'], 'observations': []}]})
+        self.assertEqual('unmeasured', result['candidate_stability']['status'])
+        self.assertIsNone(result['candidate_stability']['jaccard'])
+
     def test_no_trained_split_does_not_claim_operational_accuracy(self):
         result = evaluate({"dataset_snapshot_id": "snapshot", "splits": []})
         self.assertEqual(("not_evaluated_no_trained_split", "unlabeled_no_operational_accuracy"),
