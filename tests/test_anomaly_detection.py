@@ -35,6 +35,14 @@ class AnomalyDetectionTests(unittest.TestCase):
         result = detect(build_snapshot([record("001", 2026)]))
         self.assertEqual(("not_trained_insufficient_data", []), (result["status"], result["splits"]))
 
+    def test_later_published_correction_is_excluded_from_time_training(self):
+        snapshot = self.snapshot()
+        snapshot['rows'][0]['source_public_at'] = '2027-08-01'
+        result = detect(snapshot)
+        split = next(item for item in result['splits'] if item['name'] == 'time_ordered')
+        self.assertEqual(119, split['training_row_count'])
+        self.assertTrue(any(item['reason'] == 'published_after_training_cutoff' for item in split['excluded_rows']))
+
     def test_isolation_forest_uses_time_and_company_split_without_imputation(self):
         result = detect(self.snapshot())
         self.assertEqual("measured", result["status"])

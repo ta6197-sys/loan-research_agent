@@ -424,29 +424,117 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                 (currentTab==='analysis')
                   ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_createElementVNode("h2", null, "재무·통계·ML 분석"), analysis
                       ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
-                          _createElementVNode("p", { class: "muted" }, "검증된 수치만 쓰는 별도 읽기 분석입니다. 기존 보고서·PDF·검증 상태는 변경하지 않습니다."),
-                          _createElementVNode("div", { class: "summary-grid" }, [_createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "분석 지표"), _createElementVNode("strong", null, _toDisplayString(analysis.financial_metrics.length), 1)]), _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "확인 신호"), _createElementVNode("strong", null, _toDisplayString(analysis.analysis_signals.length), 1)]), _createElementVNode("div", null, [_createElementVNode("span", { class: "metric-label" }, "ML 상태"), _createElementVNode("strong", null, _toDisplayString(analysis.ml_readiness.training_status), 1)])]),
-                          _createElementVNode("section", null, [_createElementVNode("h3", null, "재무지표와 확인 항목"), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.financial_metrics.filter(item=>item.status==='supported'), (item) => {
+                          _createElementVNode("p", { class: "muted" }, "게시 당시 검증된 수치와 연결된 비교집단 스냅샷을 기준으로 분석합니다."),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "재무지표"), _createElementVNode("div", { class: "analytics-cards" }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.financial_metrics, (item) => {
                             return (_openBlock(), _createElementBlock("div", {
                               key: item.analysis_id,
                               class: "question-card"
-                            }, [_createElementVNode("strong", null, _toDisplayString(item.metric_id), 1), _createTextVNode(" · " + _toDisplayString(item.value) + " · " + _toDisplayString(item.period?.end || item.period?.as_of || ''), 1), _createElementVNode("p", { class: "hint" }, "원문 사실 " + _toDisplayString(item.input_fact_ids.length) + " · 검증 " + _toDisplayString(item.input_validation_ids.length), 1)]))
-                          }), 128)), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.analysis_signals, (item) => {
+                            }, [
+                              _createElementVNode("strong", null, _toDisplayString(analysisLabel(item.name)), 1),
+                              _createElementVNode("p", null, _toDisplayString(item.scope==='OFS'?'별도':'연결') + " · " + _toDisplayString(item.period?.end || item.period?.as_of), 1),
+                              (item.status==='supported')
+                                ? (_openBlock(), _createElementBlock("p", {
+                                    key: 0,
+                                    class: "analytics-value"
+                                  }, _toDisplayString(item.value) + " " + _toDisplayString(item.unit==='percent'?'%':item.unit), 1))
+                                : (_openBlock(), _createElementBlock("p", {
+                                    key: 1,
+                                    class: "muted"
+                                  }, "계산 보류 · " + _toDisplayString(item.reason_code), 1)),
+                              (item.input_fact_ids.length)
+                                ? (_openBlock(), _createElementBlock("button", {
+                                    key: 2,
+                                    onClick: $event => (openAnalysisEvidence(item.input_fact_ids))
+                                  }, "원문 근거 " + _toDisplayString(item.input_fact_ids.length) + "건", 9, ["onClick"]))
+                                : _createCommentVNode("", true)
+                            ]))
+                          }), 128))])]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "확인 신호"), (!analysis.analysis_signals.length)
+                            ? (_openBlock(), _createElementBlock("p", {
+                                key: 0,
+                                class: "muted"
+                              }, "현재 검증 범위에서 확인 신호가 없습니다."))
+                            : _createCommentVNode("", true), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.analysis_signals, (item) => {
                             return (_openBlock(), _createElementBlock("div", {
                               key: item.analysis_id,
                               class: "question-card"
-                            }, [_createElementVNode("strong", null, "추가 확인 후보"), _createElementVNode("p", null, _toDisplayString(item.question), 1), _createElementVNode("p", { class: "hint" }, _toDisplayString(item.limitations[0]), 1)]))
+                            }, [
+                              _createElementVNode("p", null, _toDisplayString(item.question), 1),
+                              _createElementVNode("p", null, _toDisplayString(item.period?.end) + " · " + _toDisplayString(item.scope), 1),
+                              _createElementVNode("p", { class: "hint" }, _toDisplayString(item.limitations[0]), 1),
+                              _createElementVNode("button", { onClick: $event => (openAnalysisEvidence(item.input_fact_ids)) }, "연결 근거 확인", 8, ["onClick"])
+                            ]))
                           }), 128))]),
-                          _createElementVNode("section", null, [_createElementVNode("h3", null, "통계·ML 비교"), _createElementVNode("div", { class: "question-card" }, [_createElementVNode("p", null, [_createElementVNode("strong", null, "비교집단"), _createTextVNode(" " + _toDisplayString(analysis.statistical_analysis.status), 1)]), (analysis.statistical_analysis.status==='insufficient_peer_data')
-                            ? (_openBlock(), _createElementBlock("p", { key: 0 }, "비교 가능한 검증 데이터가 부족하여 머신러닝 모델이 학습되지 않았습니다."))
-                            : _createCommentVNode("", true), _createElementVNode("p", { class: "hint" }, _toDisplayString(analysis.statistical_analysis.limitations[0]), 1)]), _createElementVNode("div", { class: "question-card" }, [_createElementVNode("strong", null, "ML 적격성"), _createTextVNode(" " + _toDisplayString(analysis.ml_readiness.training_status), 1), (analysis.anomaly_detection.status!=='measured')
-                            ? (_openBlock(), _createElementBlock("p", { key: 0 }, "실제 모델이 없어 합성 점수나 임의 위험등급을 표시하지 않습니다."))
-                            : _createCommentVNode("", true)])])
+                          _createElementVNode("section", null, [
+                            _createElementVNode("h3", null, "비교집단과 통계"),
+                            (analysis.statistical_analysis.comparison_definition)
+                              ? (_openBlock(), _createElementBlock("div", {
+                                  key: 0,
+                                  class: "question-card"
+                                }, [_createElementVNode("p", null, "산업 " + _toDisplayString(analysis.statistical_analysis.comparison_definition.industry_code) + " · " + _toDisplayString(analysis.statistical_analysis.comparison_definition.industry_system) + " " + _toDisplayString(analysis.statistical_analysis.comparison_definition.industry_version), 1), _createElementVNode("p", null, "회계기준 " + _toDisplayString(analysis.statistical_analysis.comparison_definition.accounting_standard) + " · " + _toDisplayString(analysis.statistical_analysis.comparison_definition.scope) + " · 공개 기준일 " + _toDisplayString(analysis.statistical_analysis.comparison_definition.public_cutoff), 1)]))
+                              : _createCommentVNode("", true),
+                            (analysis.statistical_analysis.status==='insufficient_peer_data')
+                              ? (_openBlock(), _createElementBlock("p", {
+                                  key: 1,
+                                  class: "muted"
+                                }, "통계 비교에 필요한 검증 표본이 부족합니다. " + _toDisplayString(analysis.statistical_analysis.reason_code), 1))
+                              : _createCommentVNode("", true),
+                            (_openBlock(true), _createElementBlock(_Fragment, null, _renderList((analysis.statistical_analysis.peer_comparisons||[]), (item, index) => {
+                              return (_openBlock(), _createElementBlock("div", {
+                                key: index,
+                                class: "question-card"
+                              }, [_createElementVNode("strong", null, _toDisplayString(analysisLabel(item.comparison_definition.metric)), 1), _createElementVNode("p", null, _toDisplayString(item.comparison_definition.period_end) + " · " + _toDisplayString(item.distinct_company_count) + "개 기업 · " + _toDisplayString(item.sample_size) + "개 관측", 1), (item.status==='measured')
+                                ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_createElementVNode("p", null, "중앙값 " + _toDisplayString(item.descriptive.median) + " · 1사분위 " + _toDisplayString(item.descriptive.q1) + " · 3사분위 " + _toDisplayString(item.descriptive.q3) + " · IQR " + _toDisplayString(item.descriptive.iqr), 1), _createElementVNode("p", null, "대상 값 " + _toDisplayString(item.target_value) + " · 백분위 " + _toDisplayString(item.percentile_rank), 1), (item.robust_outlier.status==='measured')
+                                    ? (_openBlock(), _createElementBlock("p", { key: 0 }, "Robust Z " + _toDisplayString(item.robust_outlier.score) + " · " + _toDisplayString(item.robust_outlier.outside_threshold?'통계적 특이 관측':'설정 범위 이내'), 1))
+                                    : (_openBlock(), _createElementBlock("p", { key: 1 }, "강건 점수 보류 · " + _toDisplayString(item.robust_outlier.reason), 1))], 64))
+                                : (_openBlock(), _createElementBlock("p", {
+                                    key: 1,
+                                    class: "muted"
+                                  }, _toDisplayString(item.reason), 1))]))
+                            }), 128))
+                          ]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "관측 추세"), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList((analysis.statistical_analysis.trend_analysis||[]), (trend, index) => {
+                            return (_openBlock(), _createElementBlock("div", {
+                              key: index,
+                              class: "question-card"
+                            }, [
+                              _createElementVNode("strong", null, _toDisplayString(analysisLabel(trend.metric)), 1),
+                              _createElementVNode("p", null, _toDisplayString(trend.scope) + " · " + _toDisplayString(trend.observation_count) + "개 관측 · 평균 " + _toDisplayString(trend.descriptive.mean) + " · 중앙값 " + _toDisplayString(trend.descriptive.median), 1),
+                              _createElementVNode("div", { class: "table-scroll" }, [_createElementVNode("table", null, [_createElementVNode("thead", null, [_createElementVNode("tr", null, [_createElementVNode("th", null, "기간"), _createElementVNode("th", null, "관측 값")])]), _createElementVNode("tbody", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(trend.observed_values, (point) => {
+                                return (_openBlock(), _createElementBlock("tr", { key: point.period_end }, [_createElementVNode("td", null, _toDisplayString(point.period_end), 1), _createElementVNode("td", null, _toDisplayString(point.value), 1)]))
+                              }), 128))])])]),
+                              _createElementVNode("p", { class: "hint" }, "관측된 값의 변화입니다. 장기 경향·계절성·원인을 확정하지 않습니다.")
+                            ]))
+                          }), 128))]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "ML 적격성 및 실행"), _createElementVNode("p", null, _toDisplayString(analysis.ml_readiness.training_status), 1), (analysis.anomaly_detection.status!=='measured')
+                            ? (_openBlock(), _createElementBlock("p", {
+                                key: 0,
+                                class: "muted"
+                              }, "비교 가능한 검증 데이터가 부족하여 머신러닝 모델이 학습되지 않았습니다."))
+                            : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [_createElementVNode("p", null, _toDisplayString(analysis.anomaly_detection.model.name) + " · " + _toDisplayString(analysis.anomaly_detection.model.sklearn_version) + " · 자료 구분 " + _toDisplayString(analysis.anomaly_detection.data_origin), 1), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.anomaly_detection.splits, (split) => {
+                                return (_openBlock(), _createElementBlock("div", {
+                                  key: split.name,
+                                  class: "question-card"
+                                }, [_createElementVNode("strong", null, _toDisplayString(split.name), 1), _createElementVNode("p", null, "학습 " + _toDisplayString(split.training_row_count) + "행 · 평가 " + _toDisplayString(split.evaluation_row_count) + "행 · " + _toDisplayString(split.status), 1), (split.status==='measured')
+                                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [_createElementVNode("p", null, "학습 점수 " + _toDisplayString(split.score_threshold_quantile) + "분위수 임계값 " + _toDisplayString(split.score_threshold), 1), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(split.observations.filter(item=>item.exploratory_anomaly), (item) => {
+                                      return (_openBlock(), _createElementBlock("p", { key: item.row_id }, "기업 " + _toDisplayString(item.corp_code) + " · " + _toDisplayString(item.period_end) + " · 탐색 점수 " + _toDisplayString(item.anomaly_score), 1))
+                                    }), 128))], 64))
+                                  : _createCommentVNode("", true)]))
+                              }), 128)), _createElementVNode("p", { class: "hint" }, "IsolationForest 점수는 부도·신용위험 확률이 아닙니다.")], 64))]),
+                          _createElementVNode("section", null, [_createElementVNode("h3", null, "추가 조사 질문 후보"), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.followup_questions.questions, (item) => {
+                            return (_openBlock(), _createElementBlock("div", {
+                              key: item.signal_id,
+                              class: "question-card"
+                            }, [
+                              _createElementVNode("p", null, _toDisplayString(item.observed_metric) + " · " + _toDisplayString(item.comparison), 1),
+                              _createElementVNode("p", null, _toDisplayString(item.question), 1),
+                              _createElementVNode("p", null, "요청 자료: " + _toDisplayString(item.requested_information), 1),
+                              _createElementVNode("p", { class: "hint" }, _toDisplayString(item.limitation), 1),
+                              _createElementVNode("button", { onClick: $event => (openAnalysisEvidence(item.input_fact_ids)) }, "연결 원문 확인", 8, ["onClick"])
+                            ]))
+                          }), 128))])
                         ], 64))
-                      : (_openBlock(), _createElementBlock("p", {
-                          key: 1,
-                          class: "muted"
-                        }, "분석 결과를 불러오는 중입니다."))], 64))
+                      : _createCommentVNode("", true)], 64))
                   : _createCommentVNode("", true),
                 (currentTab==='quality')
                   ? (_openBlock(), _createElementBlock(_Fragment, { key: 2 }, [_createElementVNode("h2", null, "데이터 품질"), _createElementVNode("p", { class: "muted" }, "이 품질지표는 정해진 범위에서 수행한 자동 검증의 결과이며, 기업 재무정보 전체의 정확성 또는 금융기관의 신용심사 결론을 보증하지 않습니다."), quality
@@ -521,8 +609,28 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                           class: "muted"
                         }, "품질지표를 불러오는 중입니다."))], 64))
                   : _createCommentVNode("", true),
+                (currentTab==='quality' && qualityAnalysis)
+                  ? (_openBlock(), _createElementBlock("section", { key: 3 }, [_createElementVNode("h3", null, "계정·기간별 품질과 배치 추세"), _createElementVNode("div", { class: "table-scroll" }, [_createElementVNode("table", null, [_createElementVNode("thead", null, [_createElementVNode("tr", null, [
+                      _createElementVNode("th", null, "계정/기간"),
+                      _createElementVNode("th", null, "통과 / 실행"),
+                      _createElementVNode("th", null, "실패"),
+                      _createElementVNode("th", null, "미검증")
+                    ])]), _createElementVNode("tbody", null, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList([...qualityAnalysis.account_gaps,...qualityAnalysis.period_coverage], (item) => {
+                      return (_openBlock(), _createElementBlock("tr", { key: item.group }, [
+                        _createElementVNode("td", null, _toDisplayString(item.account || item.period), 1),
+                        _createElementVNode("td", null, _toDisplayString(item.numerator) + " / " + _toDisplayString(item.denominator), 1),
+                        _createElementVNode("td", null, _toDisplayString(item.fail), 1),
+                        _createElementVNode("td", null, _toDisplayString(item.not_checked), 1)
+                      ]))
+                    }), 128))])])]), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(qualityAnalysis.batch_trend, (item) => {
+                      return (_openBlock(), _createElementBlock("p", {
+                        key: item.batch_id,
+                        class: "hint"
+                      }, "배치 " + _toDisplayString(item.batch_id) + " · " + _toDisplayString(day(item.created_at)) + " · 수치 검증 " + _toDisplayString(item.numeric_fact.numerator) + " / " + _toDisplayString(item.numeric_fact.denominator) + " · 이전 배치 비교 " + _toDisplayString(item.comparison_to_previous), 1))
+                    }), 128))]))
+                  : _createCommentVNode("", true),
                 (currentTab==='questions')
-                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 3 }, [
+                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 4 }, [
                       _createElementVNode("h2", null, "답변·정정·메모"),
                       _createElementVNode("p", { class: "muted" }, "답변은 별도 출처로 보존하고 검증 전 상태를 유지합니다. 현재 조사 중이면 다음 실행에 반영합니다."),
                       (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(view.questions, (question, index) => {
@@ -618,7 +726,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                     ], 64))
                   : _createCommentVNode("", true),
                 (currentTab==='history')
-                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 4 }, [
+                  ? (_openBlock(), _createElementBlock(_Fragment, { key: 5 }, [
                       _createElementVNode("h2", null, "버전과 진행 이력"),
                       _createElementVNode("div", { class: "compare-controls" }, [_createElementVNode("label", null, [_createTextVNode("이전 판"), _withDirectives(_createElementVNode("select", { "onUpdate:modelValue": $event => ((compareId) = $event) }, [_createElementVNode("option", { value: "" }, "비교할 이전 판 선택"), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(reports.filter(r=>r.id!==view.report_id), (report) => {
                         return (_openBlock(), _createElementBlock("option", {

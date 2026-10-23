@@ -141,7 +141,7 @@ def _comparison(target_company_id, items, threshold):
         gate = len(companies) >= MIN_PEER_COMPANIES and len(peers) >= MIN_PEER_OBSERVATIONS
         for target in targets:
             row = {"comparison_definition": definition, "target_company_id": target_company_id,
-                   "target_value": _text(target["_value"]), "sample_size": len(peers),
+                   "target_value": _text(target["_value"]), "evidence_refs": target.get("evidence_refs", []), "sample_size": len(peers),
                    "distinct_company_count": len(companies), "status": "measured" if gate else "insufficient_peer_data"}
             if gate:
                 row.update(descriptive=_descriptive(values), percentile_rank=_text(_percentile(target["_value"], values)),
@@ -171,7 +171,7 @@ def _trend(target_company_id, items):
                             "reason": None if same_calendar else "non_matching_period_end"})
         output.append({"metric": key[0], "scope": key[1], "period_kind": key[2], "currency": key[3],
                        "accounting_standard": key[4], "observation_count": len(values), "periods": periods,
-                       "descriptive": _descriptive(numbers), "period_changes": changes,
+                       "descriptive": _descriptive(numbers), "observed_values": [{"period_end": row["period_end"], "value": _text(row["_value"]), "evidence_refs": row.get("evidence_refs", [])} for row in values], "period_changes": changes,
                        "observed_direction": "up" if len(numbers) > 1 and numbers[-1] > numbers[0] else ("down" if len(numbers) > 1 and numbers[-1] < numbers[0] else "flat_or_single_observation"),
                        "missing_periods": {"status": "unmeasured", "reason": "expected_reporting_calendar_not_provided"},
                        "long_term_or_seasonal_inference": {"status": "withheld", "reason": "observed_values_only_no_population_or_seasonality_conclusion"}})

@@ -6,6 +6,15 @@ from tests.test_peer_dataset import record
 
 
 class ModelReadinessTests(unittest.TestCase):
+    def test_interim_rows_do_not_inflate_company_year_gate(self):
+        rows = self.records()
+        for row in rows[:60]:
+            row['period_end'] = row['period_start'][:4] + '-06-30'
+        result = evaluate(build_snapshot(rows))
+        self.assertEqual('not_trained_insufficient_data', result['training_status'])
+        self.assertEqual(90, result['annual_row_count'])
+        self.assertFalse(result['checks']['minimum_company_period_rows']['pass'])
+
     def records(self):
         return [record(str(company).zfill(3), str(year) + "-12-31", source_hash="h" + str(company) + str(year))
                 for company in range(30) for year in range(2022, 2027)]

@@ -11,7 +11,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from .model_readiness import evaluate as readiness
+from .model_readiness import evaluate as readiness, _annual
 
 VERSION = "anomaly-detection-1.1"
 RANDOM_STATE = 20261023
@@ -130,7 +130,8 @@ def detect(snapshot, *, features=None):
             "features": selected, "feature_missingness": {feature: snapshot.get("feature_missingness", {}).get(feature) for feature in selected}, "readiness": gate}
     if gate["training_status"] != "ready_for_exploratory_training":
         return {**base, "status": "not_trained_insufficient_data", "reason": "model_readiness_gate_not_passed", "splits": []}
-    rows = [row for row in snapshot.get("rows", []) if row.get("period_kind") == "duration" and row.get("period_end", "").endswith("-12-31")]
-    return {**base, "status": "measured", "industry_group": rows[0].get("peer_group") if rows else None,
-            "splits": [_run_split("time_ordered", rows, selected, _split_time), _run_split("company_holdout", rows, selected, _split_company)],
+    rows = [row for row in snapshot.get("rows", []) if _annual(row)]
+    splits = [_run_split("time_ordered", rows, selected, _split_time), _run_split("company_holdout", rows, selected, _split_company)]
+    return {**base, "status": "measured" if any(split["status"] == "measured" for split in splits) else "not_trained_insufficient_split_data", "industry_group": rows[0].get("peer_group") if rows else None,
+            "splits": splits,
             "limitations": ["IsolationForest 점수는 부도확률·신용위험 확률이 아닙니다.", "모델 결과는 원문의 검증 통과·보류 상태를 변경하지 않습니다.", "결측 특성은 0 또는 추정치로 대체하지 않고 해당 분할에서 제외합니다."]}

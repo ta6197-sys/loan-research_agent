@@ -11,3 +11,7 @@
 - [NumPy quantile API](https://numpy.org/doc/stable/reference/generated/numpy.quantile.html)
 
 검증: `tests/test_anomaly_detection.py`, `tests/test_model_evaluation.py`.
+
+## 코드 교정 1.1
+
+탐색 임계값은 학습 점수의 95분위수다. 평가 점수의 분위수는 임계값 결정에 사용하지 않는다. 민감도는 동일 평가집단에 학습 기준 90·95·97.5분위수를 적용한 실제 후보 목록과 건수다. 시간/법인 분할 안정성은 공통 평가 관측치에 한정하며 공통 집합이 없으면 unmeasured다. 자세한 검증 결과는 `ANALYTICS_CORRECTION_AND_INTEGRATION_REPORT.md`를 참조한다.

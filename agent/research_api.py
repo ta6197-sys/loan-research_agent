@@ -77,7 +77,7 @@ def _analysis_refs(item):
 def _metric_contract(report_id, batch_id, item):
     payload = {'analysis_id': 'financial:' + item['id'], 'analysis_version': 'financial-analytics-1.0',
                'report_id': report_id, 'validation_batch_id': batch_id, 'status': item['status'],
-               'metric_id': item['id'], 'value': item.get('value'), 'period': item.get('period'),
+               'metric_id': item['id'], 'name': item['name'], 'unit': item.get('unit'), 'value': item.get('value'), 'period': item.get('period'),
                'scope': item.get('scope'), 'method_version': 'financial-analytics-1.0',
                'limitations': ['검증된 수치의 산술 분석이며 신용판단이 아닙니다.'],
                'reason_code': item.get('reason')}
@@ -104,7 +104,7 @@ def _financial_analysis_payload(store, report_id):
         statistics = {'status': 'insufficient_peer_data', 'reason_code': 'verified_peer_dataset_not_available',
                       'comparison_definition': None, 'trend_analysis': [], 'peer_comparisons': [],
                       'limitations': ['해당 보고서에 연결된 검증 비교집단 스냅샷이 없습니다.']}
-    questions = analysis_questions(anomaly)
+    questions = analysis_questions(anomaly, statistics, store.get_research(report['research_id'])['company']['corp_code'])
     signal_rows = []
     for item in signals['signals']:
         evidence = item.get('evidence', [])
@@ -206,7 +206,17 @@ def batch_quality_analysis(batch_id: str, request: Request):
     with store.connection() as conn:
         basis = store._one(conn, 'research_bases', run['basis_id'])
         research_id = basis['research_id']
+    with store.connection() as conn:
+        ids = [row[0] for row in conn.execute(
+            "SELECT b.id FROM research_validation_batches b JOIN research_runs r ON r.id=b.run_id "
+            "JOIN research_bases a ON a.id=r.basis_id WHERE a.research_id=? AND b.created_at<=? "
+            "AND (b.id=? OR EXISTS(SELECT 1 FROM research_validations v WHERE v.batch_id=b.id AND v.rule_id='numeric_fact')) "
+            "ORDER BY b.created_at,b.rowid", (research_id, batch['created_at'], batch_id))]
+    history = [NumericValidationService(store).batch(identifier) for identifier in ids if identifier != batch_id]
+    # 분포는 요청 배치로 고정하고 추세만 과거 배치를 포함한다.
     result = quality_analysis(research_id, [batch])
+    from .finance.quality_analytics import _trend
+    result['batch_trend'] = _trend(history + [batch], {})
     return {'analysis_id': 'quality:' + batch_id, 'analysis_version': result['schema_version'],
             'report_id': None, 'validation_batch_id': batch_id, 'status': result['status'],
             'method_version': result['schema_version'], 'limitations': result.get('limitations', []),

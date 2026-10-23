@@ -1,6 +1,6 @@
 """게시 보고서의 검증 결과와 원문을 재확인해 기업·기간 관측치를 생성한다."""
 from collections import defaultdict
-from decimal import Decimal
+from decimal import Decimal, DecimalException
 import json
 from agent.research_store import digest, encode, IntegrityFailure
 from .financial_analytics import FinancialAnalyticsService
@@ -70,6 +70,8 @@ def build_report(store, report_id, member, cohort):
                     raise ValueError('unvalidated_fact_reference')
                 for fid in row['fact_ids']:
                     fact = store.get_evidence(fid); data = fact['data']; source = fact['source']; meta = source['metadata']
+                    if meta['kind'] not in ('dart', 'official_ir') and cohort.get('data_origin') != 'synthetic_test_only':
+                        raise ValueError('non_public_source_excluded')
                     if fact['company']['corp_code'] != member['corp_code'] or data['scope'] != cohort['scope'] or data['account'] != row['account']: raise ValueError('fact_identity_mismatch')
                     if data['period'] != row.get('period'): raise ValueError('published_period_mismatch')
                     if data.get('currency') != 'KRW' or data.get('unit') != '원': raise ValueError('currency_or_unit_not_comparable')
@@ -81,7 +83,7 @@ def build_report(store, report_id, member, cohort):
                     if not NumericValidationService._raw_check(raw, fact['fragment']['data']['location']): raise ValueError('raw_location_unverified')
                     source_manifest[source['id']] = {'source_id': source['id'], 'source_hash': source['content_hash'], 'receipt': meta['receipt_number'], 'public_at': meta['published_at'][:10]}
                 all_eligible[(row['account'], row['end'])] = row
-            except (ValueError, KeyError) as error:
+            except (ValueError, KeyError, DecimalException) as error:
                 excluded.append({'report_id': report_id, 'account': row['account'], 'period_end': end, 'reason': str(error)})
         eligible = {account: row for (account, row_end), row in all_eligible.items() if row_end == end}
         features = {}

@@ -23,7 +23,7 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
                        'policy_version': 'synthetic-test-1', 'data_origin': 'synthetic_test_only',
                        'periods': [{'start': '2025-01-01','end': '2025-12-31','kind': 'duration'}], 'members': self.members}
 
-    def add_company(self, code):
+    def add_company(self, code, unmapped_account=None):
         r = research_input(code).model_copy(update={'company': Company(name='합성 기업',corp_code=code)})
         research = self.store.create_research(r); run = research['runs'][0]['id']; batch = uuid4().hex
         identity = self.store.save_source(run, source_input(kind='dart', rights_status='public_disclosure', reporting_period={'operation':'company'}),
@@ -40,6 +40,7 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
             fact = self.store.save_fact(run,fragment['id'],FactInput(account=account,original_account=account,raw_value=value,exact_value=value,scope='OFS',period=period,currency='KRW',unit='원'))
             vid=uuid4().hex
             data={'checks':{rule:{'status':'pass'} for rule in MANDATORY_CHECKS},'account':account,'scope':'OFS','period':period,'amount_comparison':{'original_normalized':value}}
+            if account == unmapped_account: data['checks']['V06'] = {'status':'not_checked'}
             validations.append((vid,batch,fact['id'],'numeric_fact','pass',encode(data),'2026-10-20'))
             rows.append({'account':account,'scope':'OFS','end':'2025-12-31','period':period,'status':'verified','value':value,'fact_ids':[fact['id']],'validation_ids':[vid],'source_ids':[source['id']]})
         report_id=uuid4().hex; content={'context':{'financial_rows':rows,'public_cutoff':'2026-10-20'}}; hashed=digest(encode(content).encode())
@@ -49,6 +50,15 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
             conn.execute('INSERT INTO research_reports VALUES (?,?,?,?,?,?,?,?,?)',(report_id,research['id'],run,1,report_id,hashed,encode(content),'building','2026-10-20'))
             conn.execute('INSERT INTO research_report_publications VALUES (?,?,?,?,?)',(report_id,batch,hashed,'{}','2026-10-20'))
         self.reports.append(report_id)
+
+    def test_unmapped_account_is_never_promoted_to_a_feature(self):
+        self.add_company('00000003', unmapped_account='revenue')
+        cohort=CohortRegistry(self.store).register(self.policy)
+        payload=AnalyticsDatasetService(self.store).build(cohort['cohort_id'], self.reports)
+        row=next(row for row in payload['snapshot']['rows'] if row['corp_code']=='00000003')
+        self.assertNotIn('operating_margin',row['features'])
+        self.assertNotIn('net_margin',row['features'])
+        self.assertIn('liabilities_to_assets',row['features'])
 
     def test_multiple_verified_companies_flow_into_snapshot_and_frozen_api(self):
         cohort=CohortRegistry(self.store).register(self.policy)
@@ -63,6 +73,20 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
         self.assertEqual(payload['artifact_id'],api['dataset_artifact_id'])
         self.assertTrue(api['statistical_analysis']['trend_analysis'])
         self.assertTrue(all(p['status']=='insufficient_peer_data' for p in api['statistical_analysis']['peer_comparisons']))
+        with self.store.connection(write=True) as conn:
+            import sqlite3
+            with self.assertRaises(sqlite3.IntegrityError):
+                conn.execute('UPDATE analytics_snapshots SET payload=? WHERE id=?', ('{}', payload['artifact_id']))
+
+    def test_frozen_snapshot_detects_tampered_source_on_read(self):
+        cohort=CohortRegistry(self.store).register(self.policy)
+        service=AnalyticsDatasetService(self.store)
+        payload=service.build(cohort['cohort_id'], self.reports)
+        source_id=self.members[0]['accounting_standard_evidence']['source_id']
+        with self.store.connection() as conn:
+            key=conn.execute('SELECT storage_key FROM research_sources WHERE id=?',(source_id,)).fetchone()[0]
+        (self.store.source_root/key).write_bytes(b'tampered')
+        with self.assertRaises(IntegrityFailure): service.get(payload['artifact_id'])
 
     def test_industry_mismatch_is_excluded_and_original_tamper_rejected(self):
         self.policy['industry_code']='C30'
