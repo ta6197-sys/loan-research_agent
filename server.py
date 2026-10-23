@@ -214,7 +214,7 @@ def require_legacy():
 @app.get("/health")
 async def health():
     if app.state.mode == "research":
-        return {"status": "ok", "mode": "research", "implementation_stage": "7_cached_case",
+        return {"status": "ok", "mode": "research", "implementation_stage": "general_company_research",
                 "storage": "sqlite", "execution_available": False,
                 "llm_backend": "disabled", "external_trace_enabled": False,
                 "finance_mcp": app.state.finance_status,
