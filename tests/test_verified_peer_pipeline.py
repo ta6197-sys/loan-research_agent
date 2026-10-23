@@ -94,6 +94,8 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
         payload=AnalyticsDatasetService(self.store).build(cohort['cohort_id'],self.reports)
         self.assertEqual(0,payload['snapshot']['row_count'])
         self.assertTrue(payload['snapshot']['build_exclusions'])
+        with self.assertRaisesRegex(Conflict, 'snapshot_report_has_no_verified_observation'):
+            AnalyticsDatasetService(self.store).bind(self.reports[0],payload['artifact_id'])
         source=self.store.get_source(self.members[0]['identity_source_id'])
         with self.store.connection() as conn:
             key=conn.execute('SELECT storage_key FROM research_sources WHERE id=?',(source['id'],)).fetchone()[0]

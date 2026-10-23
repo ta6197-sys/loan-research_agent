@@ -60,6 +60,9 @@ class AnalyticsDatasetService:
         report = self.store.get_report(report_id)
         company = self.store.get_research(report['research_id'])['company']['corp_code']
         cutoff = report['content'].get('context', {}).get('public_cutoff')
+        if not any(row.get('report_id') == report_id and row.get('corp_code') == company
+                   for row in payload['snapshot']['rows']):
+            raise Conflict('snapshot_report_has_no_verified_observation')
         if (report_id not in payload['snapshot']['report_ids'] or company not in payload['statistics']
                 or cutoff != payload['snapshot']['cohort']['public_cutoff']): raise Conflict('snapshot_report_or_cutoff_mismatch')
         with self.store.connection(write=True) as conn:
