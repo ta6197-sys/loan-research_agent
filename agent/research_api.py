@@ -23,6 +23,7 @@ from .finance.quality_analytics import analyze as quality_analysis
 from .finance.financial_analytics import FinancialAnalyticsService
 from .finance.analysis_signals import build as analysis_signals
 from .finance.peer_dataset import build_snapshot
+from .finance.analytics_dataset_service import AnalyticsDatasetService
 from .finance.model_readiness import evaluate as model_readiness
 from .finance.anomaly_detection import detect as anomaly_detection
 from .finance.analysis_questions import build as analysis_questions
@@ -91,11 +92,18 @@ def _financial_analysis_payload(store, report_id):
     financial = FinancialAnalyticsService(store).report(report_id)
     batch_id = financial['validation_batch_id']
     signals = analysis_signals(financial)
-    # 다기업 검증 스냅샷 저장은 별도 수집 확장 단계의 결과물이다. 현재 단일 보고서는
-    # 데이터셋으로 승격하지 않으며 빈 스냅샷의 명시적 적격성 결과만 제공한다.
-    peer_snapshot = build_snapshot([])
-    readiness = model_readiness(peer_snapshot)
-    anomaly = anomaly_detection(peer_snapshot)
+    stored = AnalyticsDatasetService(store).for_report(report_id)
+    if stored:
+        company = store.get_research(report['research_id'])['company']['corp_code']
+        readiness, anomaly = stored['ml_readiness'], stored['anomaly_detection']
+        statistics = stored['statistics'][company]
+    else:
+        # 등록된 스냅샷이 없다는 실제 조회 결과에 대해서만 부족 상태를 반환한다.
+        peer_snapshot = build_snapshot([])
+        readiness, anomaly = model_readiness(peer_snapshot), anomaly_detection(peer_snapshot)
+        statistics = {'status': 'insufficient_peer_data', 'reason_code': 'verified_peer_dataset_not_available',
+                      'comparison_definition': None, 'trend_analysis': [], 'peer_comparisons': [],
+                      'limitations': ['해당 보고서에 연결된 검증 비교집단 스냅샷이 없습니다.']}
     questions = analysis_questions(anomaly)
     signal_rows = []
     for item in signals['signals']:
@@ -110,8 +118,7 @@ def _financial_analysis_payload(store, report_id):
             'report_id': report_id, 'validation_batch_id': batch_id, 'status': 'measured',
             'financial_metrics': [_metric_contract(report_id, batch_id, item) for item in financial['results']],
             'analysis_signals': signal_rows,
-            'statistical_analysis': {'status': 'insufficient_peer_data', 'reason_code': 'verified_peer_dataset_not_available',
-                                     'comparison_definition': None, 'limitations': ['비교 가능한 다기업 검증 데이터가 아직 저장되지 않았습니다.']},
+            'statistical_analysis': statistics, 'dataset_artifact_id': stored['artifact_id'] if stored else None,
             'ml_readiness': readiness, 'anomaly_detection': anomaly, 'followup_questions': questions,
             'limitations': financial['limitations'] + ['기존 보고서·PDF·원문·검증 배치는 변경하지 않는 읽기 모델입니다.']}
 

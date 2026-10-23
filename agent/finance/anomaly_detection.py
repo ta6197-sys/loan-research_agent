@@ -126,6 +126,7 @@ def detect(snapshot, *, features=None):
     gate = readiness(snapshot, core_features=features)
     selected = list(features or gate["selected_core_features"])
     base = {"schema_version": VERSION, "dataset_snapshot_id": snapshot.get("snapshot_id"), "model": {"name": "IsolationForest", "sklearn_version": sklearn.__version__, "random_state": RANDOM_STATE, "n_estimators": N_ESTIMATORS, "feature_policy_version": snapshot.get("feature_policy_version")},
+            "data_origin": snapshot.get("cohort", {}).get("data_origin", "unspecified"),
             "features": selected, "feature_missingness": {feature: snapshot.get("feature_missingness", {}).get(feature) for feature in selected}, "readiness": gate}
     if gate["training_status"] != "ready_for_exploratory_training":
         return {**base, "status": "not_trained_insufficient_data", "reason": "model_readiness_gate_not_passed", "splits": []}

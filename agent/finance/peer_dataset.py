@@ -73,7 +73,8 @@ def _canonical(record, feature_policy_version):
     return {**{field: record[field] for field in IDENTITY}, "feature_policy_version": feature_policy_version,
             "account_definition_version": record.get("account_definition_version"), "peer_group": record.get("peer_group"),
             "features": values, "missing_features": missing_features, "feature_evidence": evidence,
-            "correction_status": record["correction_status"]}, None
+            "correction_status": record["correction_status"],
+            **{key: record[key] for key in ("source_manifest", "source_public_at", "report_id", "accounting_standard", "currency", "data_origin") if key in record}}, None
 
 
 def build_snapshot(records, *, feature_policy_version=FEATURE_POLICY_VERSION):
@@ -85,7 +86,8 @@ def build_snapshot(records, *, feature_policy_version=FEATURE_POLICY_VERSION):
         else: grouped[(row["corp_code"], row["period_start"], row["period_end"], row["period_kind"], row["scope"])].append(row)
     for key, candidates in sorted(grouped.items()):
         hashes = {item["source_hash"] for item in candidates}
-        if len(hashes) != 1:
+        definitions = {json.dumps(item["features"], sort_keys=True) for item in candidates}
+        if len(hashes) != 1 or len(definitions) != 1:
             excluded.append({"reason": "ambiguous_duplicate_company_period_scope", "identity": key,
                              "source_hashes": sorted(hashes)})
         else:
