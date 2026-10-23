@@ -161,7 +161,11 @@ def analyze(report, batch, *, raw_ok=lambda row: True):
                 results.append(_ratio("operating_cashflow_to_revenue", "cashflow", scope, period, cashflow, revenue, "operating_cashflow / revenue * 100"))
             else: results.append(_item("operating_cashflow_to_revenue", "cashflow", scope, period, "operating_cashflow / revenue * 100", status="unmeasured", reason="same_period_verified_revenue_and_operating_cashflow_required"))
             if cashflow and operating and _same_flow(cashflow, operating):
-                results.append(_item("operating_cashflow_minus_operating_profit", "cashflow", scope, period, "operating_cashflow - operating_profit", status="supported", value=_decimal(cashflow["value"]) - _decimal(operating["value"]), unit="KRW", inputs=(cashflow, operating)))
+                item = _item("operating_cashflow_minus_operating_profit", "cashflow", scope, period, "operating_cashflow - operating_profit", status="supported", value=_decimal(cashflow["value"]) - _decimal(operating["value"]), unit="KRW", inputs=(cashflow, operating))
+                # 차이의 부호와 별개로 후속 신호가 두 검증 입력값을 직접 판단하게 한다.
+                item["verified_input_values"] = {"operating_profit": _text(_decimal(operating["value"])),
+                                                  "operating_cashflow": _text(_decimal(cashflow["value"]))}
+                results.append(item)
             else: results.append(_item("operating_cashflow_minus_operating_profit", "cashflow", scope, period, "operating_cashflow - operating_profit", status="unmeasured", reason="same_period_verified_operating_cashflow_and_operating_profit_required"))
         for before, after in _period_pairs(index, scope):
             for account, name, category, percent in (("revenue", "revenue_growth", "profitability", True), ("operating_profit", "operating_profit_growth", "profitability", True), ("operating_cashflow", "operating_cashflow_growth", "cashflow", True), ("operating_cashflow", "operating_cashflow_change", "cashflow", False), ("equity", "equity_change", "stability", False), ("inventory", "inventory_change", "working_capital", False), ("inventory", "inventory_growth", "working_capital", True), ("receivables", "receivables_change", "working_capital", False), ("receivables", "receivables_growth", "working_capital", True)):
