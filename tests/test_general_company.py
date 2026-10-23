@@ -18,7 +18,7 @@ class GeneralCompanyStartTests(unittest.TestCase):
     def value(self, **changes):
         return GeneralStartInput(**({
             "company_name": "SK", "corp_code": "00181712", "stock_code": "034730",
-            "request_key": "sk-general-start",
+            "request_key": "sk-general-start", "public_cutoff":"2026-10-22",
         } | changes))
 
     def test_general_company_start_stores_isolated_collection_plan(self):

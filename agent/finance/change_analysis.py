@@ -9,6 +9,8 @@ from decimal import Decimal, InvalidOperation
 BORROWING_ACCOUNTS = ("short_term_borrowings", "current_long_term_borrowings", "long_term_borrowings")
 FLOW_ACCOUNTS = {"revenue", "operating_profit", "operating_cashflow"}
 
+FOLLOWUP_QUERIES=(('borrowing_note','차입금'),('cashflow_note','영업활동'),('working_capital_note','재고자산'))
+
 
 def _decimal(row):
     try:
@@ -95,3 +97,20 @@ def analyze_financial_changes(rows):
     return {"version": "financial-change-analysis-1.0", "changes": changes, "hypotheses": hypotheses,
             "questions": questions, "withheld": withheld,
             "limitation": "증감의 동시 관찰은 원인 입증이 아니다. 차입 주석·현금흐름 주석·내부 용도 및 상환 자료가 있어야 설명을 강화할 수 있다."}
+
+
+def investigate_hypotheses(hypotheses, search):
+    """가설별로 저장 공시를 재탐색한다. 단어 발견은 원인 입증으로 승격하지 않는다."""
+    actions=[]
+    for hypothesis in hypotheses:
+        attempts=[];matches=0
+        for action_id,query in FOLLOWUP_QUERIES:
+            result=search(query)
+            count=sum(item.get('match_count',0) for item in result)
+            attempts.append({'id':action_id,'query':query,'match_count':count})
+            matches+=count
+        actions.append({'id':'investigation:'+hypothesis['id'],'hypothesis_id':hypothesis['id'],
+            'status':'stored_disclosure_matches_found' if matches else 'stored_disclosure_matches_not_found',
+            'attempts':attempts,'match_count':matches,
+            'limitation':'저장 공시에서의 검색 일치만 기록한다. 일치 문구는 차입 증가 원인·용도·상환 계획을 입증하지 않으며, 필요한 내부 자료는 계속 미확인이다.'})
+    return actions

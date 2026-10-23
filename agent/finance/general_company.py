@@ -22,7 +22,7 @@ class GeneralStartInput(Contract):
     stock_code: str | None = Field(default=None, pattern=r"^[0-9A-Z]{6}$")
     purpose: str = Field(default="공개 공시 기반 운전자금 사전조사", min_length=1, max_length=2000)
     request_key: str = Field(min_length=1, max_length=200)
-    public_cutoff: date = date(2026, 10, 22)
+    public_cutoff: date = Field(default_factory=date.today)
     budget: Budget = Field(default_factory=Budget)
 
     @field_validator("budget")

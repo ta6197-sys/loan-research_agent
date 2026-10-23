@@ -80,7 +80,11 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
               required: "",
               placeholder: "예: 운전자금 검토를 위한 공개 자료 사전조사"
             }, null, 8, ["onUpdate:modelValue"]), [[_vModelText, purpose]]),
-            _createElementVNode("div", { class: "start-meta" }, [_createElementVNode("span", null, [_createTextVNode("공개 기준일 "), _createElementVNode("strong", null, "2026.10.22")]), _createElementVNode("span", null, "별도 주 · 연결 보조")]),
+            _createElementVNode("div", { class: "start-meta" }, [_createElementVNode("label", null, [_createTextVNode("공개 기준일 "), _withDirectives(_createElementVNode("input", {
+              "onUpdate:modelValue": $event => ((publicCutoff) = $event),
+              type: "date",
+              required: ""
+            }, null, 8, ["onUpdate:modelValue"]), [[_vModelText, publicCutoff]])]), _createElementVNode("span", null, "별도 주 · 연결 보조")]),
             _createElementVNode("p", { class: "hint" }, "기업을 목록에서 선택하면 정기공시·XBRL·재무 API를 수집해 검증합니다. 내부자료·키·개인정보를 입력하지 마세요."),
             _createElementVNode("button", {
               class: "primary full",
@@ -329,6 +333,17 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                             ]))
                           }), 128))
                         : _createCommentVNode("", true),
+                      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(view.change_analysis.actions, (action) => {
+                        return (_openBlock(), _createElementBlock("div", {
+                          key: action.id,
+                          class: "change-limitation"
+                        }, [
+                          _createElementVNode("strong", null, "추가 원문 탐색"),
+                          _createTextVNode(" · " + _toDisplayString(action.status==='stored_disclosure_matches_found'?'저장 공시 일치 항목 발견':'저장 공시에서 일치 항목 없음') + " (" + _toDisplayString(action.match_count) + "건)", 1),
+                          _createElementVNode("br"),
+                          _createElementVNode("small", null, _toDisplayString(action.limitation), 1)
+                        ]))
+                      }), 128)),
                       (!view.change_analysis.hypotheses.length)
                         ? (_openBlock(), _createElementBlock("p", {
                             key: 1,

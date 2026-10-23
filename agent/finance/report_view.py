@@ -144,6 +144,9 @@ def build_view(store,report_id):
             for item in analysis['hypotheses']],
         'questions':[{'id':text(item['id']),'question':text(item['question']),'reason':text(item['reason']),
             'related_hypothesis_id':text(item['related_hypothesis_id'])} for item in analysis['questions']],
+        'actions':[{'id':text(item['id']),'hypothesis_id':text(item['hypothesis_id']),'status':text(item['status']),
+            'match_count':item['match_count'],'attempts':[{'id':text(a['id']),'query':text(a['query']),'match_count':a['match_count']} for a in item['attempts']],
+            'limitation':text(item['limitation'])} for item in analysis.get('actions',[])],
         'withheld':[{'id':text(item['id']),'status':text(item['status']),'text':text(item['text'])} for item in analysis['withheld']]}
     view={'schema_version':VIEW_VERSION,'report_id':report_id,'research_id':report['research_id'],'version':report['version'],
         'report_hash':report['publication']['content_hash'],'published_at':report['publication']['published_at'],

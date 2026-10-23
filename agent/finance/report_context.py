@@ -17,7 +17,7 @@ LABELS={'revenue':'매출액','operating_profit':'영업이익','net_profit':'�
 BORROWINGS={'short_term_borrowings','current_long_term_borrowings','long_term_borrowings'}
 
 
-def numeric_rows(batch):
+def numeric_rows(batch,period_ends=PERIOD_ENDS):
     groups=defaultdict(list)
     for validation in batch['validations']:
         if validation.get('rule_id')!='numeric_fact':continue
@@ -26,7 +26,7 @@ def numeric_rows(batch):
         if d.get('account') in ACCOUNT_RULES:groups[(d['scope'],end,d['account'])].append(validation)
     output=[]
     for scope in ('OFS','CFS'):
-        for end in PERIOD_ENDS:
+        for end in period_ends:
             for account in LABELS:
                 items=groups.get((scope,end,account),[])
                 values={v['data'].get('amount_comparison',{}).get('original_normalized') for v in items}
@@ -70,9 +70,11 @@ def svg_chart(title,series):
     return ''.join(parts)+'</svg>'
 
 
-def charts(rows,batch,mapping):
+def charts(rows,batch,mapping,period_ends=PERIOD_ENDS):
     lookup={(r['scope'],r['end'],r['account']):r for r in rows};result=[]
-    for kind,ends in (('annual',PERIOD_ENDS[:3]),('interim',PERIOD_ENDS[3:])):
+    annual=tuple(end for end in period_ends if end.endswith('-12-31'))
+    interim=tuple(end for end in period_ends if end.endswith('-06-30'))
+    for kind,ends in (('annual',annual),('interim',interim)):
         for topic,accounts in (('영업이익·영업현금흐름',('operating_profit','operating_cashflow')),
                                ('현금·차입금',('cash','borrowing_total'))):
             points=[];unconfirmed_bridge=False
@@ -102,6 +104,19 @@ def charts(rows,batch,mapping):
     return result
 
 
+def context_period_ends(comparison_window):
+    """조사에 저장된 비교 창을 수치표·차트·모델 입력에 동일하게 적용한다."""
+    annual=comparison_window.get('annual_years',comparison_window.get('years',[]))
+    interim=comparison_window.get('interim_periods',[])
+    try:
+        annual_ends=tuple(f'{int(year):04d}-12-31' for year in annual)
+        interim_ends=tuple(f'{int(str(period)[:4]):04d}-06-30' for period in interim if str(period).endswith('-H1'))
+    except (TypeError,ValueError):
+        return PERIOD_ENDS
+    values=annual_ends+interim_ends
+    return values if len(annual_ends)>=2 and len(interim_ends)>=1 and len(set(values))==len(values) else PERIOD_ENDS
+
+
 def prepare_context(store,batch,mapping,*,report_run_id=None):
     evidence_run=store.get_run(batch['run_id'])
     run=store.get_run(report_run_id or batch['run_id'])
@@ -113,7 +128,8 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         basis=row_data(store._one(conn,'research_bases',run['basis_id']))
         research=store.get_research(basis['research_id'])
         sources=[row_data(r) for r in conn.execute('SELECT * FROM research_sources WHERE run_id=? ORDER BY id',(evidence_run['id'],))]
-    rows=numeric_rows(batch);extractor=ExtractionService(store)
+    period_ends=context_period_ends(basis['data'].get('comparison_window',{}))
+    rows=numeric_rows(batch,period_ends);extractor=ExtractionService(store)
     from .change_analysis import analyze_financial_changes
     change_analysis=analyze_financial_changes(rows)
     from .public_content import collect_public_content
@@ -123,6 +139,10 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
     # 보관 사례의 특정 접수번호에 묶지 않는다. 일반기업의 정기공시 원문도 같은 검색·근거
     # 계약으로 읽되, 검색 발췌는 전체 공시 검토나 부재의 증명이 아니다.
     documents=[s for s in sources if s['metadata']['reporting_period'].get('operation')=='document_member']
+    from .change_analysis import investigate_hypotheses
+    def search_stored_documents(query):
+        return [extractor.search(source['id'],query,limit=2) for source in documents]
+    change_analysis['actions']=investigate_hypotheses(change_analysis['hypotheses'],search_stored_documents)
     queries={'identity':['회사명'],'business':['주요제품','사업의 내용'],'finance':['재무제표'],
              'cashflow':['영업활동'],'borrowing':['차입금','리스'],'disclosure':['담보','보증','감사의견'],
              'purpose':['재고자산','매출채권']}
@@ -147,7 +167,7 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
     preferred=('revenue','operating_profit','operating_cashflow','cash','inventory','receivables')
     model_source_ids=set()
     for account in preferred:
-        row=next(r for r in rows if r['scope']=='OFS' and r['end']=='2026-06-30' and r['account']==account)
+        row=next(r for r in rows if r['scope']=='OFS' and r['end']==period_ends[-1] and r['account']==account)
         if row['status']=='verified':
             # 이전 합성/복구 시험의 행은 source_ids 이전 계약을 사용한다.
             # 그 경우 권한 없는 원격 전송으로 승격하지 않고 빈 집합으로 남긴다.
@@ -208,7 +228,8 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         'affected_sections':trigger.get('affected_sections',[]),
         'purpose':basis['data']['purpose'],'public_cutoff':basis['data']['public_cutoff'],
         'numeric_batch_id':batch['id'],'mapping_batch_id':mapping['id'],
-        'sections':sections,'financial_rows':rows,'charts':charts(rows,batch,mapping),'model_evidence':evidence,
+        'sections':sections,'financial_rows':rows,'comparison_period_ends':list(period_ends),
+        'charts':charts(rows,batch,mapping,period_ends),'model_evidence':evidence,
         'external_model_policy':external_model_policy,
         'public_findings':public_findings,'business_review':business_review,
         'unknowns':unknowns,'interpretations':change_analysis['hypotheses'],'change_analysis':change_analysis,

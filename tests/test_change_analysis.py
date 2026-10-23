@@ -1,6 +1,7 @@
 import unittest
 
-from agent.finance.change_analysis import analyze_financial_changes
+from agent.finance.change_analysis import analyze_financial_changes,investigate_hypotheses
+from agent.finance.report_context import context_period_ends
 
 
 def row(account, end, value, fact_id):
@@ -9,6 +10,11 @@ def row(account, end, value, fact_id):
 
 
 class ChangeAnalysisTests(unittest.TestCase):
+    def test_report_periods_follow_saved_comparison_window(self):
+        self.assertEqual(('2025-12-31','2026-12-31','2027-12-31','2026-06-30','2027-06-30'),
+                         context_period_ends({'annual_years':[2025,2026,2027],
+                                              'interim_periods':['2026-H1','2027-H1']}))
+
     def test_working_capital_pattern_is_a_hypothesis_not_a_cause(self):
         rows = []
         values = {
@@ -29,3 +35,9 @@ class ChangeAnalysisTests(unittest.TestCase):
         result = analyze_financial_changes(rows)
         self.assertEqual([], result["hypotheses"])
         self.assertFalse(any(item["account"] == "borrowing_total" for item in result["changes"]))
+
+    def test_hypothesis_research_records_searches_without_claiming_causality(self):
+        hypothesis={'id':'hypothesis:test'}
+        actions=investigate_hypotheses([hypothesis],lambda query:[{'match_count':1 if query=='차입금' else 0}])
+        self.assertEqual('stored_disclosure_matches_found',actions[0]['status'])
+        self.assertIn('입증하지 않으며',actions[0]['limitation'])
