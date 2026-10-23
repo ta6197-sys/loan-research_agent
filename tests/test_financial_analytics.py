@@ -1,4 +1,5 @@
 import unittest
+from copy import deepcopy
 
 from agent.finance.analysis_signals import build
 from agent.finance.financial_analytics import analyze
@@ -87,3 +88,11 @@ class FinancialAnalyticsTests(unittest.TestCase):
         report, batch = fixture()
         values = analyze(report, batch, raw_ok=lambda item: item['account'] != 'revenue')
         self.assertEqual('unmeasured', self.result(values, 'operating_margin')['status'])
+
+    def test_same_input_is_reproducible_and_scope_mismatch_is_not_mixed(self):
+        report, batch = fixture()
+        self.assertEqual(analyze(report, batch), analyze(deepcopy(report), deepcopy(batch)))
+        current = next(row for row in report['content']['context']['financial_rows'] if row['account'] == 'revenue' and row['end'] == '2026-06-30')
+        current['scope'] = 'CFS'
+        self.assertFalse(any(item['name'] == 'revenue_growth' and item['status'] == 'supported'
+                             for item in analyze(report, batch)['results']))
