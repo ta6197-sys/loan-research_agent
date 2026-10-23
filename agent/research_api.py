@@ -10,6 +10,8 @@ from .finance.extraction_service import ExtractionService
 from .finance.document_extractor import ExtractionFailure
 from .finance.research_followup import FollowupInput
 from .finance.cached_case import CachedStartInput
+from .finance.general_company import GeneralStartInput, receive as receive_general_company, create_collection_retry
+from .finance.general_collection import GeneralCollectionService
 from .finance.report_view import build_view,chart_svg,compare_views
 from .finance.report_exports import ReportExports
 from typing import Literal
@@ -180,6 +182,38 @@ async def start_cached_research(value: CachedStartInput,request: Request):
     result=await asyncio.to_thread(library.receive,request.app.state.research_store,value)
     request.app.state.research_runtime.schedule()
     return result
+
+
+@router.post('/researches/general/start',status_code=202)
+async def start_general_research(value: GeneralStartInput,request: Request):
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 실행해주세요.')
+    return await asyncio.to_thread(receive_general_company,request.app.state.research_store,value)
+
+
+@router.post('/runs/{run_id}/collect',status_code=202)
+async def collect_general_research(run_id: str,request: Request):
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 실행해주세요.')
+    service=GeneralCollectionService(request.app.state.research_store)
+    return await service.run(run_id)
+
+
+@router.post('/runs/{run_id}/report',status_code=202)
+async def create_general_report(run_id: str,value: CachedDraftInput,request: Request):
+    """수집을 마친 일반기업 실행을 공통 검증·보고서 작업 큐에 넣는다."""
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 실행해주세요.')
+    return request.app.state.research_runtime.submit(run_id,value.request_key)
+
+
+@router.post('/researches/{research_id}/general-runs',status_code=202)
+async def retry_general_collection(research_id: str,request: Request):
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 실행해주세요.')
+    return await asyncio.to_thread(create_collection_retry,request.app.state.research_store,research_id)
+
+
+@router.post('/researches/{research_id}/refresh',status_code=202)
+async def refresh_general_research(research_id: str,request: Request):
+    if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 실행해주세요.')
+    return await GeneralCollectionService(request.app.state.research_store).refresh(research_id)
 
 
 @router.post("/researches", status_code=201)

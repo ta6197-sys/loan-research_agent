@@ -112,16 +112,17 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         from agent.research_store import row_data
         basis=row_data(store._one(conn,'research_bases',run['basis_id']))
         research=store.get_research(basis['research_id'])
-        if research['company'].get('corp_code')!='00129642' or basis['data']['public_cutoff']!='2026-10-20':
-            raise ValueError('stage05_cached_case_only')
         sources=[row_data(r) for r in conn.execute('SELECT * FROM research_sources WHERE run_id=? ORDER BY id',(evidence_run['id'],))]
     rows=numeric_rows(batch);extractor=ExtractionService(store)
+    from .change_analysis import analyze_financial_changes
+    change_analysis=analyze_financial_changes(rows)
     from .public_content import collect_public_content
     public_findings=collect_public_content(store,sources)
     from .business_review import collect_business_review
     business_review=collect_business_review(store,sources)
-    documents=[s for s in sources if s['metadata']['reporting_period'].get('operation')=='document_member'
-               and s['metadata'].get('receipt_number')=='20260813000874']
+    # 보관 사례의 특정 접수번호에 묶지 않는다. 일반기업의 정기공시 원문도 같은 검색·근거
+    # 계약으로 읽되, 검색 발췌는 전체 공시 검토나 부재의 증명이 아니다.
+    documents=[s for s in sources if s['metadata']['reporting_period'].get('operation')=='document_member']
     queries={'identity':['회사명'],'business':['주요제품','사업의 내용'],'finance':['재무제표'],
              'cashflow':['영업활동'],'borrowing':['차입금','리스'],'disclosure':['담보','보증','감사의견'],
              'purpose':['재고자산','매출채권']}
@@ -210,9 +211,9 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         'sections':sections,'financial_rows':rows,'charts':charts(rows,batch,mapping),'model_evidence':evidence,
         'external_model_policy':external_model_policy,
         'public_findings':public_findings,'business_review':business_review,
-        'unknowns':unknowns,'interpretations':[],
-        'limitations':['보관 사례를 이용한 사전조사 초안이며 실제 대출 신청·승인 판단이 아니다.',
-            '공식 IR 자동 수집·다른 기업/기준일 확대·스캔 OCR은 남아 있다. 로컬 PDF/XLSX/CSV/TXT 첨부는 읽기 한계·미검증 상태를 보존한다.',
+        'unknowns':unknowns,'interpretations':change_analysis['hypotheses'],'change_analysis':change_analysis,
+        'limitations':['공개 공시 기반 사전조사 초안이며 실제 대출 신청·승인 판단이 아니다.',
+            '공식 IR 자동 수집과 스캔 OCR은 범위 밖이다. 로컬 PDF/XLSX/CSV/TXT 첨부는 읽기 한계·미검증 상태를 보존한다.',
             '후속 사용자 입력은 미검증 출처로 보존한다. 외부 재수집이나 내부 자료의 독립 검증 없이 공시 수치와 미확인을 변경하지 않는다.',
             '기타채권 포함 합계를 순수 매출채권으로 대체하거나 DSO·CCC를 임의 계산하지 않는다.',
             '모델 설명의 생성보다 수치·구성·비교 보류와 근거 추적을 우선한다.']}

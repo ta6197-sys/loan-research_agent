@@ -51,7 +51,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
         }, [
           _createElementVNode("p", { class: "eyebrow" }, "기업 조사 워크스페이스"),
           _createElementVNode("h1", null, [_createTextVNode("공시의 숫자에서"), _createElementVNode("br"), _createTextVNode("확인할 질문까지.")]),
-          _createElementVNode("p", { class: "intro" }, [_createTextVNode("원문 근거와 검증한 수치, 아직 모르는 내용을 함께 확인합니다."), _createElementVNode("br"), _createTextVNode("현재는 상신브레이크의 보관 공개 자료를 지원합니다.")]),
+          _createElementVNode("p", { class: "intro" }, "OpenDART 공개 공시에서 원문 근거와 검증한 수치, 아직 모르는 내용을 함께 확인합니다."),
           _createElementVNode("form", {
             class: "start-card",
             onSubmit: _withModifiers(startResearch, ["prevent"])
@@ -60,7 +60,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
             _withDirectives(_createElementVNode("input", {
               id: "company",
               "onUpdate:modelValue": $event => ((company) = $event),
-              placeholder: "상신브레이크",
+              placeholder: "예: SK",
               autocomplete: "off",
               required: "",
               onInput: lookupCompanies
@@ -68,9 +68,9 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
             (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(candidates, (candidate) => {
               return (_openBlock(), _createElementBlock("div", {
                 class: "candidate",
-                key: candidate.case_id,
-                onClick: $event => (company=candidate.company.name)
-              }, [_createElementVNode("strong", null, _toDisplayString(candidate.company.name), 1), _createElementVNode("span", null, _toDisplayString(candidate.company.stock_code) + " · 보관 자료", 1)], 8, ["onClick"]))
+                key: candidate.corp_code,
+                onClick: $event => (selectCandidate(candidate))
+              }, [_createElementVNode("strong", null, _toDisplayString(candidate.corp_name), 1), _createElementVNode("span", null, _toDisplayString(candidate.stock_code || '비상장') + " · OpenDART 법인 " + _toDisplayString(candidate.corp_code), 1)], 8, ["onClick"]))
             }), 128)),
             _createElementVNode("label", { for: "purpose" }, "확인하려는 목적"),
             _withDirectives(_createElementVNode("textarea", {
@@ -80,8 +80,8 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
               required: "",
               placeholder: "예: 운전자금 검토를 위한 공개 자료 사전조사"
             }, null, 8, ["onUpdate:modelValue"]), [[_vModelText, purpose]]),
-            _createElementVNode("div", { class: "start-meta" }, [_createElementVNode("span", null, [_createTextVNode("공개 기준일 "), _createElementVNode("strong", null, "2026.10.20")]), _createElementVNode("span", null, "별도 주 · 연결 보조")]),
-            _createElementVNode("p", { class: "hint" }, "최신 공시의 새 수집이 아닙니다. 내부자료·키·개인정보를 입력하지 마세요."),
+            _createElementVNode("div", { class: "start-meta" }, [_createElementVNode("span", null, [_createTextVNode("공개 기준일 "), _createElementVNode("strong", null, "2026.10.22")]), _createElementVNode("span", null, "별도 주 · 연결 보조")]),
+            _createElementVNode("p", { class: "hint" }, "기업을 목록에서 선택하면 정기공시·XBRL·재무 API를 수집해 검증합니다. 내부자료·키·개인정보를 입력하지 마세요."),
             _createElementVNode("button", {
               class: "primary full",
               disabled: busy
@@ -147,7 +147,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                     value: item[0]
                   }, null, 8, ["onUpdate:modelValue", "value"]), [[_vModelCheckbox, planFocus]]), _createTextVNode(_toDisplayString(item[1]), 1)]))
                 }), 128)),
-                _createElementVNode("p", { class: "hint" }, "상신브레이크·2026-10-20 기준을 유지합니다. 현재 실행과 이전 판을 보존하고 새 계획을 대기합니다. 중단 중이면 재개 전 실행하지 않습니다."),
+                _createElementVNode("p", { class: "hint" }, "현재 기준일과 수집 원문은 보존합니다. 계획 변경은 새 실행으로 기록되며, 중단 중이면 재개 전 실행하지 않습니다."),
                 _createElementVNode("button", {
                   class: "primary",
                   disabled: busy
@@ -306,6 +306,43 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                       : _createCommentVNode("", true), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(view.interpretations, (item) => {
                       return (_openBlock(), _createElementBlock("p", { key: item }, _toDisplayString(item), 1))
                     }), 128))]),
+                    _createElementVNode("section", { class: "change-analysis" }, [
+                      _createElementVNode("div", { class: "section-heading" }, [_createElementVNode("div", null, [_createElementVNode("h3", null, [_createTextVNode("재무 변화 분석 "), _createElementVNode("span", { class: "section-tag" }, "별도 기준 · 인과 미확정")]), _createElementVNode("p", { class: "muted" }, "검증된 수치의 같은 기간 증감만 비교합니다. 차입 용도와 원인은 주석·내부 자료로 추가 확인해야 합니다.")])]),
+                      (view.change_analysis.hypotheses.length)
+                        ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(view.change_analysis.hypotheses, (item) => {
+                            return (_openBlock(), _createElementBlock("div", {
+                              class: "change-hypothesis",
+                              key: item.id
+                            }, [
+                              _createElementVNode("span", { class: "badge amber" }, "가능한 설명"),
+                              _createElementVNode("h4", null, _toDisplayString(item.title), 1),
+                              _createElementVNode("p", null, _toDisplayString(item.statement), 1),
+                              _createElementVNode("p", { class: "change-limitation" }, "한계: " + _toDisplayString(item.limitation), 1),
+                              _createElementVNode("p", { class: "change-needed" }, [_createElementVNode("strong", null, "다음 확인 자료"), _createTextVNode(" " + _toDisplayString(item.required_evidence.join(' · ')), 1)]),
+                              (item.evidence_ids.length)
+                                ? (_openBlock(), _createElementBlock("button", {
+                                    key: 0,
+                                    class: "evidence-link",
+                                    onClick: $event => (openEvidence(item.evidence_ids))
+                                  }, "관찰 근거 " + _toDisplayString(item.evidence_ids.join(', ')) + " 보기 →", 9, ["onClick"]))
+                                : _createCommentVNode("", true)
+                            ]))
+                          }), 128))
+                        : _createCommentVNode("", true),
+                      (!view.change_analysis.hypotheses.length)
+                        ? (_openBlock(), _createElementBlock("p", {
+                            key: 1,
+                            class: "muted"
+                          }, "현재 검증된 수치만으로는 차입 증가의 원인 가설을 만들지 않았습니다."))
+                        : _createCommentVNode("", true),
+                      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(view.change_analysis.withheld, (item) => {
+                        return (_openBlock(), _createElementBlock("p", {
+                          key: item.id,
+                          class: "change-limitation"
+                        }, _toDisplayString(item.text), 1))
+                      }), 128)),
+                      _createElementVNode("p", { class: "change-limitation" }, _toDisplayString(view.change_analysis.limitation), 1)
+                    ]),
                     _createElementVNode("section", null, [_createElementVNode("div", { class: "section-heading" }, [_createElementVNode("h3", null, "우선 확인할 질문"), _createElementVNode("button", { onClick: $event => (currentTab='questions') }, "답변·정정 보내기 →", 8, ["onClick"])]), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(view.questions.slice(0,4), (question, index) => {
                       return (_openBlock(), _createElementBlock("div", {
                         class: "question-preview",

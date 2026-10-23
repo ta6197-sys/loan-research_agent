@@ -76,10 +76,6 @@ class ResearchRuntime:
                 raise Conflict('기존 실행 요청을 먼저 완료하거나 재개해주세요.')
             if run['status'] in {'stopped','stopping','interrupted'}:raise Conflict('중단된 실행은 재개 API를 사용해주세요.')
             if trigger.get('kind')=='followup':raise Conflict('후속 실행은 접수된 입력의 고정 요청 키를 사용합니다.')
-            # 저장 전용 신규 기업을 전체 자동 조사로 잘못 시작하지 않는다.
-            company=json.loads(self.store._one(conn,'research_researches',basis['research_id'])['company_json'])
-            if company.get('corp_code')!='00129642' or json.loads(basis['data_json'])['public_cutoff']!='2026-10-20':
-                raise ValueError('stage05_cached_case_only')
             if conn.execute('SELECT 1 FROM research_executions WHERE run_id=? AND request_key=? AND phase IN (\'complete\',\'limited\')',
                             (run_id,key)).fetchone():raise Conflict('종료된 실행입니다. 같은 요청의 한도를 초기화하지 않습니다.')
             trigger['job_request_key']=key
