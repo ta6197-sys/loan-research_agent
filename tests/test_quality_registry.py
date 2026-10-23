@@ -18,3 +18,15 @@ class QualityRegistryTests(unittest.TestCase):
         self.assertFalse(is_mandatory('V12'))
         self.assertEqual('V12_note_amounts', get('V12_note_amounts')['rule_id'])
         self.assertEqual('completeness', get('V12_note_amounts')['quality_dimension'])
+
+    def test_v14_to_v22_match_original_design_and_do_not_claim_execution(self):
+        meanings = {'V14': '사실 주장', 'V15': '원인·위험', 'V16': '공개 자료',
+                    'V17': '기본 항목', 'V18': '빈 값과 0', 'V19': '본문·표·차트·출력',
+                    'V20': '후속 자료', 'V21': '외부 전송', 'V22': '한도 도달'}
+        for rule, text in meanings.items():
+            with self.subTest(rule=rule):
+                item = get(rule)
+                self.assertIn(text, item['description'])
+                self.assertEqual('quality-registry-1.1', item['registry_version'])
+                if rule != 'V18':
+                    self.assertEqual('partially_implemented', item['implementation_state'])

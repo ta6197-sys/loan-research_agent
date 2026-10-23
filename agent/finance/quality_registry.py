@@ -5,7 +5,7 @@
 """
 from .validation_acceptance import MANDATORY_CHECKS
 
-REGISTRY_VERSION = "quality-registry-1.0"
+REGISTRY_VERSION = "quality-registry-1.1"
 DIMENSIONS = {"accuracy", "completeness", "consistency", "integrity", "timeliness", "traceability"}
 
 
@@ -37,15 +37,15 @@ _RULES = {
     "V11": _rule("V11", "기간 비교", "동일 범위·통화·기간의 증감 계산 조건을 확인", "consistency", "normal", "calculation"),
     "V12": _rule("V12", "차입금 구성", "차입금 본표·주석 구성과 리스·보증 제한을 확인", "completeness", "high", "composition_review"),
     "V13": _rule("V13", "정정·중복 이력", "같은 공시 쌍과 정정 이력을 확인", "timeliness", "high"),
-    "V14": _rule("V14", "보고서 표시 검토", "게시 단계 검토 규칙", "traceability", "normal", state="design_only"),
-    "V15": _rule("V15", "해석 근거 검토", "해석과 근거 연결 검토 규칙", "traceability", "normal", state="design_only"),
-    "V16": _rule("V16", "사용자 입력 분리", "사용자 입력과 공시 근거 분리 규칙", "integrity", "normal", state="partially_implemented"),
-    "V17": _rule("V17", "보고서 완결성", "게시 단계의 완결성 검토 규칙", "completeness", "normal", state="design_only"),
-    "V18": _rule("V18", "결측값 구분", "결측값을 0으로 취급하지 않는지 확인", "completeness", "critical"),
-    "V19": _rule("V19", "외부 입력 검토", "외부 자료의 검증 범위 표시 규칙", "integrity", "normal", state="partially_implemented"),
-    "V20": _rule("V20", "불변 이력", "원문·검증·보고 버전의 불변 저장 규칙", "traceability", "high", "storage"),
-    "V21": _rule("V21", "모델 경계", "모델이 검증 상태를 승격하지 못하도록 하는 규칙", "integrity", "high", "runtime"),
-    "V22": _rule("V22", "강제 통과 금지", "입력이나 모델이 검증 통과를 강제하지 못하도록 하는 규칙", "integrity", "critical", "runtime"),
+    "V14": _rule("V14", "사실 주장 근거 연결", "사실 주장마다 지원 근거를 연결하고 미지원 주장은 보류", "traceability", "high", "publication", state="partially_implemented"),
+    "V15": _rule("V15", "원인·위험 판단 확정 금지", "원문에 없는 원인·위험 판단을 확정하지 않고 해석 후보와 한계를 표시", "accuracy", "high", "publication", state="partially_implemented"),
+    "V16": _rule("V16", "질문 전 공개자료 조회", "질문 전에 공개 자료를 합리적으로 조회하고 실제 제한을 기록", "completeness", "normal", "research", state="partially_implemented"),
+    "V17": _rule("V17", "기본 항목 확인 범위", "모든 기본 항목의 확인 범위와 남은 부분을 기록", "completeness", "normal", "publication", state="partially_implemented"),
+    "V18": _rule("V18", "결측값 구분", "빈 값과 0을 구분하고 가짜 0 표시를 금지", "completeness", "critical"),
+    "V19": _rule("V19", "본문·표·차트·출력 버전 일치", "본문·표·차트·출력의 데이터와 버전을 동일 manifest로 연결", "consistency", "high", "output", state="partially_implemented"),
+    "V20": _rule("V20", "후속 영향·이전 버전 보존", "후속 자료의 영향을 계산하고 관련 결과를 재검증하며 이전 게시본을 보존", "traceability", "high", "storage", state="partially_implemented"),
+    "V21": _rule("V21", "키·이용권한·외부 전송 경계", "키·권리 제한 자료·외부 전송 경계를 준수하고 허용되지 않은 전송·출력을 차단", "integrity", "high", "runtime", state="partially_implemented"),
+    "V22": _rule("V22", "한도 소진의 검증 통과 금지", "한도 도달을 검증 통과로 쓰지 않고 검증된 부분과 남은 내용을 분리 게시", "integrity", "critical", "runtime", state="partially_implemented"),
 }
 
 
