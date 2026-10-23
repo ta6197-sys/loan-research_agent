@@ -94,8 +94,8 @@ class Stage05Service:
             if state.get('model_status'):
                 return {'model':state['model'],'model_status':state['model_status']}
             evidence=state['context']['model_evidence']
+            policy=state['context'].get('external_model_policy',{})
             if getattr(self.model,'requires_external_model_permission',False):
-                policy=state['context'].get('external_model_policy',{})
                 override=(getattr(self.model,'allow_archived_public_override',False)
                           and policy.get('archived_public_only',False))
                 if not (policy.get('allowed',False) or override):
