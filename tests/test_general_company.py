@@ -4,7 +4,7 @@ import tempfile
 import unittest
 
 from agent.finance.general_company import GeneralStartInput, create_collection_retry, receive
-from agent.finance.general_collection import changed_regular_reports, planned_reports, select_regular_reports
+from agent.finance.general_collection import GeneralCollectionService,changed_regular_reports, planned_reports, select_regular_reports
 from agent.research_store import Conflict, ResearchStore
 
 
@@ -88,3 +88,18 @@ class GeneralCompanyStartTests(unittest.TestCase):
         self.assertEqual(first["run_id"], retry["previous_run_id"])
         self.assertEqual(2, len(research["runs"]))
         self.assertEqual("general_company", self.store.get_run(retry["run_id"])["trigger"]["kind"])
+
+
+class GeneralCollectionPaginationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_all_disclosure_pages_are_preserved_as_one_collection_result(self):
+        calls=[]
+        class Dart:
+            async def disclosures(self,*args,**kwargs):
+                calls.append(kwargs['page_no'])
+                page=kwargs['page_no']
+                return {'items':[{'rcept_no':str(page)}],'source_id':'source-'+str(page),'total_page':2}
+        service=object.__new__(GeneralCollectionService);service.dart=Dart()
+        result=await service._all_disclosures('run','00181712','2026-10-23')
+        self.assertEqual([1,2],calls)
+        self.assertEqual(['1','2'],[item['rcept_no'] for item in result['items']])
+        self.assertEqual(['source-1','source-2'],result['source_ids'])
