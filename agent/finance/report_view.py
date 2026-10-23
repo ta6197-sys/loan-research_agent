@@ -5,8 +5,9 @@ from urllib.parse import urlsplit,parse_qsl
 from agent.research_store import Conflict,IntegrityFailure,digest,safe_payload
 from .numeric_validation import NumericValidationService
 from .report_context import svg_chart
+from .change_analysis import analyze_financial_changes
 
-VIEW_VERSION='finance-view-1.2'
+VIEW_VERSION='finance-view-1.3'
 
 
 def text(value):
@@ -128,6 +129,25 @@ def build_view(store,report_id):
                 'location':location_label(loc),'content_hash':source['content_hash'],'use_status':'verified_excerpt',
                 'rights_status':meta['rights_status'],'usage_restrictions':[text(v) for v in meta.get('usage_restrictions',[])]})
         business_items.append(projection)
+    analysis=analyze_financial_changes(context['financial_rows'])
+    def analysis_references(fact_ids):
+        return [evidence[fact_id]['id'] for fact_id in fact_ids if fact_id in evidence]
+    change_analysis={
+        'version':analysis['version'],
+        'limitation':text(analysis['limitation']),
+        'changes':[{key:text(item[key]) for key in ('id','label','scope','before_end','after_end','before_value','after_value','delta','direction')}
+            | {'evidence_ids':analysis_references(item['fact_ids'])} for item in analysis['changes']],
+        'hypotheses':[{'id':text(item['id']),'period_kind':text(item['period_kind']),'status':text(item['status']),
+            'title':text(item['title']),'statement':text(item['statement']),'supporting_change_ids':[text(v) for v in item['supporting_change_ids']],
+            'evidence_ids':analysis_references(item['fact_ids']),'counter_evidence':[text(v) for v in item['counter_evidence']],
+            'required_evidence':[text(v) for v in item['required_evidence']],'limitation':text(item['limitation'])}
+            for item in analysis['hypotheses']],
+        'questions':[{'id':text(item['id']),'question':text(item['question']),'reason':text(item['reason']),
+            'related_hypothesis_id':text(item['related_hypothesis_id'])} for item in analysis['questions']],
+        'actions':[{'id':text(item['id']),'hypothesis_id':text(item['hypothesis_id']),'status':text(item['status']),
+            'match_count':item['match_count'],'attempts':[{'id':text(a['id']),'query':text(a['query']),'match_count':a['match_count']} for a in item['attempts']],
+            'limitation':text(item['limitation'])} for item in analysis.get('actions',[])],
+        'withheld':[{'id':text(item['id']),'status':text(item['status']),'text':text(item['text'])} for item in analysis['withheld']]}
     view={'schema_version':VIEW_VERSION,'report_id':report_id,'research_id':report['research_id'],'version':report['version'],
         'report_hash':report['publication']['content_hash'],'published_at':report['publication']['published_at'],
         'company':{k:text(context['company'].get(k)) for k in ('name','corp_code','stock_code')},
@@ -146,7 +166,7 @@ def build_view(store,report_id):
         'user_observations':[user_observation(o) for o in context.get('user_observations',[])],
         'sections':sections,'public_findings':public_findings,'business_review':business_items,
         'minimum_review':minimum_review(context) if 'business_review' in context else [],
-        'financial_rows':rows,'charts':charts,'evidence':list(evidence.values())+public_evidence,
+        'financial_rows':rows,'change_analysis':change_analysis,'charts':charts,'evidence':list(evidence.values())+public_evidence,
         'limitations':[text(x) for x in content['limitations']]}
     view['view_hash']=digest(safe_payload(view).encode())
     return view

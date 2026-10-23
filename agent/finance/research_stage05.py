@@ -1,7 +1,4 @@
-"""보관 사례의 일곱 항목→로컬 모델→검증 표/차트→불변 게시본을 연결한다.
-
-외부 수집·일반 첨부는 시작하지 않는다. 답변·정정은 같은 기준의 고정 입력으로만 반영한다.
-"""
+"""저장된 공시의 일곱 항목→금융 초안→검증 표/차트→불변 게시본을 연결한다."""
 import asyncio
 import time
 from typing import TypedDict
@@ -97,8 +94,8 @@ class Stage05Service:
             if state.get('model_status'):
                 return {'model':state['model'],'model_status':state['model_status']}
             evidence=state['context']['model_evidence']
+            policy=state['context'].get('external_model_policy',{})
             if getattr(self.model,'requires_external_model_permission',False):
-                policy=state['context'].get('external_model_policy',{})
                 override=(getattr(self.model,'allow_archived_public_override',False)
                           and policy.get('archived_public_only',False))
                 if not (policy.get('allowed',False) or override):
@@ -153,7 +150,7 @@ class Stage05Service:
             if state['model_status']=='validated':
                 checked_draft(state['model']['draft'],current['model_evidence'])
             self._checkpoint(run_id,'stage05_publication_validation')
-            content={'workflow_version':'stage05-cached-case-1.0','context':current,
+            content={'workflow_version':'stage05-general-company-1.0','context':current,
                 'model_status':state['model_status'],'model':state['model'],
                 'confirmed_facts':[r for r in current['financial_rows'] if r['status']=='verified'],
                 'interpretations':[],'unknowns':current['unknowns'],

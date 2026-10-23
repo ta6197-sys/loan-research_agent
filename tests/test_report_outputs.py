@@ -33,6 +33,8 @@ class OutputTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('verified',view['evidence'][0]['use_status'])
         self.assertEqual(self.report['publication']['content_hash'],view['report_hash'])
         self.assertNotIn('storage_key',json.dumps(view));self.assertNotIn('owner_id',json.dumps(view))
+        self.assertEqual('financial-change-analysis-1.0',view['change_analysis']['version'])
+        self.assertIn('limitation',view['change_analysis'])
 
     async def test_old_source_metadata_without_optional_restrictions_remains_readable(self):
         original=self.store.get_evidence

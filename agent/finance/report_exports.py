@@ -75,6 +75,16 @@ def markdown(view):
     if not view['facts']:lines.append('모델 설명은 미작성/보류 상태입니다. 아래 검증 표와 미확인을 확인하세요.')
     lines += ['','## 해석','']+[md(x) for x in view['interpretations']]
     if not view['interpretations']:lines.append('별도의 검증된 해석 문장은 없습니다.')
+    analysis=view.get('change_analysis',{})
+    lines += ['','## 재무 변화 분석','',md(analysis.get('limitation',''))]
+    if analysis.get('hypotheses'):
+        for item in analysis['hypotheses']:
+            lines += ['### '+md(item['title']),'',md(item['statement']),
+                '한계: '+md(item['limitation']),'다음 확인 자료: '+md(' / '.join(item['required_evidence'])),
+                '관찰 근거: '+md(', '.join(item['evidence_ids']) or '연결된 게시 근거 없음'),'']
+    else:
+        lines.append('현재 검증된 수치만으로는 차입 증가의 원인 가설을 만들지 않았습니다.')
+    lines += ['- '+md(item['text']) for item in analysis.get('withheld',[])]
     lines += ['','## 우선 질문','']
     for question in view['questions']:
         lines += ['- '+md(question['question']),'  - 요청 자료: '+md(question['requested_information']),
@@ -160,6 +170,15 @@ def legacy_pdf(view):
     if not view['facts']:story.append(para('모델 설명은 미작성/보류입니다. 검증된 표와 미확인 범위를 제공합니다.'))
     story.append(para('해석',heading))
     story += [para(x) for x in view['interpretations']] or [para('별도의 검증된 해석 문장은 없습니다.')]
+    analysis=view.get('change_analysis',{})
+    story += [para('재무 변화 분석',heading),para(analysis.get('limitation',''),small)]
+    if analysis.get('hypotheses'):
+        for item in analysis['hypotheses']:
+            story += [para(item['title'],section),para(item['statement']),para('한계: '+item['limitation'],small),
+                para('다음 확인 자료: '+' / '.join(item['required_evidence']),small),
+                para('관찰 근거: '+(', '.join(item['evidence_ids']) or '연결된 게시 근거 없음'),small)]
+    else:story.append(para('현재 검증된 수치만으로는 차입 증가의 원인 가설을 만들지 않았습니다.',small))
+    story += [para('• '+item['text'],small) for item in analysis.get('withheld',[])]
     story.append(para('우선 질문',heading))
     for i,q in enumerate(view['questions'],1):
         story.append(KeepTogether([para(str(i)+'. '+q['question']),para('요청 자료: '+q['requested_information'],small),
@@ -221,6 +240,7 @@ def legacy_pdf(view):
     story += [para('한계',heading)]+[para('• '+x) for x in view['limitations']]
     story += [PageBreak(),para('근거·원문 위치 부록',heading),para('대표 위치를 수치표의 E번호와 연결했습니다. 전체 추가 참조와 콘텐츠 해시는 동일 버전 Markdown ZIP의 evidence.json에 있습니다.',small)]
     used={c['evidence_ids'][0] for table in tables(view) for row in table['rows'] for c in row['cells'] if c['evidence_ids']}
+    used.update(eid for item in view.get('change_analysis',{}).get('hypotheses',[]) for eid in item['evidence_ids'])
     used.update(q['id'] for f in view.get('public_findings',[]) for q in f['quotes'])
     used.update(i['quote']['id'] for i in view.get('business_review',[]) if i.get('quote'))
     for item in view['evidence']:

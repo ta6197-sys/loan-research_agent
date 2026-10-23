@@ -9,7 +9,7 @@ from uuid import uuid4
 from pathlib import Path
 
 from agent.research_store import IntegrityFailure, encode, now, row_data, safe_payload
-from .document_extractor import normalize_label, number
+from .document_extractor import ExtractionFailure, normalize_label, number
 from .extraction_service import ExtractionService, ACCOUNT_RULES, SUPPORT_RULES
 from .source_locations import RawLocations, raw_text
 from .disclosure_audit import audit_disclosure_history
@@ -316,7 +316,13 @@ class NumericValidationService:
                 excluded.append({'source_id':source['id'],'reason':'supporting_attachment_not_primary_financial_document'})
                 continue
             contents[source['id']]=self.store.source_content(source['id'])
-            extracted=self.extraction.extract_source(source['id'])
+            try:
+                extracted=self.extraction.extract_source(source['id'])
+            except ExtractionFailure as error:
+                # 원문은 해시와 함께 보존하되, 안전 한도를 넘은 표에서 추정한 수치를 만들지 않는다.
+                contents.pop(source['id'],None)
+                excluded.append({'source_id':source['id'],'reason':'extraction_'+str(error)})
+                continue
             manifest=self.extraction.fragment(extracted['manifest_id'])['data']['context']
             manifests.append({'source_id':source['id'],'content_hash':source['content_hash'],'manifest_id':extracted['manifest_id']})
             if media=='application/json':

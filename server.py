@@ -90,7 +90,8 @@ async def lifespan(app: FastAPI):
     from agent.finance.openai_model import finance_model_from_environment
     # 기본은 로컬 모델이다. OpenAI는 별도 허용 플래그가 있을 때만 .env.openai.local을 읽는다.
     app.state.finance_model = finance_model_from_environment(Path(__file__).resolve().parent)
-    app.state.finance_model_backend = ("openai" if app.state.finance_model.__class__.__name__ == "OpenAIFinanceModel" else "local")
+    model_class=app.state.finance_model.__class__.__name__
+    app.state.finance_model_backend = ("openai" if model_class == "OpenAIFinanceModel" else "ollama" if model_class == "LocalFinanceModel" else "local")
     from agent.finance.research_followup import FollowupService
     app.state.followups = FollowupService(app.state.research_store, app.state.finance_model)
     from agent.finance.cached_case import CachedCaseLibrary,preferred_manifest
@@ -213,7 +214,7 @@ def require_legacy():
 @app.get("/health")
 async def health():
     if app.state.mode == "research":
-        return {"status": "ok", "mode": "research", "implementation_stage": "7_cached_case",
+        return {"status": "ok", "mode": "research", "implementation_stage": "general_company_research",
                 "storage": "sqlite", "execution_available": False,
                 "llm_backend": "disabled", "external_trace_enabled": False,
                 "finance_mcp": app.state.finance_status,

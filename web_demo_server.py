@@ -62,10 +62,10 @@ async def legacy_page():return FileResponse(HERE/'web_chat.html')
 @app.api_route('/api/{path:path}',methods=['GET','POST'])
 async def finance_proxy(path: str,req: Request):
     uid='[0-9a-f]{32}'
-    read=[r'health',r'researches',r'research-archives',r'case-companies',rf'researches/{uid}(?:/(?:summary|events|reports))?',
-        rf'runs/{uid}(?:/(?:execution|validations))?',rf'reports/{uid}(?:/view|/compare/{uid}|/charts/(?:annual|interim)-[a-z_]+[.]svg)?',
+    read=[r'health',r'researches',r'research-archives',r'companies',rf'researches/{uid}(?:/(?:summary|events|reports))?',
+        rf'runs/{uid}(?:/(?:execution|validations))?',rf'validation-batches/{uid}(?:/(?:quality|quality-analysis))?',rf'reports/{uid}(?:/(?:view|quality|financial-analysis|compare/{uid}|charts/(?:annual|interim)-[a-z_]+[.]svg))?',
         rf'evidence/{uid}',rf'fragments/{uid}(?:/original)?',rf'sources/{uid}(?:/view)?',r'exports/[0-9a-f]{64}',rf'researches/{uid}/attachment-bundles/[0-9a-f]{{64}}']
-    write=[r'researches/start',rf'researches/{uid}/(?:inputs|stop|resume|attachment-bundles|plan|archive|restore)',rf'runs/{uid}/drafts',rf'reports/{uid}/exports']
+    write=[r'researches/general/start',rf'researches/{uid}/(?:inputs|stop|resume|attachment-bundles|plan|archive|restore|general-runs|refresh)',rf'researches/{uid}/quality-exceptions/[0-9a-f]{{64}}/reviews',rf'runs/{uid}/(?:drafts|collect|report)',rf'reports/{uid}/exports']
     if not any(re.fullmatch(pattern,path) for pattern in (read if req.method=='GET' else write)):
         return JSONResponse({'detail':'허용되지 않은 금융 API 경로입니다.'},status_code=403)
     attachment=path.endswith('/attachment-bundles') and req.method=='POST'

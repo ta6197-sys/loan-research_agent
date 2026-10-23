@@ -9,7 +9,7 @@ from lxml import etree
 from .source_locations import RawLocations, raw_text
 from .literal_xml import escape_literal_text
 
-VERSION='dart-extraction-1.8'
+VERSION='dart-extraction-1.9'
 CELL_TAGS={'td','th','te','tu'}
 
 
@@ -266,6 +266,9 @@ class DocumentExtractor:
             scope_location=self.locate(scope_node) if scope_node is not None else None
             preamble=self.preamble(table)
             rows=[]; occupied={}; original=[]
+            # 문서 전체의 주석 표를 누적해 금융제표 표까지 버리지 않는다. 각 표의 span
+            # 확장만 안전 한도로 제한한다. 전체 수는 관찰값으로 보존한다.
+            table_cells=0
             table_warnings=[]
             for row_number,tr in enumerate((node for node in table.iter() if tag(node)=='tr' and
                     next((a for a in node.iterancestors() if tag(a)=='table'),None) is table),1):
@@ -280,8 +283,9 @@ class DocumentExtractor:
                             raise ValueError
                     except ValueError:
                         raise ExtractionFailure('invalid_table_span') from None
+                    table_cells+=rowspan*colspan
                     total_cells+=rowspan*colspan
-                    if total_cells>self.max_cells:
+                    if table_cells>self.max_cells:
                         raise ExtractionFailure('table_cell_limit')
                     for r in range(row_number,row_number+rowspan):
                         for c in range(column,column+colspan):
