@@ -49,7 +49,7 @@ Vue.createApp({render:window.FinanceRender,setup(){
  const latestReport=computed(()=>reports.value[reports.value.length-1]);const runLabel=computed(()=>runNames[activeRun.value?.status]||'저장된 조사');
  const phaseLabel=computed(()=>phaseNames[execution.value?.items?.at(-1)?.phase]||'저장된 상태를 확인합니다');
  const limited=computed(()=>execution.value?.items?.at(-1)?.state?.limited_result);
- const modelBackendLabel=computed(()=>health.value?.finance_model_backend==='openai'?'OpenAI 금융 초안':'로컬 금융 모델');
+ const modelBackendLabel=computed(()=>health.value?.finance_model_backend==='openai'?'OpenAI 금융 초안':health.value?.finance_model_backend==='ollama'?'로컬 Ollama 금융 초안':'로컬 금융 모델');
  const modelBackendDetail=computed(()=>health.value?.finance_model_backend==='openai'?'외부 모델은 승인된 공개 공시 근거만 전송합니다.':'외부 모델·추적을 사용하지 않습니다.');
  const reportModelLabel=computed(()=>{if(!view.value)return'';if(view.value.model_status==='validated')return view.value.model?.name||modelBackendLabel.value;if(view.value.model_status==='withheld_by_source_policy')return '원문 이용 제한으로 원격 모델 미사용';return '모델 설명 미작성 또는 검증 거부';});
  const reportModelDetail=computed(()=>{if(!view.value)return'';const policy=view.value.model?.external_model_policy||{};if(policy.permission_mode==='user_approved_archived_public_override')return '사용자 승인된 보관 공개 공시 근거만 전송해 출력 검사를 통과했습니다.';if(view.value.model_status==='withheld_by_source_policy')return '원문별 외부 모델 이용 허가가 없어 모델 요청을 보내지 않았습니다.';return '수치·보류·근거는 모델 출력과 별도로 검증·보존합니다.';});

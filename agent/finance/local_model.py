@@ -89,6 +89,33 @@ def checked_draft(value,evidence):
     return draft.model_dump()
 
 
+def normalize_local_draft(value,evidence):
+    """로컬 모델의 형식 누락만 보완하고 금융 사실은 절대 보완하지 않는다."""
+    sources={item['evidence_id']:item for item in evidence}
+    raw=value if isinstance(value,dict) else {}
+    facts=[];seen=set()
+    for fact in raw.get('facts',[]) if isinstance(raw.get('facts',[]),list) else []:
+        if not isinstance(fact,dict):continue
+        evidence_id=fact.get('evidence_id');source=sources.get(evidence_id)
+        if (evidence_id not in seen and source and source.get('state')=='verified'
+                and fact.get('text')==source.get('text')):
+            facts.append({'evidence_id':evidence_id,'text':source['text']});seen.add(evidence_id)
+    required=[item['evidence_id'] for item in evidence if item['state']=='withheld']
+    questions=[]
+    for question in raw.get('questions',[]) if isinstance(raw.get('questions',[]),list) else []:
+        if not isinstance(question,dict):continue
+        candidate={'question':question.get('question'),'evidence_ids':question.get('evidence_ids')}
+        try:
+            checked_draft({'facts':facts,'unknown_evidence_ids':required,'questions':[candidate]},evidence)
+        except (TypeError,ValueError):
+            continue
+        questions.append(candidate)
+    if required and not questions:
+        questions=[{'question':'미확인 항목의 상세 내용과 확인 가능한 근거를 제공할 수 있습니까?',
+                    'evidence_ids':[required[0]]}]
+    return checked_draft({'facts':facts,'unknown_evidence_ids':required,'questions':questions},evidence)
+
+
 class LocalFinanceModel:
     def __init__(self,model='qwen3.5:2b',*,transport=None):
         if model!='qwen3.5:2b':raise ValueError('unverified_finance_model')
@@ -120,7 +147,7 @@ class LocalFinanceModel:
         if not result.get('done') or result.get('done_reason') not in (None,'stop'):
             raise ValueError('local_model_incomplete')
         parsed=json.loads(result['message']['content'])
-        return {'draft':checked_draft(parsed,evidence),'usage':{
+        return {'draft':normalize_local_draft(parsed,evidence),'usage':{
             'model':self.model,'model_calls':1,'elapsed_seconds':round(time.monotonic()-started,3),
             'input_tokens':result.get('prompt_eval_count',0),'output_tokens':result.get('eval_count',0)},
             'external_requests':0,'external_trace':False}
