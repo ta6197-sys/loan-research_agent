@@ -119,6 +119,10 @@ def context_period_ends(comparison_window):
 
 def prepare_context(store,batch,mapping,*,report_run_id=None):
     evidence_run=store.get_run(batch['run_id'])
+    if evidence_run['trigger'].get('kind') == 'general_company':
+        fiscal = evidence_run['trigger'].get('collection_result', {}).get('fiscal_period')
+        if fiscal is not None and fiscal.get('month') != 12:
+            raise ValueError('non_calendar_numeric_mapping_pending')
     run=store.get_run(report_run_id or batch['run_id'])
     if evidence_run['basis_id']!=run['basis_id']:raise ValueError('report_basis_mismatch')
     trigger=run['trigger'];followup=trigger.get('kind')=='followup'

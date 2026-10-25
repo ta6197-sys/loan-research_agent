@@ -1,5 +1,9 @@
 # 저장 분석 조회 계약 1.1
 
+## 일반 기업 수집 결과의 결산월 계약
+
+`POST /researches/general/start`는 결산월 확인 전 비교 창을 잠정 계획으로 저장한다. `POST /runs/{run_id}/collect`는 공식 기업개황 `acc_mt`와 사업보고서 월을 대조하고, 응답에 `fiscal_period:{status,reason,month,annual_report_months}`, `target_reports`, `next_phase`를 포함한다. 결산월이 누락·충돌하면 `target_reports=[]`, `financial_requests=0`, `next_phase=fiscal_month_review_required`다. 비12월 결산 원문 수집 결과는 `next_phase=non_calendar_numeric_mapping_pending`이며 검증된 수치나 게시 보고서로 승격되지 않는다. 상세 규칙은 [결산월 수집 정책](FISCAL_PERIOD_COLLECTION_POLICY.md)에 있다.
+
 ## GET /reports/{report_id}/financial-analysis
 
 게시된 보고서에 대한 읽기 요청이다. 외부 수집, 모델 호출, 스냅샷 생성·연결을 수행하지 않는다.

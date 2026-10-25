@@ -113,6 +113,25 @@ class ValidationFixture(unittest.TestCase):
 
 
 class ValidationStorageTests(ValidationFixture):
+    def test_general_company_non_calendar_month_withholds_v04_even_for_calendar_shaped_table(self):
+        research=self.store.create_research(ResearchInput(
+            company={'name':'합성 3월 결산 기업','corp_code':'00129642'},purpose='결산월 게이트',
+            public_cutoff='2026-10-20',comparison_window={},request_key='fiscal-gate-test'),
+            initial_trigger={'kind':'general_company','collection_result':{
+                'fiscal_period':{'status':'supported','month':3}}})
+        self.run_id=research['runs'][0]['id']
+        self.store.save_source(self.run_id,SourceInput(kind='dart',title='기업개황',publisher='금융감독원',
+            retrieved_at='2026-10-20',media_type='application/json',rights_status='public_disclosure',
+            reporting_period={'operation':'company','corp_code':'00129642'}),
+            b'{"status":"000","corp_code":"00129642","acc_mt":"03"}')
+        self.setup_data()
+        result=self.service.validate_run(self.run_id)
+        numeric=[v for v in result['validations'] if v['rule_id']=='numeric_fact']
+        self.assertTrue(numeric)
+        self.assertTrue(all(v['status']!='pass' and
+            v['data']['checks']['V04']['reason']=='non_calendar_fiscal_period_mapping_pending'
+            for v in numeric))
+
     def test_pairs_are_exact_immutable_idempotent_and_reopen(self):
         self.setup_data();first=self.service.validate_run(self.run_id)
         self.assertEqual({'pass':4},first['summary']['validation_counts'])

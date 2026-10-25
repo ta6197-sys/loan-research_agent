@@ -198,7 +198,7 @@ class NumericValidationService:
         methods={x['method'] for x in declarations}
         return declarations[0] if len(methods)==1 else None
 
-    def _validate_fact(self,fact,source,content,identity,api_records,basis,company,superseded):
+    def _validate_fact(self,fact,source,content,identity,api_records,basis,company,superseded,fiscal_month=None):
         d=fact['data'];fragment=fact['fragment']['data'];ctx=fragment['context'];checks={}
         def check(rule,status,reason):checks[rule]={'status':status,'reason':reason}
         corp=company.get('corp_code')
@@ -281,10 +281,14 @@ class NumericValidationService:
             check('V06',checks.get('V06',{}).get('status','pass'),'standard_id_original_label_and_hierarchy')
             # API의 회계연도/보고서 코드와 원문 표지의 역년 시작/끝이 함께 맞아야 한다.
             code_end={'11011':'12-31','11012':'06-30','11013':'03-31','11014':'09-30'}.get(query.get('reprt_code'))
-            calendar_ok=(identity['start']==str(query.get('bsns_year'))+'-01-01' and
+            calendar_ok=(fiscal_month in (None,12) and
+                         identity['start']==str(query.get('bsns_year'))+'-01-01' and
                          identity['end']==str(query.get('bsns_year'))+'-'+str(code_end) and
                          record.get('bsns_year')==query.get('bsns_year') and record.get('reprt_code')==query.get('reprt_code'))
-            check('V04','pass' if field and calendar_ok else 'not_checked','calendar_cover_statement_specific_api_column')
+            check('V04','pass' if field and calendar_ok else 'not_checked',
+                  'company_fiscal_month_conflict' if fiscal_month == 0 else
+                  'non_calendar_fiscal_period_mapping_pending' if fiscal_month not in (None,12)
+                  else 'calendar_cover_statement_specific_api_column')
             lexical=number(d['raw_value']) if d['raw_value'] is not None else None
             amounts=match_amount(d['exact_value'],number(record.get(field,'')) if field else None,d['unit'],self._declared_rounding(content,table))
             currency_ok=d['currency']==record.get('currency') and d['unit']==table['unit'] and d['currency']==table['currency']
@@ -353,13 +357,25 @@ class NumericValidationService:
             old=conn.execute('SELECT id FROM research_validation_batches WHERE run_id=? AND fingerprint=?',(run_id,fingerprint)).fetchone()
         if old:return self.batch(old[0]) | {'reused':True}
         superseded=set()
+        fiscal_months=set()
         for source in sources:
             meta=source['metadata'];parent=meta.get('supersedes_id');receipt=meta.get('receipt_number') or ''
+            if meta.get('reporting_period',{}).get('operation')=='company':
+                try:
+                    month=json.loads(self.store.source_content(source['id'])).get('acc_mt')
+                    if isinstance(month,str) and re.fullmatch(r'0[1-9]|1[0-2]',month):
+                        fiscal_months.add(int(month))
+                except (ValueError,TypeError):
+                    pass
             try:allowed=date.fromisoformat(receipt[:8])<=date.fromisoformat(basis['data']['public_cutoff'])
             except ValueError:allowed=False
             if parent and allowed:superseded.add(parent)
+        fiscal_month=(0 if len(fiscal_months)>1 else next(iter(fiscal_months)) if fiscal_months else None)
+        if run['trigger'].get('kind')=='general_company':
+            planned=run['trigger'].get('collection_result',{}).get('fiscal_period',{}).get('month')
+            fiscal_month=planned if planned in range(1,13) and fiscal_months=={planned} else 0
         validations=[self._validate_fact(f,documents[f['source']['id']],contents[f['source']['id']],
-            identities[f['source']['id']],apis,basis,company,superseded) for f in facts]
+            identities[f['source']['id']],apis,basis,company,superseded,fiscal_month) for f in facts]
         notes=[]
         for sid,source in documents.items():
             notes+=reconcile_note_amounts(source,contents[sid],identities[sid],tables[sid],facts,validations,self._raw_check)

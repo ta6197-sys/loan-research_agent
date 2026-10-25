@@ -10,10 +10,15 @@ from pydantic import Field, field_validator
 from agent.research_models import Budget, Company, Contract, ResearchInput
 
 
+def disclosures_begin(cutoff):
+    return f'{cutoff.year-3:04d}-01-01'
+
+
 def comparison_window(cutoff):
     latest_half_year=cutoff.year if cutoff.month>=8 else cutoff.year-1
     return {"annual_years":list(range(cutoff.year-3,cutoff.year)),
-            "interim_periods":[f"{latest_half_year-1}-H1",f"{latest_half_year}-H1"]}
+            "interim_periods":[f"{latest_half_year-1}-H1",f"{latest_half_year}-H1"],
+            "fiscal_month_status":"pending_company_identity"}
 
 
 class GeneralStartInput(Contract):
@@ -51,7 +56,7 @@ def receive(store, value: GeneralStartInput):
         "collection_plan": {
             "source": "opendart",
             "company_verification": True,
-            "disclosures_begin": "2023-01-01",
+            "disclosures_begin": disclosures_begin(value.public_cutoff),
             "collect_regular_reports": True,
             "collect_xbrl": True,
             "collect_financial_api": True,
@@ -82,7 +87,7 @@ def create_collection_retry(store, research_id):
         "kind": "general_company",
         "phase": "identity_pending",
         "collection_plan": {
-            "source": "opendart", "company_verification": True, "disclosures_begin": "2023-01-01",
+            "source": "opendart", "company_verification": True, "disclosures_begin": disclosures_begin(date.fromisoformat(basis['data']['public_cutoff'])),
             "collect_regular_reports": True, "collect_xbrl": True, "collect_financial_api": True,
             "official_ir": "deferred_until_dart_gap_and_rights_check",
         },

@@ -221,7 +221,7 @@ class DartService:
             raise DartFailure('company_mismatch')
         source = self._save(run_id,'company',params,response)
         return {'status':'ok','source_id':source['id'], 'company':{
-            key:data.get(key) for key in ('corp_code','corp_name','stock_code','corp_cls','hm_url','ir_url','induty_code')},
+            key:data.get(key) for key in ('corp_code','corp_name','stock_code','corp_cls','hm_url','ir_url','induty_code','acc_mt')},
             'support_status':'business_not_checked', 'financial_verification':'not_performed'}
 
     async def disclosures(self, run_id, corp_code, begin, end, page_no=1, page_count=100, last_report='N'):
