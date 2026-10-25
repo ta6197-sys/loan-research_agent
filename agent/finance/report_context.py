@@ -2,8 +2,10 @@
 from collections import defaultdict
 from decimal import Decimal
 from html import escape
+from decimal import InvalidOperation
 
 from .extraction_service import ExtractionService,ACCOUNT_RULES
+from .numeric_validation import fiscal_report_period,period_key
 from .validation_acceptance import MANDATORY_CHECKS
 
 SECTIONS=(('identity','기업 식별'),('business','사업'),('finance','재무'),('cashflow','현금흐름'),
@@ -17,16 +19,24 @@ LABELS={'revenue':'매출액','operating_profit':'영업이익','net_profit':'�
 BORROWINGS={'short_term_borrowings','current_long_term_borrowings','long_term_borrowings'}
 
 
-def numeric_rows(batch,period_ends=PERIOD_ENDS):
+def numeric_rows(batch,period_ends=PERIOD_ENDS,periods=None):
+    expected={item['end']:item for item in periods or ()}
     groups=defaultdict(list)
     for validation in batch['validations']:
         if validation.get('rule_id')!='numeric_fact':continue
         d=validation['data'];end=d['period'].get('as_of') or d['period'].get('end')
-        if d['period'].get('kind')=='duration' and d['period'].get('start')!=(end or '')[:4]+'-01-01':continue
+        target=expected.get(end)
+        if periods is not None and (target is None or d['period'].get('kind') not in {'duration','instant'}
+                or (d['period'].get('kind')=='duration' and
+                    (d['period'].get('start'),d['period'].get('end')) != (target['start'],target['end']))
+                or (d['period'].get('kind')=='instant' and d['period'].get('as_of')!=target['end'])):
+            continue
+        if periods is None and d['period'].get('kind')=='duration' and d['period'].get('start')!=(end or '')[:4]+'-01-01':continue
         if d.get('account') in ACCOUNT_RULES:groups[(d['scope'],end,d['account'])].append(validation)
     output=[]
     for scope in ('OFS','CFS'):
         for end in period_ends:
+            target=expected.get(end)
             for account in LABELS:
                 items=groups.get((scope,end,account),[])
                 values={v['data'].get('amount_comparison',{}).get('original_normalized') for v in items}
@@ -41,7 +51,9 @@ def numeric_rows(batch,period_ends=PERIOD_ENDS):
                     'fact_ids':sorted(v['fact_id'] for v in items),
                     'validation_ids':sorted(v['id'] for v in items),
                     'source_ids':sorted({v['data']['source_id'] for v in items})}
-                row['period']=items[0]['data']['period'] if items else {'end':end}
+                row['period']=items[0]['data']['period'] if items else (
+                    {'kind':'instant','as_of':end} if target and account not in {'revenue','operating_profit','net_profit','operating_cashflow'}
+                    else {'kind':'duration','start':target['start'],'end':end} if target else {'end':end})
                 if good:row['value']=next(iter(values))
                 else:row['reason']='composition_or_numeric_evidence_unconfirmed' if items else 'input_missing'
                 output.append(row)
@@ -70,10 +82,10 @@ def svg_chart(title,series):
     return ''.join(parts)+'</svg>'
 
 
-def charts(rows,batch,mapping,period_ends=PERIOD_ENDS):
+def charts(rows,batch,mapping,period_ends=PERIOD_ENDS,periods=None):
     lookup={(r['scope'],r['end'],r['account']):r for r in rows};result=[]
-    annual=tuple(end for end in period_ends if end.endswith('-12-31'))
-    interim=tuple(end for end in period_ends if end.endswith('-06-30'))
+    annual=tuple(p['end'] for p in periods if p['period_kind']=='annual') if periods is not None else tuple(end for end in period_ends if end.endswith('-12-31'))
+    interim=tuple(p['end'] for p in periods if p['period_kind']=='interim') if periods is not None else tuple(end for end in period_ends if end.endswith('-06-30'))
     for kind,ends in (('annual',annual),('interim',interim)):
         for topic,accounts in (('영업이익·영업현금흐름',('operating_profit','operating_cashflow')),
                                ('현금·차입금',('cash','borrowing_total'))):
@@ -117,12 +129,74 @@ def context_period_ends(comparison_window):
     return values if len(annual_ends)>=2 and len(interim_ends)>=1 and len(set(values))==len(values) else PERIOD_ENDS
 
 
+def fiscal_periods(target_reports, fiscal_month):
+    """공시 수집 계획의 연도·코드와 검증 결산월로 비교 기간을 재구성한다."""
+    if type(fiscal_month) is not int or not 1 <= fiscal_month <= 12:
+        raise ValueError('fiscal_month_review_required')
+    annual, interim = [], []
+    seen = set()
+    for target in target_reports:
+        code = target.get('report_code')
+        try: year = int(target['year'])
+        except (KeyError, TypeError, ValueError): raise ValueError('fiscal_target_invalid') from None
+        bounds = fiscal_report_period(year, code, fiscal_month)
+        if bounds is None or (year, code) in seen:
+            raise ValueError('fiscal_target_invalid_or_duplicate')
+        seen.add((year, code))
+        start, end = (value.isoformat() for value in bounds)
+        item = {'start':start,'end':end,'period_kind':'annual' if code=='11011' else 'interim',
+                'report_code':code,'year':year}
+        (annual if code=='11011' else interim).append(item)
+    annual.sort(key=lambda p:p['end']);interim.sort(key=lambda p:p['end'])
+    periods = annual + interim
+    if len(annual)<2 or len(interim)<1 or len({p['end'] for p in periods})!=len(periods):
+        raise ValueError('fiscal_targets_insufficient_or_overlapping')
+    return periods
+
+
+def xbrl_report_gate(rows, numeric_batch, mapping):
+    """원문/API 숫자와 별도로 XBRL 계정·기간·금액 대응을 요구한다."""
+    validations = {v['id']:v for v in numeric_batch.get('validations',[])}
+    bindings = [v for v in mapping.get('validations',[]) if
+                v.get('rule_id')=='XBRL_STANDARD_CONCEPT' and
+                all(v.get('data',{}).get(k)=='pass' for k in ('concept_status','context_status','amount_status'))]
+    missing=[];matched=[];mapping_ids=[]
+    def same_amount(left,right):
+        try:return Decimal(str(left).replace(',',''))==Decimal(str(right).replace(',',''))
+        except (InvalidOperation,TypeError):return False
+    for row in rows:
+        if row['status']!='verified':continue
+        found=None
+        for vid in row['validation_ids']:
+            d=validations[vid]['data']
+            value=d['amount_comparison']['api_value']
+            found=next((item for item in bindings if
+                (b:=item['data']).get('account')==row['account'] and b.get('scope')==row['scope']
+                and period_key(b.get('period',{}))==period_key(d['period'])
+                and b.get('currency')==d.get('currency') and b.get('api_value') is not None
+                and same_amount(b['api_value'],value)),None)
+            if found:break
+        key=f"{row['scope']}:{row['end']}:{row['account']}"
+        if found:
+            matched.append(key);mapping_ids.append(found['id'])
+        else:missing.append(key)
+    return {'status':'pass' if matched and not missing else 'withheld',
+            'matched_row_keys':sorted(matched),'unmatched_row_keys':sorted(missing),
+            'mapping_validation_ids':sorted(set(mapping_ids)),
+            'reason':None if matched and not missing else 'independent_xbrl_period_account_amount_unconfirmed'}
+
+
 def prepare_context(store,batch,mapping,*,report_run_id=None):
     evidence_run=store.get_run(batch['run_id'])
+    periods=None
     if evidence_run['trigger'].get('kind') == 'general_company':
-        fiscal = evidence_run['trigger'].get('collection_result', {}).get('fiscal_period')
-        if fiscal is not None and fiscal.get('month') != 12:
-            raise ValueError('non_calendar_numeric_mapping_pending')
+        collection=evidence_run['trigger'].get('collection_result',{})
+        fiscal=collection.get('fiscal_period',{})
+        if fiscal.get('status') not in {'supported','identity_only'}:
+            raise ValueError('fiscal_month_review_required')
+        periods=fiscal_periods(collection.get('target_reports',[]),fiscal.get('month'))
+        if not batch.get('validations'):
+            raise ValueError('numeric_validation_required')
     run=store.get_run(report_run_id or batch['run_id'])
     if evidence_run['basis_id']!=run['basis_id']:raise ValueError('report_basis_mismatch')
     trigger=run['trigger'];followup=trigger.get('kind')=='followup'
@@ -132,8 +206,13 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         basis=row_data(store._one(conn,'research_bases',run['basis_id']))
         research=store.get_research(basis['research_id'])
         sources=[row_data(r) for r in conn.execute('SELECT * FROM research_sources WHERE run_id=? ORDER BY id',(evidence_run['id'],))]
-    period_ends=context_period_ends(basis['data'].get('comparison_window',{}))
-    rows=numeric_rows(batch,period_ends);extractor=ExtractionService(store)
+    period_ends=tuple(p['end'] for p in periods) if periods is not None else context_period_ends(basis['data'].get('comparison_window',{}))
+    rows=numeric_rows(batch,period_ends,periods);extractor=ExtractionService(store)
+    report_gate=None
+    if periods is not None and fiscal['month'] != 12:
+        report_gate=xbrl_report_gate(rows,batch,mapping)
+        if report_gate['status']!='pass':
+            raise ValueError('independent_xbrl_period_account_amount_unconfirmed')
     from .change_analysis import analyze_financial_changes
     change_analysis=analyze_financial_changes(rows)
     # 보관 사례의 특정 접수번호·표 구조 인용 규칙은 일반 기업에 적용하지 않는다.
@@ -238,7 +317,9 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         'purpose':basis['data']['purpose'],'public_cutoff':basis['data']['public_cutoff'],
         'numeric_batch_id':batch['id'],'mapping_batch_id':mapping['id'],
         'sections':sections,'financial_rows':rows,'comparison_period_ends':list(period_ends),
-        'charts':charts(rows,batch,mapping,period_ends),'model_evidence':evidence,
+        'comparison_periods':periods or [],'fiscal_end_month':fiscal['month'] if periods is not None else 12,
+        'xbrl_report_gate':report_gate,
+        'charts':charts(rows,batch,mapping,period_ends,periods),'model_evidence':evidence,
         'external_model_policy':external_model_policy,
         'public_findings':public_findings,**({'business_review':business_review} if business_review is not None else {}),
         'unknowns':unknowns,'interpretations':change_analysis['hypotheses'],'change_analysis':change_analysis,

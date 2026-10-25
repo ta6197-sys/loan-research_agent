@@ -9,9 +9,13 @@ import os
 import re
 from calendar import monthrange
 from datetime import date
+from pathlib import PurePosixPath
+
+from lxml import etree
 
 from agent.research_store import Conflict, now, safe_payload
 from .dart_service import DartService
+from .dart_protocol import DartFailure
 from .extraction_service import ExtractionService
 from .document_extractor import ExtractionFailure
 from .general_company import create_collection_retry, disclosures_begin
@@ -19,6 +23,40 @@ from .general_company import create_collection_retry, disclosures_begin
 
 REPORT_CODES = (("사업보고서", "11011"), ("반기보고서", "11012"),
                 ("분기보고서", "11013"), ("3분기보고서", "11014"))
+
+
+def declared_taxonomy_references(members, read_content):
+    """XBRL 인스턴스가 지시한 엔티티 스키마의 직접 DART 참조만 선택한다."""
+    names={item['name']:item for item in members}
+    parser=etree.XMLParser(resolve_entities=False,no_network=True)
+    instance=[]
+    for item in members:
+        if not item['name'].lower().endswith(('.xbrl','.xml')):continue
+        raw=read_content(item['source_id'])
+        if b'<!DOCTYPE' in raw.upper() or b'<!ENTITY' in raw.upper():continue
+        try:root=etree.fromstring(raw,parser)
+        except etree.XMLSyntaxError:continue
+        if root.tag=='{http://www.xbrl.org/2003/instance}xbrl':instance.append((item,root))
+    if len(instance)!=1:return []
+    item,root=instance[0]
+    refs=root.findall('{http://www.xbrl.org/2003/linkbase}schemaRef')
+    if len(refs)!=1:return []
+    relative=refs[0].get('{http://www.w3.org/1999/xlink}href','')
+    schema_name=str(PurePosixPath(item['name']).parent / relative)
+    schema=names.get(schema_name)
+    if not schema:return []
+    raw=read_content(schema['source_id'])
+    if b'<!DOCTYPE' in raw.upper() or b'<!ENTITY' in raw.upper():return []
+    try:doc=etree.fromstring(raw,parser)
+    except etree.XMLSyntaxError:return []
+    if doc.tag!='{http://www.w3.org/2001/XMLSchema}schema':return []
+    values=[]
+    for node in doc.findall('{http://www.w3.org/2001/XMLSchema}import'):
+        uri=node.get('schemaLocation','')
+        if uri.startswith(('http://dart.fss.or.kr/Resource/Taxonomy/ifrs/',
+                           'https://dart.fss.or.kr/Resource/Taxonomy/ifrs/')):
+            values.append((schema['source_id'],uri))
+    return sorted(set(values))
 
 
 def report_code(report_name):
@@ -192,7 +230,7 @@ class GeneralCollectionService:
                 self._finish(run_id,result)
                 return result
             targets = planned_reports(disclosed["items"],basis["public_cutoff"],fiscal['month'])
-            financial_sources, archives, extracted = [], [], []
+            financial_sources, archives, extracted, taxonomy_references = [], [], [], []
             for target in targets:
                 receipts = {target["rcept_no"]} if target["rcept_no"] else set()
                 for scope in ("OFS", "CFS"):
@@ -205,6 +243,16 @@ class GeneralCollectionService:
                     xbrl = await self.dart.xbrl(run_id, receipt, target["report_code"])
                     archives.append({"target": target, "receipt_number": receipt,
                                      "document_source_id": document["source_id"], "xbrl_source_id": xbrl["source_id"]})
+                    if fiscal['month']!=12 and xbrl.get('members'):
+                        for referring_source_id,uri in declared_taxonomy_references(
+                                xbrl['members'],self.store.source_content):
+                            try:
+                                outcome=await self.dart.taxonomy_reference(run_id,uri,referring_source_id)
+                                taxonomy_references.append({'status':'ok','source_id':outcome['source_id'],
+                                    'declared_uri':uri,'referring_source_id':referring_source_id})
+                            except DartFailure as error:
+                                taxonomy_references.append({'status':'withheld','reason':error.kind,
+                                    'declared_uri':uri,'referring_source_id':referring_source_id})
                     for member in document.get("members", []):
                         try:
                             extracted.append(await asyncio.to_thread(self.extractor.extract_source, member["source_id"]))
@@ -218,9 +266,10 @@ class GeneralCollectionService:
                       'fiscal_period':fiscal,
                       "target_reports": targets, "financial_requests": len(financial_sources),
                       "archive_count": len(archives), "extracted_source_count": len(extracted),
+                      "taxonomy_reference_count":sum(x['status']=='ok' for x in taxonomy_references),
+                      "taxonomy_reference_withheld":sum(x['status']!='ok' for x in taxonomy_references),
                       "financial_verification": "not_performed",
-                      "next_phase": ("numeric_and_xbrl_validation" if fiscal['month'] == 12 else
-                                     "non_calendar_numeric_mapping_pending")}
+                      "next_phase": "numeric_and_xbrl_validation"}
             self._finish(run_id, result)
             return result
         except Exception:

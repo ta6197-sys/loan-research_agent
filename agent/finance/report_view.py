@@ -166,7 +166,8 @@ def build_view(store,report_id):
         'user_observations':[user_observation(o) for o in context.get('user_observations',[])],
         'sections':sections,'public_findings':public_findings,'business_review':business_items,
         'minimum_review':minimum_review(context) if 'business_review' in context else [],
-        'financial_rows':rows,'change_analysis':change_analysis,'charts':charts,'evidence':list(evidence.values())+public_evidence,
+        'financial_rows':rows,'comparison_periods':context.get('comparison_periods',[]),
+        'change_analysis':change_analysis,'charts':charts,'evidence':list(evidence.values())+public_evidence,
         'limitations':[text(x) for x in content['limitations']]}
     view['view_hash']=digest(safe_payload(view).encode())
     return view

@@ -162,12 +162,12 @@ class GeneralCollectionFiscalTests(unittest.IsolatedAsyncioTestCase):
         result=await service.run(self.run_id)
         self.assertEqual('supported',result['fiscal_period']['status'])
         self.assertEqual(3,result['fiscal_period']['month'])
-        self.assertEqual('non_calendar_numeric_mapping_pending',result['next_phase'])
+        self.assertEqual('numeric_and_xbrl_validation',result['next_phase'])
         self.assertEqual(10,len(calls))
         self.assertEqual([(2024,'11011'),(2025,'11011'),(2026,'11011'),(2025,'11012'),(2026,'11012')],
                          [(x['year'],x['report_code']) for x in result['target_reports']])
         self.assertEqual('not_performed',result['financial_verification'])
-        with self.assertRaisesRegex(ValueError,'non_calendar_numeric_mapping_pending'):
+        with self.assertRaisesRegex(ValueError,'numeric_validation_required'):
             prepare_context(self.store,{'run_id':self.run_id},{})
         later=create_collection_retry(self.store,self.research_id)
         service._finish(later['run_id'],{'freshness':'no_new_or_corrected_regular_report',

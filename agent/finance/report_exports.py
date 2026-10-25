@@ -40,14 +40,26 @@ def tables(view):
     from .report_context import LABELS,PERIOD_ENDS
     flow={'revenue','operating_profit','net_profit','operating_cashflow'}
     lookup={(r['scope'],r['end'],r['account']):r for r in view['financial_rows']}
-    result=[]
-    for scope in ('OFS','CFS'):
-        for title,ends,accounts in [
+    periods=view.get('comparison_periods') or []
+    if periods:
+        annual=tuple(p['end'] for p in periods if p['period_kind']=='annual')
+        interim=tuple(p['end'] for p in periods if p['period_kind']=='interim')
+        latest_annual_before_interim=max((end for end in annual if interim and end<interim[-1]),default=None)
+        specs=[('연간 손익·현금흐름 (회계연도 누적)',annual,[a for a in LABELS if a in flow]),
+               ('연말 재무상태 (기간 말 잔액)',annual,[a for a in LABELS if a not in flow]),
+               ('반기 손익·현금흐름 (회계반기 누적)',interim,[a for a in LABELS if a in flow]),
+               ('반기 재무상태 (직전 연말·반기 말 잔액)',tuple(x for x in (latest_annual_before_interim,interim[-1] if interim else None) if x),[a for a in LABELS if a not in flow]),
+               ('전년 반기말 재무상태 (보조·주요 비교 아님)',interim[:1],[a for a in LABELS if a not in flow])]
+    else:
+        specs=[
             ('연간 손익·현금흐름 (연초부터 누적)',PERIOD_ENDS[:3],[a for a in LABELS if a in flow]),
             ('연말 재무상태 (기간 말 잔액)',PERIOD_ENDS[:3],[a for a in LABELS if a not in flow]),
             ('반기 손익·현금흐름 (동기간 누적)',PERIOD_ENDS[3:],[a for a in LABELS if a in flow]),
             ('반기 재무상태 (직전 연말·반기 말 잔액)',('2025-12-31','2026-06-30'),[a for a in LABELS if a not in flow]),
-            ('전년 반기말 재무상태 (보조·주요 비교 아님)',('2025-06-30',),[a for a in LABELS if a not in flow])]:
+            ('전년 반기말 재무상태 (보조·주요 비교 아님)',('2025-06-30',),[a for a in LABELS if a not in flow])]
+    result=[]
+    for scope in ('OFS','CFS'):
+        for title,ends,accounts in specs:
             rows=[]
             for account in accounts:
                 cells=[]

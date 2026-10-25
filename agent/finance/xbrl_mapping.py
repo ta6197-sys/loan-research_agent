@@ -19,7 +19,7 @@ from agent.research_store import encode, now, row_data
 from .extraction_service import ACCOUNT_RULES
 from .numeric_validation import ACCOUNT_IDS
 
-VERSION = 'xbrl-mapping-1.6'
+VERSION = 'xbrl-mapping-1.7'
 XI = 'http://www.xbrl.org/2003/instance'
 XS = 'http://www.w3.org/2001/XMLSchema'
 XL = 'http://www.w3.org/1999/xlink'
@@ -389,12 +389,17 @@ def bind_record(report, row, company, scope, period, amount, pointer):
                         else 'concept_identification_only' if concept_status == 'pass' else 'unavailable')}
 
 
-def current_period(year, code, statement):
-    end = f'{year}-12-31' if code == '11011' else f'{year}-06-30' if code == '11012' else None
-    if not end:
+def current_period(year, code, statement, fiscal_month=12):
+    from .numeric_validation import fiscal_report_period
+    try:
+        bounds = fiscal_report_period(int(year), code, fiscal_month)
+    except (TypeError, ValueError):
+        bounds = None
+    if bounds is None:
         return None
+    start, end = (value.isoformat() for value in bounds)
     return {'kind': 'instant', 'as_of': end} if statement == 'BS' else {
-        'kind': 'duration', 'start': f'{year}-01-01', 'end': end}
+        'kind': 'duration', 'start': start, 'end': end}
 
 
 
@@ -440,6 +445,10 @@ class XbrlMappingService:
             return self.batch(old[0]) | {'reused': True}
         archives = [s for s in sources if s['metadata']['reporting_period'].get('operation') == 'xbrl']
         reports, report_failures = load_reports(self.store, sources)
+        fiscal_month = 12
+        if run['trigger'].get('kind') == 'general_company':
+            fiscal = run['trigger'].get('collection_result', {}).get('fiscal_period', {})
+            fiscal_month = fiscal.get('month') if fiscal.get('status') in {'supported', 'identity_only'} else None
         records = []
         excluded_statement_rows = 0
         target_ids = {code: account for account in ACCOUNT_RULES for code in ACCOUNT_IDS[account]}
@@ -467,7 +476,7 @@ class XbrlMappingService:
                     raise ValueError('api_query_metadata_mismatch')
                 if date.fromisoformat(row['rcept_no'][:8]) > date.fromisoformat(basis['data']['public_cutoff']):
                     raise ValueError('outside_public_cutoff')
-                period = current_period(row['bsns_year'], row['reprt_code'], row['sj_div'])
+                period = current_period(row['bsns_year'], row['reprt_code'], row['sj_div'], fiscal_month)
                 if not period:
                     continue
                 # 반기 손익의 3개월 값을 누적 값으로 취급하지 않는다.
