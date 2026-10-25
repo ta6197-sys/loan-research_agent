@@ -1,0 +1,2427 @@
+{
+  "status": "discovery_only_not_verified_peer_data",
+  "catalogue_stock_code_rows": 4000,
+  "company_lookup_dates": [
+    "2026-10-23",
+    "2026-10-25"
+  ],
+  "xbrl_lookup_date": "2026-10-25",
+  "candidate_rule": "company_induty_code == 30 or startswith 303",
+  "candidate_count": 117,
+  "records": [
+    {
+      "corp_code": "00102353",
+      "corp_name": "경창산업",
+      "stock_code": "024910",
+      "company_induty_code": "30331",
+      "annual_2025": {
+        "receipt": "20260323000235",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002675",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      }
+    },
+    {
+      "corp_code": "00103510",
+      "corp_name": "인지컨트롤스",
+      "stock_code": "023800",
+      "company_induty_code": "30310",
+      "annual_2025": {
+        "receipt": "20260323001493",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002667",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      }
+    },
+    {
+      "corp_code": "00105040",
+      "corp_name": "뉴인텍",
+      "stock_code": "012340",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001476",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30332"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260930000280",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30332"
+        ]
+      }
+    },
+    {
+      "corp_code": "00105606",
+      "corp_name": "금호에이치티",
+      "stock_code": "214330",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001668",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813001781",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00106623",
+      "corp_name": "현대위아",
+      "stock_code": "011210",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260317000785",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002618",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      }
+    },
+    {
+      "corp_code": "00106650",
+      "corp_name": "카스코",
+      "stock_code": "005330",
+      "company_induty_code": "30",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": "no_data",
+        "selected_reports": []
+      }
+    },
+    {
+      "corp_code": "00111689",
+      "corp_name": "아진전자부품",
+      "stock_code": "009320",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323001496",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003484",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00111847",
+      "corp_name": "대원강업",
+      "stock_code": "000430",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001323",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001532",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      }
+    },
+    {
+      "corp_code": "00111874",
+      "corp_name": "대원산업",
+      "stock_code": "005710",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260312001127",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002698",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00112165",
+      "corp_name": "디아이씨",
+      "stock_code": "092200",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260320001046",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813001541",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00112679",
+      "corp_name": "대창단조",
+      "stock_code": "015230",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000402",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "29142"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814000441",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "29142"
+        ]
+      }
+    },
+    {
+      "corp_code": "00114154",
+      "corp_name": "디와이덕양",
+      "stock_code": "024900",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260317000660",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20261012000127",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00114765",
+      "corp_name": "케이비아이동국실업",
+      "stock_code": "001620",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260317000470",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004128",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00116806",
+      "corp_name": "하스코",
+      "stock_code": "012760",
+      "company_induty_code": "30",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [
+          {
+            "receipt": "20260814000368",
+            "report_code": "11012",
+            "report_name": "반기보고서 (2026.06)"
+          },
+          {
+            "receipt": "20260324000898",
+            "report_code": "11011",
+            "report_name": "사업보고서 (2025.12)"
+          }
+        ],
+        "additional_xbrl_error": "file_not_found"
+      }
+    },
+    {
+      "corp_code": "00118008",
+      "corp_name": "동원모빌리티",
+      "stock_code": "018500",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20250618000195",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "452"
+        ]
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [
+          {
+            "receipt": "20250618000195",
+            "report_code": "11011",
+            "report_name": "사업보고서 (2025.03)"
+          }
+        ],
+        "additional_xbrl_codes": [
+          "452"
+        ]
+      }
+    },
+    {
+      "corp_code": "00119140",
+      "corp_name": "핸즈코퍼레이션",
+      "stock_code": "143210",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260731000461",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260902000277",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00119672",
+      "corp_name": "두올",
+      "stock_code": "016740",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001456",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813001559",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00124151",
+      "corp_name": "부산주공",
+      "stock_code": "005030",
+      "company_induty_code": "30310",
+      "annual_2025": {
+        "receipt": "20260630000693",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3031"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001921",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3031"
+        ]
+      }
+    },
+    {
+      "corp_code": "00125521",
+      "corp_name": "에스엘",
+      "stock_code": "005850",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000781",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "452"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002776",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "452"
+        ]
+      }
+    },
+    {
+      "corp_code": "00125576",
+      "corp_name": "체시스",
+      "stock_code": "033250",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323000928",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260929000443",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00125628",
+      "corp_name": "삼목강업",
+      "stock_code": "158380",
+      "company_induty_code": "30",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": "no_data",
+        "selected_reports": []
+      }
+    },
+    {
+      "corp_code": "00126089",
+      "corp_name": "DH오토넥스",
+      "stock_code": "000300",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260619000568",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "2642"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003826",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "25913"
+        ]
+      }
+    },
+    {
+      "corp_code": "00126201",
+      "corp_name": "삼성공조",
+      "stock_code": "006660",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": "20260608000034",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004110",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00129642",
+      "corp_name": "상신브레이크",
+      "stock_code": "041650",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001187",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30392"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813000874",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30392"
+        ]
+      }
+    },
+    {
+      "corp_code": "00132992",
+      "corp_name": "성우하이텍",
+      "stock_code": "015750",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000729",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260929000494",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00133663",
+      "corp_name": "세동",
+      "stock_code": "053060",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323000453",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3012"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260930000235",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3012"
+        ]
+      }
+    },
+    {
+      "corp_code": "00134316",
+      "corp_name": "세원정공",
+      "stock_code": "021820",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20250922000199",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "302"
+        ]
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [
+          {
+            "receipt": "20250922000199",
+            "report_code": "11011",
+            "report_name": "사업보고서 (2025.06)"
+          }
+        ],
+        "additional_xbrl_codes": [
+          "302"
+        ]
+      }
+    },
+    {
+      "corp_code": "00134477",
+      "corp_name": "SNT다이내믹스",
+      "stock_code": "003570",
+      "company_induty_code": "30331",
+      "annual_2025": {
+        "receipt": "20260219002133",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260812000083",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      }
+    },
+    {
+      "corp_code": "00134510",
+      "corp_name": "SJG세종",
+      "stock_code": "033530",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260316000994",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002335",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00137207",
+      "corp_name": "유니켐",
+      "stock_code": "011330",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260325000515",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "15110"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260818000144",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "15110"
+        ]
+      }
+    },
+    {
+      "corp_code": "00137234",
+      "corp_name": "모베이스전자",
+      "stock_code": "012860",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000473",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813000525",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00139083",
+      "corp_name": "아진산업",
+      "stock_code": "013310",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323000927",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20261020000200",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00139153",
+      "corp_name": "에코플라스틱",
+      "stock_code": "038110",
+      "company_induty_code": "30320",
+      "annual_2025": {
+        "receipt": "20260318001470",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003056",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      }
+    },
+    {
+      "corp_code": "00141413",
+      "corp_name": "영화금속",
+      "stock_code": "012280",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260316000700",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814000046",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      }
+    },
+    {
+      "corp_code": "00146436",
+      "corp_name": "엔브이에이치코리아",
+      "stock_code": "067570",
+      "company_induty_code": "30320",
+      "annual_2025": {
+        "receipt": "20260323001278",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003774",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00146560",
+      "corp_name": "일지테크",
+      "stock_code": "019540",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000717",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002305",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00147152",
+      "corp_name": "유니크",
+      "stock_code": "011320",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260320001049",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003814",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00147860",
+      "corp_name": "에스엠벡셀",
+      "stock_code": "010580",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260320000787",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3031"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002786",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3031"
+        ]
+      }
+    },
+    {
+      "corp_code": "00149804",
+      "corp_name": "디와이에이",
+      "stock_code": "002880",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260317000864",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30393"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260930000619",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30393"
+        ]
+      }
+    },
+    {
+      "corp_code": "00151128",
+      "corp_name": "모토닉",
+      "stock_code": "009680",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000984",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001080",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      }
+    },
+    {
+      "corp_code": "00151605",
+      "corp_name": "청보",
+      "stock_code": "013720",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260312001406",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20261006000275",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30310"
+        ]
+      }
+    },
+    {
+      "corp_code": "00152039",
+      "corp_name": "SG글로벌",
+      "stock_code": "001380",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000113",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30393"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004143",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30393"
+        ]
+      }
+    },
+    {
+      "corp_code": "00153755",
+      "corp_name": "태양금속공업",
+      "stock_code": "004100",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260324000742",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003845",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00154055",
+      "corp_name": "태원물산",
+      "stock_code": "001420",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260327001530",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003258",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00155124",
+      "corp_name": "평화홀딩스",
+      "stock_code": "010770",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260316000856",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20261013000109",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00155151",
+      "corp_name": "피에이치에이",
+      "stock_code": "043370",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000311",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": "20260814001696",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [],
+        "additional_xbrl_codes": [
+          "30"
+        ]
+      }
+    },
+    {
+      "corp_code": "00156354",
+      "corp_name": "지엠비코리아",
+      "stock_code": "013870",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260320001109",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001700",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      }
+    },
+    {
+      "corp_code": "00157539",
+      "corp_name": "KB오토시스",
+      "stock_code": "024120",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319001360",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004239",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00160418",
+      "corp_name": "한국무브넥스",
+      "stock_code": "010100",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323000529",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001488",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00162832",
+      "corp_name": "한일단조",
+      "stock_code": "024740",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260515000598",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "25912"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002077",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "25912"
+        ]
+      }
+    },
+    {
+      "corp_code": "00164502",
+      "corp_name": "현대공업",
+      "stock_code": "170030",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260320001172",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30393"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260812000818",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30393"
+        ]
+      }
+    },
+    {
+      "corp_code": "00164788",
+      "corp_name": "현대모비스",
+      "stock_code": "012330",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260309001878",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3032"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004065",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3032"
+        ]
+      }
+    },
+    {
+      "corp_code": "00165565",
+      "corp_name": "디에스피이엔티",
+      "stock_code": "016040",
+      "company_induty_code": "30",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": "no_data",
+        "selected_reports": []
+      }
+    },
+    {
+      "corp_code": "00166272",
+      "corp_name": "화승코퍼레이션",
+      "stock_code": "013520",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323001005",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003275",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00166315",
+      "corp_name": "화신",
+      "stock_code": "010690",
+      "company_induty_code": "30391",
+      "annual_2025": {
+        "receipt": "20260316000461",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20261015000147",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      }
+    },
+    {
+      "corp_code": "00173069",
+      "corp_name": "아진카인텍",
+      "stock_code": "011400",
+      "company_induty_code": "30320",
+      "annual_2025": {
+        "receipt": "20260331002865",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "302"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003013",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "302"
+        ]
+      }
+    },
+    {
+      "corp_code": "00173078",
+      "corp_name": "명신산업",
+      "stock_code": "009900",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323000909",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813001431",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00173591",
+      "corp_name": "세원물산",
+      "stock_code": "024830",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323001247",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30201"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003225",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30201"
+        ]
+      }
+    },
+    {
+      "corp_code": "00174004",
+      "corp_name": "유성기업",
+      "stock_code": "002920",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260629000189",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001198",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00175173",
+      "corp_name": "오스템",
+      "stock_code": "031510",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319001031",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002583",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00180795",
+      "corp_name": "인팩",
+      "stock_code": "023810",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323001188",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003827",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00191588",
+      "corp_name": "삼원강재",
+      "stock_code": "023000",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260316001210",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001299",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00202060",
+      "corp_name": "구영테크",
+      "stock_code": "053270",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260316001359",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002687",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00230814",
+      "corp_name": "휴림에이텍",
+      "stock_code": "078590",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319001131",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003841",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00235147",
+      "corp_name": "에이팸",
+      "stock_code": "073070",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [
+          {
+            "receipt": "20260814002088",
+            "report_code": "11012",
+            "report_name": "반기보고서 (2026.06)"
+          },
+          {
+            "receipt": "20260325000909",
+            "report_code": "11011",
+            "report_name": "사업보고서 (2025.12)"
+          }
+        ],
+        "additional_xbrl_error": "file_not_found"
+      }
+    },
+    {
+      "corp_code": "00238977",
+      "corp_name": "에스엠화진",
+      "stock_code": "134780",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": "20260319000101",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260812000402",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00259545",
+      "corp_name": "엠에스오토텍",
+      "stock_code": "123040",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260330001617",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3020"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20261001000247",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3020"
+        ]
+      }
+    },
+    {
+      "corp_code": "00262266",
+      "corp_name": "삼현",
+      "stock_code": "437730",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000680",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003171",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00264714",
+      "corp_name": "SG&G",
+      "stock_code": "040610",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000627",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001690",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00264787",
+      "corp_name": "럭슬",
+      "stock_code": "033600",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": "no_data",
+        "selected_reports": []
+      }
+    },
+    {
+      "corp_code": "00295857",
+      "corp_name": "코다코",
+      "stock_code": "046070",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260409000308",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003077",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00300405",
+      "corp_name": "오리엔트정공",
+      "stock_code": "065500",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000819",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004280",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00301422",
+      "corp_name": "스모트로닉",
+      "stock_code": "066590",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260728000417",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001740",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00302582",
+      "corp_name": "캐스텍코리아",
+      "stock_code": "071850",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000858",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002028",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00305668",
+      "corp_name": "새론오토모티브",
+      "stock_code": "075180",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260331002685",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002314",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00334244",
+      "corp_name": "덴소코리아",
+      "stock_code": "047060",
+      "company_induty_code": "30",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": "no_data",
+        "selected_reports": []
+      }
+    },
+    {
+      "corp_code": "00338170",
+      "corp_name": "이닉스",
+      "stock_code": "452400",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": "20260318000138",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814000003",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00351092",
+      "corp_name": "삼보모터스",
+      "stock_code": "053700",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323000719",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003733",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00359623",
+      "corp_name": "우리산업홀딩스",
+      "stock_code": "072470",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000793",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002258",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00365624",
+      "corp_name": "아이윈",
+      "stock_code": "090150",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323001346",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003930",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00398792",
+      "corp_name": "SNT모티브",
+      "stock_code": "064960",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260219002256",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260818000153",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00409140",
+      "corp_name": "이원컴포텍",
+      "stock_code": "088290",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260626000139",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260929000215",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00430089",
+      "corp_name": "삼보오토",
+      "stock_code": "070080",
+      "company_induty_code": "30",
+      "annual_2025": {
+        "receipt": "20260323001396",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002205",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00442631",
+      "corp_name": "태양기계",
+      "stock_code": "116100",
+      "company_induty_code": "30320",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [
+          {
+            "receipt": "20260320001219",
+            "report_code": "11011",
+            "report_name": "사업보고서 (2025.12)"
+          }
+        ],
+        "additional_xbrl_error": "file_not_found"
+      }
+    },
+    {
+      "corp_code": "00442905",
+      "corp_name": "디에스엠",
+      "stock_code": "104040",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": "20260318001079",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003295",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00447928",
+      "corp_name": "네오티스",
+      "stock_code": "085910",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260629000421",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "29223"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813000500",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "29223"
+        ]
+      }
+    },
+    {
+      "corp_code": "00450010",
+      "corp_name": "씨티알모빌리티",
+      "stock_code": "308170",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000736",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": "20260814001658",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [],
+        "additional_xbrl_codes": [
+          "30"
+        ]
+      }
+    },
+    {
+      "corp_code": "00486370",
+      "corp_name": "성창오토텍",
+      "stock_code": "080470",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319001158",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003709",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00521433",
+      "corp_name": "엔지브이아이",
+      "stock_code": "093510",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [
+          {
+            "receipt": "20260319000348",
+            "report_code": "11011",
+            "report_name": "사업보고서 (2025.12)"
+          }
+        ],
+        "additional_xbrl_error": "file_not_found"
+      }
+    },
+    {
+      "corp_code": "00531865",
+      "corp_name": "유니테크노",
+      "stock_code": "241690",
+      "company_induty_code": "30331",
+      "annual_2025": {
+        "receipt": "20260323001426",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001228",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00562360",
+      "corp_name": "에코볼트",
+      "stock_code": "097780",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000446",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001313",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00573579",
+      "corp_name": "평화산업",
+      "stock_code": "090080",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260316000837",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3039"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003443",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3039"
+        ]
+      }
+    },
+    {
+      "corp_code": "00576789",
+      "corp_name": "디젠스",
+      "stock_code": "113810",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001189",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814000844",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00578538",
+      "corp_name": "티피씨글로벌",
+      "stock_code": "130740",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260317000725",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813001408",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00606664",
+      "corp_name": "케이엔더블유",
+      "stock_code": "105330",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260311003815",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3039"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003272",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "3039"
+        ]
+      }
+    },
+    {
+      "corp_code": "00617998",
+      "corp_name": "폴라리스세원",
+      "stock_code": "234100",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001559",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004094",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00659976",
+      "corp_name": "영화테크",
+      "stock_code": "265560",
+      "company_induty_code": "3033",
+      "annual_2025": {
+        "receipt": "20260318001678",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30332"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003332",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30332"
+        ]
+      }
+    },
+    {
+      "corp_code": "00673301",
+      "corp_name": "전우정밀",
+      "stock_code": "120780",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": []
+      }
+    },
+    {
+      "corp_code": "00679730",
+      "corp_name": "파브코",
+      "stock_code": "101990",
+      "company_induty_code": "30",
+      "annual_2025": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": null,
+        "status": "financial_receipt_unavailable",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": "no_data",
+        "selected_reports": []
+      }
+    },
+    {
+      "corp_code": "00683061",
+      "corp_name": "한라캐스트",
+      "stock_code": "125490",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000665",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001101",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30320"
+        ]
+      }
+    },
+    {
+      "corp_code": "00761183",
+      "corp_name": "신성에스티",
+      "stock_code": "416180",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": "20260316001016",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "25913"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001031",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "25913"
+        ]
+      }
+    },
+    {
+      "corp_code": "00765897",
+      "corp_name": "한국피아이엠",
+      "stock_code": "448900",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260320001061",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004093",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00799177",
+      "corp_name": "삼기",
+      "stock_code": "122350",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001642",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": "20260814003759",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [],
+        "additional_xbrl_codes": [
+          "45"
+        ]
+      }
+    },
+    {
+      "corp_code": "00800145",
+      "corp_name": "서진오토모티브",
+      "stock_code": "122690",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323001419",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "half_2026": {
+        "receipt": "20260814000372",
+        "status": "xbrl_code_absent",
+        "xbrl_codes": []
+      },
+      "gap_followup": {
+        "disclosures_error": null,
+        "selected_reports": [],
+        "additional_xbrl_codes": [
+          "30"
+        ]
+      }
+    },
+    {
+      "corp_code": "00803425",
+      "corp_name": "코리아에프티",
+      "stock_code": "123410",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260731000261",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002833",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00815369",
+      "corp_name": "에스제이엠",
+      "stock_code": "123700",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319001071",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003271",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00825223",
+      "corp_name": "화신정공",
+      "stock_code": "126640",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260316000444",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814001456",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "00870481",
+      "corp_name": "에코캡",
+      "stock_code": "128540",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260323001607",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "45212"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20261001000593",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "45212"
+        ]
+      }
+    },
+    {
+      "corp_code": "00876865",
+      "corp_name": "네오오토",
+      "stock_code": "212560",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319001301",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003021",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "00876908",
+      "corp_name": "모트렉스",
+      "stock_code": "118990",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000967",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813001249",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "01036446",
+      "corp_name": "서연이화",
+      "stock_code": "200880",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318001250",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003429",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "303"
+        ]
+      }
+    },
+    {
+      "corp_code": "01042775",
+      "corp_name": "HL만도",
+      "stock_code": "204320",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000883",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814004041",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      }
+    },
+    {
+      "corp_code": "01077577",
+      "corp_name": "우리산업",
+      "stock_code": "215360",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260319000860",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002319",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "01182578",
+      "corp_name": "DH오토리드",
+      "stock_code": "290120",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": "20260331004980",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814002060",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30391"
+        ]
+      }
+    },
+    {
+      "corp_code": "01336443",
+      "corp_name": "디와이씨",
+      "stock_code": "310870",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260320000513",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003107",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30331"
+        ]
+      }
+    },
+    {
+      "corp_code": "01526806",
+      "corp_name": "삼기에너지솔루션즈",
+      "stock_code": "419050",
+      "company_induty_code": "303",
+      "annual_2025": {
+        "receipt": "20260318000999",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260813000643",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    },
+    {
+      "corp_code": "01532603",
+      "corp_name": "화승알앤에이",
+      "stock_code": "378850",
+      "company_induty_code": "30399",
+      "annual_2025": {
+        "receipt": "20260323000996",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      },
+      "half_2026": {
+        "receipt": "20260814003427",
+        "status": "xbrl_checked",
+        "xbrl_codes": [
+          "30399"
+        ]
+      }
+    }
+  ],
+  "catalogue_content_hash": "64b834e3e569fdc3a789e5a7287bd8c20cc431fb9365e012952920142853373c",
+  "catalogue_updated_at": "2026-10-22T12:37:37.541275+00:00"
+}
