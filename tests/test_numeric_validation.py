@@ -9,7 +9,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from agent.finance.numeric_validation import (
-    NumericValidationService, api_field, comparison_policy, decimal, exact_sum, match_amount,
+    NumericValidationService, api_field, comparison_policy, decimal, exact_sum, fiscal_report_period, match_amount,
 )
 from agent.research_models import ResearchInput, SourceInput
 from agent.research_store import IntegrityFailure, ResearchStore
@@ -68,6 +68,23 @@ class NumericRulesTests(unittest.TestCase):
         self.assertEqual('bfefrmtrm_amount',api_field({'kind':'duration','start':'2023-01-01','end':'2023-12-31'},'CIS',q))
         self.assertIsNone(api_field({'kind':'duration','start':'2025-04-01','end':'2026-03-31'},'CIS',q))
 
+    def test_verified_noncalendar_annual_and_half_year_columns(self):
+        annual={'bsns_year':'2026','reprt_code':'11011'}
+        self.assertEqual(('2025-07-01','2026-06-30'),tuple(x.isoformat() for x in fiscal_report_period(2026,'11011',6)))
+        self.assertEqual('thstrm_amount',api_field({'kind':'duration','start':'2025-07-01','end':'2026-06-30'},'CIS',annual,6))
+        self.assertEqual('frmtrm_amount',api_field({'kind':'duration','start':'2024-07-01','end':'2025-06-30'},'CF',annual,6))
+        self.assertEqual('bfefrmtrm_amount',api_field({'kind':'instant','as_of':'2024-06-30'},'BS',annual,6))
+        half={'bsns_year':'2026','reprt_code':'11012'}
+        self.assertEqual('thstrm_add_amount',api_field({'kind':'duration','start':'2026-04-01','end':'2026-09-30'},'CIS',half,3))
+        self.assertEqual('frmtrm_add_amount',api_field({'kind':'duration','start':'2025-04-01','end':'2025-09-30'},'CIS',half,3))
+        self.assertEqual('thstrm_amount',api_field({'kind':'duration','start':'2026-07-01','end':'2026-09-30','column_kind':'three_months'},'CIS',half,3))
+        self.assertEqual('thstrm_amount',api_field({'kind':'duration','start':'2026-04-01','end':'2026-09-30'},'CF',half,3))
+        self.assertEqual('frmtrm_amount',api_field({'kind':'instant','as_of':'2026-03-31'},'BS',half,3))
+        self.assertEqual(('2025-10-01','2026-03-31'),tuple(x.isoformat() for x in fiscal_report_period(2026,'11012',9)))
+        self.assertEqual('thstrm_add_amount',api_field({'kind':'duration','start':'2025-10-01','end':'2026-03-31'},'CIS',half,9))
+        self.assertIsNone(api_field({'kind':'duration','start':'2026-01-01','end':'2026-09-30'},'CIS',half,3))
+        self.assertIsNone(api_field({'kind':'duration','start':'2026-04-01','end':'2026-09-30'},'CIS',half,6))
+
     def test_comparison_policy_disallows_annual_interim_scope_composition_mix(self):
         a={'scope':'OFS','currency':'KRW','account':'revenue','original_account':'매출액',
            'period':{'kind':'duration','start':'2026-01-01','end':'2026-06-30'}}
@@ -78,6 +95,14 @@ class NumericRulesTests(unittest.TestCase):
         self.assertEqual('account_composition_unconfirmed',comparison_policy(a,b|{'original_account':'다른 매출액'}))
         cash=a|{'account':'cash','period':{'kind':'instant','as_of':'2026-06-30'}}
         self.assertEqual('previous_year_end',comparison_policy(cash,cash|{'period':{'kind':'instant','as_of':'2025-12-31'}}))
+        june_annual=cash|{'period':{'kind':'instant','as_of':'2026-06-30'}}
+        self.assertEqual('previous_year_end',comparison_policy(june_annual,june_annual|{
+            'period':{'kind':'instant','as_of':'2025-06-30'}},fiscal_month=6))
+        june_half=cash|{'period':{'kind':'instant','as_of':'2025-12-31'}}
+        self.assertEqual('previous_year_end',comparison_policy(june_half,june_half|{
+            'period':{'kind':'instant','as_of':'2025-06-30'}},fiscal_month=6))
+        self.assertEqual('prior_same_date_supplementary',comparison_policy(june_half,june_half|{
+            'period':{'kind':'instant','as_of':'2024-12-31'}},fiscal_month=6))
 
 
 class ValidationFixture(unittest.TestCase):
@@ -113,6 +138,37 @@ class ValidationFixture(unittest.TestCase):
 
 
 class ValidationStorageTests(ValidationFixture):
+    def test_confirmed_noncalendar_cover_and_api_period_can_pass_v04(self):
+        research=self.store.create_research(ResearchInput(
+            company={'name':'합성 3월 결산 기업','corp_code':'00129642'},purpose='결산월 대조',
+            public_cutoff='2026-10-20',comparison_window={},request_key='fiscal-verified-test'),
+            initial_trigger={'kind':'general_company','collection_result':{
+                'fiscal_period':{'status':'supported','month':3}}})
+        self.run_id=research['runs'][0]['id']
+        self.store.save_source(self.run_id,SourceInput(kind='dart',title='기업개황',publisher='금융감독원',
+            retrieved_at='2026-10-20',media_type='application/json',rights_status='public_disclosure',
+            reporting_period={'operation':'company','corp_code':'00129642'}),
+            b'{"status":"000","corp_code":"00129642","acc_mt":"03"}')
+        receipt='20261013000874'
+        original=covered_document()
+        for before,after in ((b'20260101',b'20260401'),(b'2026-01-01',b'2026-04-01'),
+                             (b'20260630',b'20260930'),(b'2026-06-30',b'2026-09-30'),
+                             (b'2025-01-01',b'2025-04-01'),(b'2025-06-30',b'2025-09-30'),
+                             (b'2026.01.01',b'2026.04.01'),(b'2026.06.30',b'2026.09.30'),
+                             (b'2025.01.01',b'2025.04.01'),(b'2025.06.30',b'2025.09.30')):
+            original=original.replace(before,after)
+        self.save(original,receipt=receipt)
+        record={'corp_code':'00129642','rcept_no':receipt,'bsns_year':'2026','reprt_code':'11012',
+            'sj_div':'CIS','account_id':'ifrs-full_Revenue','account_nm':'매출액','currency':'KRW',
+            'thstrm_amount':'106461983869','thstrm_add_amount':'197724953870',
+            'frmtrm_q_amount':'96257111900','frmtrm_add_amount':'191738976251'}
+        self.save(json.dumps({'status':'000','list':[record]}).encode(),'application/json',receipt=receipt)
+        result=self.service.validate_run(self.run_id)
+        numeric=[v for v in result['validations'] if v['rule_id']=='numeric_fact']
+        self.assertEqual(4,len(numeric))
+        self.assertTrue(all(v['status']=='pass' and v['data']['checks']['V04']['status']=='pass' for v in numeric),
+                        [(v['status'],v['data']['period'],v['data']['checks']) for v in numeric])
+
     def test_general_company_non_calendar_month_withholds_v04_even_for_calendar_shaped_table(self):
         research=self.store.create_research(ResearchInput(
             company={'name':'합성 3월 결산 기업','corp_code':'00129642'},purpose='결산월 게이트',
@@ -129,7 +185,7 @@ class ValidationStorageTests(ValidationFixture):
         numeric=[v for v in result['validations'] if v['rule_id']=='numeric_fact']
         self.assertTrue(numeric)
         self.assertTrue(all(v['status']!='pass' and
-            v['data']['checks']['V04']['reason']=='non_calendar_fiscal_period_mapping_pending'
+            v['data']['checks']['V04']['reason']=='fiscal_cover_statement_specific_api_column'
             for v in numeric))
 
     def test_pairs_are_exact_immutable_idempotent_and_reopen(self):

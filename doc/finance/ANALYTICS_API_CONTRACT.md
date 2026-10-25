@@ -2,7 +2,7 @@
 
 ## 일반 기업 수집 결과의 결산월 계약
 
-`POST /researches/general/start`는 결산월 확인 전 비교 창을 잠정 계획으로 저장한다. `POST /runs/{run_id}/collect`는 공식 기업개황 `acc_mt`와 사업보고서 월을 대조하고, 응답에 `fiscal_period:{status,reason,month,annual_report_months}`, `target_reports`, `next_phase`를 포함한다. 결산월이 누락·충돌하면 `target_reports=[]`, `financial_requests=0`, `next_phase=fiscal_month_review_required`다. 비12월 결산 원문 수집 결과는 `next_phase=non_calendar_numeric_mapping_pending`이며 검증된 수치나 게시 보고서로 승격되지 않는다. 상세 규칙은 [결산월 수집 정책](FISCAL_PERIOD_COLLECTION_POLICY.md)에 있다.
+`POST /researches/general/start`는 결산월 확인 전 비교 창을 잠정 계획으로 저장한다. `POST /runs/{run_id}/collect`는 공식 기업개황 `acc_mt`와 사업보고서 월을 대조하고, 응답에 `fiscal_period:{status,reason,month,annual_report_months}`, `target_reports`, `next_phase`를 포함한다. 결산월이 누락·충돌하면 `target_reports=[]`, `financial_requests=0`, `next_phase=fiscal_month_review_required`다. 비12월 결산 수집 결과의 `next_phase=non_calendar_numeric_mapping_pending`은 기존 흐름 식별자다. 수집은 숫자 검증을 자동 실행하지 않는다. 별도 숫자 검증 배치가 통과해도 비12월 보고서 생성은 아직 차단된다. 상세 규칙은 [결산월 수집 정책](FISCAL_PERIOD_COLLECTION_POLICY.md)에 있다.
 
 ## GET /reports/{report_id}/financial-analysis
 
