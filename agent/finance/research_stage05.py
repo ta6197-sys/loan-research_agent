@@ -218,7 +218,7 @@ class Stage05Service:
 
     def _publish(self,run_id,key,content,batch_id):
         context=content['context']
-        if context.get('comparison_periods') and context.get('fiscal_end_month')!=12:
+        if context.get('comparison_periods'):
             if context.get('xbrl_report_gate',{}).get('status')!='pass':
                 raise ValueError('independent_xbrl_period_account_amount_unconfirmed')
         data=safe_payload(content);content_hash=digest(data.encode())

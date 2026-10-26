@@ -58,6 +58,16 @@ def _canonical(record, feature_policy_version):
         return None, {"reason": "required_identity_missing", "fields": missing, "record": record}
     if record.get("correction_status") != "current_verified":
         return None, {"reason": "correction_relation_not_verified", "record": record}
+    origin = record.get('data_origin')
+    if origin not in {'verified_public_disclosure', 'synthetic_test_only'}:
+        return None, {'reason': 'data_origin_unverified', 'record': record}
+    required_gates = ('original_api', 'actual_period', 'fiscal_month', 'independent_xbrl')
+    if origin == 'verified_public_disclosure' and any(
+            record.get('verification_gates', {}).get(gate) != 'pass' for gate in required_gates):
+        return None, {'reason': 'four_source_verification_gates_not_passed',
+                      'failed_gates': [gate for gate in required_gates if
+                                       record.get('verification_gates', {}).get(gate) != 'pass'],
+                      'record': record}
     source_public_at = str(record.get("source_public_at", record["source_receipt"][:8])).replace("-", "")
     if source_public_at > record["public_cutoff"].replace("-", ""):
         return None, {"reason": "source_not_public_at_cutoff", "record": record}
@@ -74,7 +84,7 @@ def _canonical(record, feature_policy_version):
             "account_definition_version": record.get("account_definition_version"), "peer_group": record.get("peer_group"),
             "features": values, "missing_features": missing_features, "feature_evidence": evidence,
             "correction_status": record["correction_status"],
-            **{key: record[key] for key in ("source_manifest", "source_public_at", "report_id", "accounting_standard", "currency", "data_origin") if key in record}}, None
+            **{key: record[key] for key in ("source_manifest", "source_public_at", "report_id", "accounting_standard", "currency", "data_origin", "verification_gates") if key in record}}, None
 
 
 def build_snapshot(records, *, feature_policy_version=FEATURE_POLICY_VERSION):

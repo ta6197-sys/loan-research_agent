@@ -25,7 +25,7 @@ from agent.research_store import Conflict,IntegrityFailure,digest,safe_payload
 from .report_view import build_view,chart_svg,text
 
 ROOT=Path(__file__).resolve().parents[2]
-RENDERER='finance-export-1.4'
+RENDERER='finance-export-1.5'
 FONT_LOCK=threading.Lock()
 
 
@@ -296,7 +296,7 @@ def pdf(view):
         return Table([[para(label,ParagraphStyle('SurveyWhite',parent=small,textColor=colors.white)),para(view['company']['name']+' 사전조사',ParagraphStyle('SurveyWhiteRight',parent=small,textColor=colors.white,alignment=2))]],colWidths=[310,197],style=TableStyle([('BACKGROUND',(0,0),(-1,-1),navy),('LEFTPADDING',(0,0),(-1,-1),9),('RIGHTPADDING',(0,0),(-1,-1),9),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]))
     verified=sum(1 for r in view['financial_rows'] if r['status']=='verified');withheld=sum(1 for r in view['financial_rows'] if r['status']!='verified')
     story=[Spacer(1,62),para('PUBLIC DISCLOSURE–BASED',small),para('기업 사전조사서',title),para('공개 공시 기반 금융·사업 조사 결과',ParagraphStyle('SurveyCoverSub',parent=body,fontName='FinanceKoreanBold',fontSize=15,leading=22,textColor=colors.HexColor('#1c78b4'))),Spacer(1,38),
-        table(['구분','내용'],[['대상 기업',view['company']['name']+' ('+view['company']['stock_code']+')'],['공개 기준일',view['public_cutoff']],['보고서 판',str(view['version'])+'판 · 게시본'],['조사 목적',view['purpose']],['조사 성격','정식 신용평가·대출심사 이전의 공개 자료 사전조사']],[110,397]),Spacer(1,20),para('이 문서는 확인 가능한 공개 공시와 원문 근거를 정리한 사전조사서입니다. 신용등급, 대출 승인·거절, 상환 가능성 또는 내부 심사 결론을 제시하지 않습니다.',body),PageBreak(),banner('Ⅰ. 조사 요약'),Spacer(1,15),para('조사 결과 한눈에 보기',heading),para('확인된 공개 수치와 원문 인용을 먼저 제시하고, 근거가 부족한 부분은 미확인으로 분리합니다.',small),Spacer(1,9),
+        table(['구분','내용'],[['대상 기업',view['company']['name']+(' ('+view['company']['stock_code']+')' if view['company']['stock_code'] else '')],['공개 기준일',view['public_cutoff']],['보고서 판',str(view['version'])+'판 · 게시본'],['조사 목적',view['purpose']],['조사 성격','정식 신용평가·대출심사 이전의 공개 자료 사전조사']],[110,397]),Spacer(1,20),para('이 문서는 확인 가능한 공개 공시와 원문 근거를 정리한 사전조사서입니다. 신용등급, 대출 승인·거절, 상환 가능성 또는 내부 심사 결론을 제시하지 않습니다.',body),PageBreak(),banner('Ⅰ. 조사 요약'),Spacer(1,15),para('조사 결과 한눈에 보기',heading),para('확인된 공개 수치와 원문 인용을 먼저 제시하고, 근거가 부족한 부분은 미확인으로 분리합니다.',small),Spacer(1,9),
         Table([[card('게시 수치',str(verified),'기간·범위·단위·근거 확인',green),card('사용 보류',str(withheld),'추정·대체 없이 보류',amber),card('남은 쟁점',str(len(view['unknowns'])),'담당자 또는 추가 자료 확인 필요',amber)]],colWidths=[169,169,169],style=TableStyle([('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),8)])),Spacer(1,16),para('핵심 확인 사실',section)]
     story += [para('• '+f['text'],small) for f in view['facts'][:6]] or [para('별도의 검증된 요약 문장은 없습니다.',small)]
     story += [para('내부 심사 전 추가 확인',section)]

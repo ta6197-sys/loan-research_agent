@@ -60,10 +60,19 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
         self.assertNotIn('net_margin',row['features'])
         self.assertIn('liabilities_to_assets',row['features'])
 
+    def test_synthetic_facts_cannot_be_promoted_as_actual_public_rows(self):
+        self.policy['data_origin'] = 'verified_public_disclosure'
+        cohort = CohortRegistry(self.store).register(self.policy)
+        payload = AnalyticsDatasetService(self.store).build(cohort['cohort_id'], self.reports)
+        self.assertEqual(0, payload['snapshot']['row_count'])
+        self.assertIn('independent_xbrl_mapping_batch_required', str(payload['snapshot']['build_exclusions']))
+
     def test_multiple_verified_companies_flow_into_snapshot_and_frozen_api(self):
         cohort=CohortRegistry(self.store).register(self.policy)
         service=AnalyticsDatasetService(self.store); payload=service.build(cohort['cohort_id'],self.reports)
         self.assertEqual(2,payload['snapshot']['row_count'],payload['snapshot']['build_exclusions'])
+        self.assertEqual(2, len(payload['snapshot']['manifest']['included']))
+        self.assertEqual('2026-10-20', payload['snapshot']['manifest']['public_cutoff'])
         self.assertEqual('not_trained_insufficient_data',payload['ml_readiness']['training_status'])
         self.assertEqual(payload['artifact_id'],service.build(cohort['cohort_id'],list(reversed(self.reports)))['artifact_id'])
         service.bind(self.reports[0],payload['artifact_id'])

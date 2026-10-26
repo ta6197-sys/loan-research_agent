@@ -29,6 +29,18 @@ class AnalyticsDatasetService:
                 excluded.append({'report_id': report_id, 'reason': str(error)})
         snapshot = build_snapshot(records)
         snapshot.update(cohort=cohort, build_exclusions=excluded, report_ids=linked)
+        snapshot['manifest'] = {'policy_version': 'verified-cohort-manifest-1.0',
+            'cohort_id': cohort_id, 'public_cutoff': cohort['public_cutoff'],
+            'industry_system': cohort['industry_system'], 'industry_version': cohort['industry_version'],
+            'industry_code': cohort['industry_code'],
+            'members': [{k: member.get(k) for k in ('corp_code', 'identity_source_id', 'industry_evidence')}
+                        for member in cohort['members']],
+            'included': [{'corp_code': row['corp_code'], 'report_id': row.get('report_id'),
+                          'period_end': row['period_end'], 'source_hash': row['source_hash'],
+                          'validation_batch_id': row['validation_batch_id'],
+                          'verification_gates': row.get('verification_gates')}
+                         for row in snapshot['rows']],
+            'excluded': [*snapshot['excluded_records'], *excluded]}
         # 모든 metadata까지 해시로 봉인한다. 입력 행 순서와 무관하다.
         identifier = digest(encode(snapshot).encode())
         snapshot['artifact_id'] = identifier

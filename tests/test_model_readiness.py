@@ -32,3 +32,14 @@ class ModelReadinessTests(unittest.TestCase):
         result = evaluate(build_snapshot(rows))
         self.assertEqual("not_trained_insufficient_data", result["training_status"])
         self.assertFalse(result["checks"]["core_feature_availability"]["features"]["net_margin"]["pass"])
+
+    def test_synthetic_origin_and_unlabeled_model_are_explicit(self):
+        result = evaluate(build_snapshot(self.records()))
+        self.assertEqual('synthetic_test_only', result['data_origin'])
+        self.assertEqual('not_applicable_unsupervised', result['label_quality']['status'])
+        rows = self.records()
+        rows[-1]['data_origin'] = 'verified_public_disclosure'
+        rows[-1]['verification_gates'] = dict.fromkeys(
+            ('original_api', 'actual_period', 'fiscal_month', 'independent_xbrl'), 'pass')
+        mixed = evaluate(build_snapshot(rows))
+        self.assertFalse(mixed['checks']['data_origin']['pass'])

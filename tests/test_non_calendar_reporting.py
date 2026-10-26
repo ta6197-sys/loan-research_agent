@@ -87,9 +87,11 @@ class FiscalReportingTests(unittest.TestCase):
                 changed=json.loads(json.dumps(binding));changed['data'][field]=value
                 self.assertEqual('withheld',xbrl_report_gate([row],batch,{'validations':[changed]})['status'])
         service=object.__new__(Stage05Service)
-        with self.assertRaisesRegex(ValueError,'independent_xbrl_period_account_amount_unconfirmed'):
-            service._publish('run','key',{'context':{'comparison_periods':[{'end':'2026-06-30'}],
-                'fiscal_end_month':6,'xbrl_report_gate':{'status':'withheld'}}},'batch')
+        for fiscal_month in (6,12):
+            with self.subTest(fiscal_month=fiscal_month), self.assertRaisesRegex(
+                    ValueError,'independent_xbrl_period_account_amount_unconfirmed'):
+                service._publish('run','key',{'context':{'comparison_periods':[{'end':'2026-06-30'}],
+                    'fiscal_end_month':fiscal_month,'xbrl_report_gate':{'status':'withheld'}}},'batch')
 
     def test_chart_and_export_periods_come_from_fiscal_plan(self):
         periods=fiscal_periods(targets(2026,2025),6)

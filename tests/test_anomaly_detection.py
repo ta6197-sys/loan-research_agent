@@ -16,6 +16,7 @@ def record(company, year, *, outlier=False):
             "period_kind": "duration", "scope": "OFS", "public_cutoff": "2027-12-31", "source_receipt": str(year + 1) + "033000000001",
             "source_hash": "hash-" + company + str(year), "validation_batch_id": "batch-" + company + str(year),
             "correction_status": "current_verified", "account_definition_version": "map-1", "peer_group": "manufacturing-C29",
+            "data_origin": "synthetic_test_only", "verification_gates": {"status": "synthetic_test_only"},
             "features": {feature: {"status": "supported", "value": value, "evidence_refs": ["fact-" + feature, "validation-" + feature]} for feature in FEATURES}}
 
 
@@ -46,6 +47,8 @@ class AnomalyDetectionTests(unittest.TestCase):
     def test_isolation_forest_uses_time_and_company_split_without_imputation(self):
         result = detect(self.snapshot())
         self.assertEqual("measured", result["status"])
+        self.assertEqual('synthetic_test_only', result['data_origin'])
+        self.assertTrue(any('합성 시험 자료' in item for item in result['limitations']))
         splits = {item["name"]: item for item in result["splits"]}
         self.assertEqual("measured", splits["time_ordered"]["status"])
         self.assertEqual("measured", splits["company_holdout"]["status"])

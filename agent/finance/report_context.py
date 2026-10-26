@@ -197,6 +197,8 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         periods=fiscal_periods(collection.get('target_reports',[]),fiscal.get('month'))
         if not batch.get('validations'):
             raise ValueError('numeric_validation_required')
+    if mapping.get('run_id') != batch.get('run_id'):
+        raise ValueError('mapping_numeric_run_mismatch')
     run=store.get_run(report_run_id or batch['run_id'])
     if evidence_run['basis_id']!=run['basis_id']:raise ValueError('report_basis_mismatch')
     trigger=run['trigger'];followup=trigger.get('kind')=='followup'
@@ -209,7 +211,7 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
     period_ends=tuple(p['end'] for p in periods) if periods is not None else context_period_ends(basis['data'].get('comparison_window',{}))
     rows=numeric_rows(batch,period_ends,periods);extractor=ExtractionService(store)
     report_gate=None
-    if periods is not None and fiscal['month'] != 12:
+    if periods is not None:
         report_gate=xbrl_report_gate(rows,batch,mapping)
         if report_gate['status']!='pass':
             raise ValueError('independent_xbrl_period_account_amount_unconfirmed')

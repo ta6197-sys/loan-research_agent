@@ -243,7 +243,7 @@ class GeneralCollectionService:
                     xbrl = await self.dart.xbrl(run_id, receipt, target["report_code"])
                     archives.append({"target": target, "receipt_number": receipt,
                                      "document_source_id": document["source_id"], "xbrl_source_id": xbrl["source_id"]})
-                    if fiscal['month']!=12 and xbrl.get('members'):
+                    if xbrl.get('members'):
                         for referring_source_id,uri in declared_taxonomy_references(
                                 xbrl['members'],self.store.source_content):
                             try:

@@ -13,7 +13,8 @@ def record(corp="001", end="2024-12-31", *, source_hash="hash", correction="curr
     return {"corp_code": corp, "industry_code": "C29", "period_start": end[:4] + "-01-01", "period_end": end,
             "period_kind": "duration", "scope": "OFS", "public_cutoff": "2026-10-23", "source_receipt": "20260330000001",
             "source_hash": source_hash, "validation_batch_id": "batch-" + corp + end, "source_public_at": "2026-03-30",
-            "correction_status": correction, "account_definition_version": "account-map-1", "peer_group": "manufacturing-C29", "features": features}
+            "correction_status": correction, "account_definition_version": "account-map-1", "peer_group": "manufacturing-C29", "features": features,
+            "data_origin": "synthetic_test_only", "verification_gates": {"status": "synthetic_test_only"}}
 
 
 class PeerDatasetTests(unittest.TestCase):
@@ -46,3 +47,13 @@ class PeerDatasetTests(unittest.TestCase):
         plan = collection_expansion_plan()
         self.assertIn("OpenDART 응답만으로 verified 처리 금지", plan["prohibitions"])
         self.assertEqual("required_no_auto_approval", plan["phases"][2]["status"])
+
+    def test_actual_public_row_needs_all_four_gates(self):
+        item = record(); item['data_origin'] = 'verified_public_disclosure'
+        self.assertEqual('four_source_verification_gates_not_passed',
+                         build_snapshot([item])['excluded_records'][0]['reason'])
+        item['verification_gates'] = dict.fromkeys(
+            ('original_api', 'actual_period', 'fiscal_month', 'independent_xbrl'), 'pass')
+        self.assertEqual(1, build_snapshot([item])['row_count'])
+        item['verification_gates']['independent_xbrl'] = 'withheld'
+        self.assertEqual(0, build_snapshot([item])['row_count'])

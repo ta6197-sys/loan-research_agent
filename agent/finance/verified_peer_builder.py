@@ -3,13 +3,30 @@ from collections import defaultdict
 from decimal import Decimal, DecimalException
 import json
 import re
+from datetime import date, timedelta
 from agent.research_store import digest, encode, IntegrityFailure
 from .financial_analytics import FinancialAnalyticsService
 from .numeric_validation import NumericValidationService
 from .validation_acceptance import MANDATORY_CHECKS
 from .peer_dataset import FEATURES
+from .report_context import xbrl_report_gate
+from .xbrl_mapping import XbrlMappingService
 
 ACCOUNT_POLICY = 'verified-peer-account-definitions-1.0'
+
+
+def _fiscal_period_confirmed(period, fiscal_month):
+    try:
+        month = int(fiscal_month)
+        start = date.fromisoformat(period['start'])
+        end = date.fromisoformat(period['end'])
+    except (KeyError, TypeError, ValueError):
+        return False
+    length = (end.year - start.year) * 12 + end.month - start.month + 1
+    if not 1 <= month <= 12 or start.day != 1 or length not in (6, 12):
+        return False
+    expected_month = month if length == 12 else (month + 5) % 12 + 1
+    return end.month == expected_month and (end + timedelta(days=1)).day == 1
 
 
 def _identity(store, member, cohort, report):
@@ -101,12 +118,26 @@ def build_report(store, report_id, member, cohort):
         raise ValueError('report_correction_cutoff_not_matching_cohort')
     policy_sources = _identity(store, member, cohort, report)
     batch = NumericValidationService(store).batch(report['publication']['validation_batch_id'])
+    actual_public_data = cohort.get('data_origin') != 'synthetic_test_only'
+    context = report['content'].get('context', {})
+    mapping_id = context.get('mapping_batch_id')
+    mapping = XbrlMappingService(store).batch(mapping_id) if actual_public_data and mapping_id else None
+    if actual_public_data and mapping is None:
+        raise ValueError('independent_xbrl_mapping_batch_required')
+    if actual_public_data and mapping['run_id'] != batch['run_id']:
+        raise ValueError('mapping_numeric_run_mismatch')
+    company_profile = json.loads(store.source_content(member['identity_source_id']))
+    fiscal_month = company_profile.get('acc_mt')
     analytics = FinancialAnalyticsService(store).report(report_id)
     validated = {v['id']: v for v in batch['validations']}
     rows = report['content'].get('context', {}).get('financial_rows', [])
     result, excluded = [], []
     for period in cohort['periods']:
         end = period['end']; all_eligible = {}
+        if actual_public_data and not _fiscal_period_confirmed(period, fiscal_month):
+            excluded.append({'report_id': report_id, 'period_end': end,
+                             'reason': 'fiscal_month_or_actual_reporting_period_unconfirmed'})
+            continue
         source_manifest = {s['id']: {'source_id':s['id'], 'source_hash':s['content_hash'],
                            'receipt':s['metadata'].get('receipt_number') or '',
                            'public_at':(s['metadata'].get('published_at') or s['metadata']['retrieved_at'])[:10]} for s in policy_sources}
@@ -119,6 +150,8 @@ def build_report(store, report_id, member, cohort):
             if not row.get('fact_ids') or not row.get('validation_ids'): continue
             # 출처·사실·검증 ID를 같은 회사와 기간으로 재결합한다.
             try:
+                if actual_public_data and xbrl_report_gate([row], batch, mapping)['status'] != 'pass':
+                    raise ValueError('independent_xbrl_account_period_amount_unconfirmed')
                 for vid in row['validation_ids']:
                     v = validated[vid]; d = v['data']
                     if v['status'] != 'pass' or any(d.get('checks', {}).get(rule, {}).get('status') != 'pass' for rule in MANDATORY_CHECKS): raise ValueError('mandatory_checks_not_passed')
@@ -166,6 +199,9 @@ def build_report(store, report_id, member, cohort):
                        'source_public_at': max(s['public_at'] for s in manifest), 'validation_batch_id': batch['id'],
                        'account_definition_version': ACCOUNT_POLICY, 'peer_group': cohort['cohort_id'], 'correction_status': 'current_verified',
                        'features': features, 'source_manifest': manifest, 'report_id': report_id,
+                       'verification_gates': {'original_api': 'pass', 'actual_period': 'pass',
+                                              'fiscal_month': 'pass', 'independent_xbrl': 'pass'} if actual_public_data
+                                              else {'status': 'synthetic_test_only'},
                        'data_origin': cohort.get('data_origin', 'verified_public_disclosure'),
                        'accounting_standard': cohort['accounting_standard'], 'currency': 'KRW'})
     return result, list({encode(issue): issue for issue in excluded}.values())
