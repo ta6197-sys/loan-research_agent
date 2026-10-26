@@ -6,7 +6,7 @@ from fastmcp import FastMCP
 
 from agent.finance.dart_service import DartService
 from agent.research_store import ResearchStore
-from agent.session_store import DB_PATH
+from agent.research_paths import DB_PATH
 from agent.finance.numeric_validation import NumericValidationService
 from agent.finance.extraction_service import ExtractionService
 from agent.finance.document_extractor import ExtractionFailure

@@ -18,7 +18,7 @@ from .research_models import (
     BasisInput, Budget, FactInput, FragmentInput, ReportInput, ResearchInput,
     SourceInput, Usage,
 )
-from .session_store import DB_PATH
+from .research_paths import DB_PATH
 from .source_recovery import SourceRecovery
 
 

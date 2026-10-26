@@ -8,7 +8,7 @@
       <strong>{{ item.company.name }}</strong><small>{{ dateTime(item.created_at) }} · 저장된 조사 열기</small>
     </button>
     <details><summary>보관함 ({{ archives.length }})</summary><p class="hint">원문과 이전 판을 보존합니다.</p><button v-for="item in archives" :key="item.id" @click="restoreResearch(item.id)" :disabled="busy">{{ item.company.name }} 복원</button></details>
-    <div class="sidebar-foot"><span class="dot" :class="{remote:health?.finance_model_backend==='openai'}"></span> {{ modelBackendLabel }}<br><small>{{ modelBackendDetail }}</small><a href="/legacy">기존 실습 화면</a></div>
+    <div class="sidebar-foot"><span class="dot" :class="{remote:health?.finance_model_backend==='openai'}"></span> {{ modelBackendLabel }}<br><small>{{ modelBackendDetail }}</small></div>
   </aside>
   <main class="main-pane">
     <header class="topbar"><span>기업 운전자금 사전조사</span><span class="pill">공개 자료 · 개발 검증 사례</span></header>
@@ -71,6 +71,9 @@
                 </div></section>
                 <section><h3>확인 신호</h3><p v-if="!analysis.analysis_signals.length" class="muted">현재 검증 범위에서 확인 신호가 없습니다.</p>
                   <div v-for="item in analysis.analysis_signals" :key="item.analysis_id" class="question-card"><p>{{ item.question }}</p><p>{{ item.period?.end }} · {{ item.scope }}</p><p class="hint">{{ item.limitations[0] }}</p><button @click="openAnalysisEvidence(item.input_fact_ids)">연결 근거 확인</button></div>
+                </section>
+                <section v-if="analysis.analysis_plan"><h3>다음 조사 계획</h3><p class="muted">검증된 확인 신호와 계산 보류 사유에서 만든 자료 요청 후보입니다.</p>
+                  <div v-for="step in analysis.analysis_plan.steps" :key="step.id" class="question-card"><strong>{{ step.kind==='verification_gap'?'검증 공백':'확인 신호' }}</strong><p>{{ step.question }}</p><p>필요 자료: {{ step.requested_information }}</p><p v-if="step.reason_code" class="hint">보류 사유: {{ step.reason_code }}</p><p class="hint">{{ step.limitation }}</p><button v-if="step.input_fact_ids.length" @click="openAnalysisEvidence(step.input_fact_ids)">연결 원문 확인</button></div>
                 </section>
                 <section><h3>비교집단과 통계</h3>
                   <div v-if="analysis.statistical_analysis.comparison_definition" class="question-card"><p>산업 {{ analysis.statistical_analysis.comparison_definition.industry_code }} · {{ analysis.statistical_analysis.comparison_definition.industry_system }} {{ analysis.statistical_analysis.comparison_definition.industry_version }}</p><p>회계기준 {{ analysis.statistical_analysis.comparison_definition.accounting_standard }} · {{ analysis.statistical_analysis.comparison_definition.scope }} · 공개 기준일 {{ analysis.statistical_analysis.comparison_definition.public_cutoff }}</p></div>

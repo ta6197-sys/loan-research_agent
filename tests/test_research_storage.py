@@ -24,7 +24,6 @@ from agent.research_models import (
     BasisInput, FactInput, FragmentInput, ReportInput, ResearchInput, SourceInput, Usage,
 )
 from agent.research_store import Conflict, IntegrityFailure, ResearchStore
-from agent.session_store import SqliteSessionStore
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -63,9 +62,10 @@ class StoreTests(unittest.TestCase):
         self.directory = Path(self.temp.name)
         self.db = self.directory / "session.db"
         self.sources = self.directory / "sources"
-        session = SqliteSessionStore(self.db)
-        session.append("conversation-only", "user", "기존 대화 보존")
-        session.close()
+        with sqlite3.connect(self.db) as conn:
+            conn.execute("CREATE TABLE messages (thread_id TEXT, role TEXT, content TEXT, created TEXT)")
+            conn.execute("INSERT INTO messages VALUES (?,?,?,?)",
+                         ("conversation-only", "user", "기존 대화 보존", "2026-10-20"))
         self.store = ResearchStore(self.db, self.sources)
         self.research = self.store.create_research(research_input())
         self.run_id = self.research["runs"][0]["id"]
@@ -92,10 +92,11 @@ class StoreTests(unittest.TestCase):
             self.assertEqual([(1,), (2,), (3,), (4,), (5,), (6,)], conn.execute("SELECT version FROM research_migrations ORDER BY version").fetchall())
             self.assertEqual([], conn.execute("PRAGMA foreign_key_check").fetchall())
         self.assertEqual(self.research, reopened.get_research(self.research["id"]))
-        session = SqliteSessionStore(self.db)
-        self.addCleanup(session.close)
-        self.assertEqual([{"role": "user", "content": "기존 대화 보존"}], session.load("conversation-only"))
-        self.assertEqual([], session.load(self.research["id"]))
+        with sqlite3.connect(self.db) as conn:
+            self.assertEqual([("user", "기존 대화 보존")], conn.execute(
+                "SELECT role,content FROM messages WHERE thread_id=?", ("conversation-only",)).fetchall())
+            self.assertEqual([], conn.execute(
+                "SELECT role,content FROM messages WHERE thread_id=?", (self.research["id"],)).fetchall())
 
     def test_creation_is_idempotent_and_concurrent(self):
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
@@ -251,20 +252,13 @@ class StoreTests(unittest.TestCase):
             self.store.save_snapshot(self.run_id, expected_revision=0, stage="test",
                                      state={"last_prompt": "private prompt"}, usage=Usage())
 
-    def test_default_mode_does_not_initialize_model_or_ops_mcp(self):
-        with patch.dict(os.environ, {"APP_MODE": "research", "APP_DB_PATH": str(self.db),
-                                     "APP_SOURCE_ROOT": str(self.sources)}):
-            import server
-            with patch.object(server, "MCPClient", side_effect=AssertionError("학습용 MCP가 시작되면 안 됩니다.")), \
-                    patch.object(server, "_build_llms", side_effect=AssertionError("LLM should not start")):
-                with TestClient(server.app, base_url="http://127.0.0.1:8100") as client:
-                    self.assertEqual("disabled", client.get("/health").json()["llm_backend"])
-
-    def test_external_model_requires_separate_setting(self):
+    def test_legacy_mode_is_rejected(self):
         import server
-        with patch.dict(os.environ, {"LLM_BACKEND": "openai", "APP_ALLOW_EXTERNAL_MODEL": "false"}):
-            with self.assertRaises(RuntimeError):
-                server._build_llms()
+        with patch.dict(os.environ, {"APP_MODE": "legacy", "APP_DB_PATH": str(self.db),
+                                     "APP_SOURCE_ROOT": str(self.sources)}):
+            with self.assertRaisesRegex(RuntimeError, "기업금융 조사 모드"):
+                with TestClient(server.app, base_url="http://127.0.0.1:8100"):
+                    pass
 
     def test_failed_migration_does_not_destroy_existing_database(self):
         path = self.directory / "future.db"
@@ -282,7 +276,7 @@ class StoreTests(unittest.TestCase):
             from server import app
             with TestClient(app, base_url="http://127.0.0.1:8100") as client:
                 self.assertFalse(client.get("/health").json()["execution_available"])
-                self.assertEqual(409, client.post("/chat", json={"message": "test"}).status_code)
+                self.assertEqual(404, client.post("/chat", json={"message": "test"}).status_code)
                 self.assertEqual(403, client.post("/researches", headers={"Origin": "https://outside.test"},
                                                  json=research_input("bad-origin").model_dump(mode="json")).status_code)
                 self.assertEqual(400, client.get("/health", headers={"Host": "outside.test"}).status_code)
@@ -300,9 +294,10 @@ class ProcessRestartTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             db, sources = directory / "session.db", directory / "sources"
-            session = SqliteSessionStore(db)
-            session.append("old-thread", "user", "대화는 독립 보존")
-            session.close()
+            with sqlite3.connect(db) as conn:
+                conn.execute("CREATE TABLE messages (thread_id TEXT, role TEXT, content TEXT, created TEXT)")
+                conn.execute("INSERT INTO messages VALUES (?,?,?,?)",
+                             ("old-thread", "user", "대화는 독립 보존", "2026-10-20"))
             env = {**os.environ, "APP_MODE": "research", "APP_DB_PATH": str(db),
                    "APP_SOURCE_ROOT": str(sources), "LANGCHAIN_TRACING_V2": "false",
                    "LANGSMITH_TRACING": "false", "APP_ALLOW_EXTERNAL_TRACE": "false"}
@@ -360,11 +355,9 @@ class ProcessRestartTests(unittest.TestCase):
                     self.assertEqual(before["/researches/" + research["id"]], repeated)
                     second_process.terminate()
                     second_process.wait(timeout=10)
-                    session = SqliteSessionStore(db)
-                    try:
-                        self.assertEqual("대화는 독립 보존", session.load("old-thread")[0]["content"])
-                    finally:
-                        session.close()
+                    with sqlite3.connect(db) as conn:
+                        self.assertEqual("대화는 독립 보존", conn.execute(
+                            "SELECT content FROM messages WHERE thread_id=?", ("old-thread",)).fetchone()[0])
                 finally:
                     for process in processes:
                         if process.poll() is None:

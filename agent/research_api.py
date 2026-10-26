@@ -22,6 +22,7 @@ from .finance.quality_exceptions import build as quality_exceptions
 from .finance.quality_analytics import analyze as quality_analysis
 from .finance.financial_analytics import FinancialAnalyticsService
 from .finance.analysis_signals import build as analysis_signals
+from .finance.analysis_plan import build as analysis_plan
 from .finance.peer_dataset import build_snapshot
 from .finance.analytics_dataset_service import AnalyticsDatasetService
 from .finance.model_readiness import evaluate as model_readiness
@@ -114,10 +115,13 @@ def _financial_analysis_payload(store, report_id):
                             'signal_id': item['id'], 'value': None, 'period': item.get('period'), 'scope': item.get('scope'),
                             'method_version': signals['schema_version'], 'limitations': [item['limitation']],
                             'reason_code': None, **refs, 'question': item['question']})
+    metrics = [_metric_contract(report_id, batch_id, item) for item in financial['results']]
+    plan = analysis_plan(report_id, batch_id, metrics, signal_rows)
     return {'analysis_id': 'report-analysis:' + report_id, 'analysis_version': 'report-analysis-1.0',
             'report_id': report_id, 'validation_batch_id': batch_id, 'status': 'measured',
-            'financial_metrics': [_metric_contract(report_id, batch_id, item) for item in financial['results']],
+            'financial_metrics': metrics,
             'analysis_signals': signal_rows,
+            'analysis_plan': plan,
             'statistical_analysis': statistics, 'dataset_artifact_id': stored['artifact_id'] if stored else None,
             'ml_readiness': readiness, 'anomaly_detection': anomaly, 'followup_questions': questions,
             'limitations': financial['limitations'] + ['기존 보고서·PDF·원문·검증 배치는 변경하지 않는 읽기 모델입니다.']}

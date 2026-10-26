@@ -35,8 +35,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
         _createElementVNode("span", { class: _normalizeClass(["dot", {remote:health?.finance_model_backend==='openai'}]) }, null, 2),
         _createTextVNode(" " + _toDisplayString(modelBackendLabel), 1),
         _createElementVNode("br"),
-        _createElementVNode("small", null, _toDisplayString(modelBackendDetail), 1),
-        _createElementVNode("a", { href: "/legacy" }, "기존 실습 화면")
+        _createElementVNode("small", null, _toDisplayString(modelBackendDetail), 1)
       ])
     ]), _createElementVNode("main", { class: "main-pane" }, [_createElementVNode("header", { class: "topbar" }, [_createElementVNode("span", null, "기업 운전자금 사전조사"), _createElementVNode("span", { class: "pill" }, "공개 자료 · 개발 검증 사례")]), error
       ? (_openBlock(), _createElementBlock("div", {
@@ -465,6 +464,31 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                               _createElementVNode("button", { onClick: $event => (openAnalysisEvidence(item.input_fact_ids)) }, "연결 근거 확인", 8, ["onClick"])
                             ]))
                           }), 128))]),
+                          (analysis.analysis_plan)
+                            ? (_openBlock(), _createElementBlock("section", { key: 0 }, [_createElementVNode("h3", null, "다음 조사 계획"), _createElementVNode("p", { class: "muted" }, "검증된 확인 신호와 계산 보류 사유에서 만든 자료 요청 후보입니다."), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(analysis.analysis_plan.steps, (step) => {
+                                return (_openBlock(), _createElementBlock("div", {
+                                  key: step.id,
+                                  class: "question-card"
+                                }, [
+                                  _createElementVNode("strong", null, _toDisplayString(step.kind==='verification_gap'?'검증 공백':'확인 신호'), 1),
+                                  _createElementVNode("p", null, _toDisplayString(step.question), 1),
+                                  _createElementVNode("p", null, "필요 자료: " + _toDisplayString(step.requested_information), 1),
+                                  (step.reason_code)
+                                    ? (_openBlock(), _createElementBlock("p", {
+                                        key: 0,
+                                        class: "hint"
+                                      }, "보류 사유: " + _toDisplayString(step.reason_code), 1))
+                                    : _createCommentVNode("", true),
+                                  _createElementVNode("p", { class: "hint" }, _toDisplayString(step.limitation), 1),
+                                  (step.input_fact_ids.length)
+                                    ? (_openBlock(), _createElementBlock("button", {
+                                        key: 1,
+                                        onClick: $event => (openAnalysisEvidence(step.input_fact_ids))
+                                      }, "연결 원문 확인", 8, ["onClick"]))
+                                    : _createCommentVNode("", true)
+                                ]))
+                              }), 128))]))
+                            : _createCommentVNode("", true),
                           _createElementVNode("section", null, [
                             _createElementVNode("h3", null, "비교집단과 통계"),
                             (analysis.statistical_analysis.comparison_definition)

@@ -14,7 +14,7 @@ from agent.finance.tool_policy import checked_finance_arguments
 
 class FinanceToolBoundaryTests(unittest.IsolatedAsyncioTestCase):
     def client(self):
-        client = MCPClient(flaky_first_tool_call=False)
+        client = MCPClient()
         session = SimpleNamespace(call_tool=AsyncMock(return_value=SimpleNamespace(
             structured_content={'status': 'ok'}, is_error=False)))
         client.sessions['finance'] = session
@@ -55,13 +55,9 @@ class FinanceToolBoundaryTests(unittest.IsolatedAsyncioTestCase):
         session.call_tool.assert_awaited_once_with('search_source', {
             'source_id': 'source', 'query': query, 'limit': 10}, read_timeout_seconds=1800)
 
-    async def test_generic_traced_path_cannot_bypass_finance_policy(self):
-        client, session = self.client()
-        with patch.object(client, '_call_legacy_tool', new_callable=AsyncMock) as legacy:
-            result = await client.call_tool('run_shell', {'command': 'synthetic'}, server='finance')
-        self.assertEqual('tool_not_allowed', result['status'])
-        legacy.assert_not_awaited()
-        session.call_tool.assert_not_awaited()
+    async def test_finance_client_rejects_nonfinance_server(self):
+        with self.assertRaisesRegex(ValueError, 'finance_server_only'):
+            MCPClient(server_scripts={'ops': Path('mcp_server.py')})
 
     async def test_defaults_preserve_supported_financial_request(self):
         args = checked_finance_arguments('dart_disclosures', {
@@ -79,8 +75,7 @@ class LocalBoundaryTests(unittest.TestCase):
             root = Path(temporary)
             with patch.dict(os.environ, {'APP_MODE': 'research', 'APP_DB_PATH': str(root / 'session.db'),
                                         'APP_SOURCE_ROOT': str(root / 'sources')}), \
-                    patch.object(server, 'create_finance_client', return_value=AsyncMock()), \
-                    patch.object(server, '_build_llms', side_effect=AssertionError('no model in research')):
+                    patch.object(server, 'create_finance_client', return_value=AsyncMock()):
                 with TestClient(server.app, base_url='http://127.0.0.1:8100') as client:
                     for headers in ({'Origin': 'https://external.test'},
                                     {'Origin': 'null'}, {'Sec-Fetch-Site': 'cross-site'}):

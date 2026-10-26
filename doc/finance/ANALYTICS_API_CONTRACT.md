@@ -9,6 +9,7 @@
 게시된 보고서에 대한 읽기 요청이다. 외부 수집, 모델 호출, 스냅샷 생성·연결을 수행하지 않는다.
 
 - 기존 필드 `financial_metrics`, `analysis_signals`, `ml_readiness`, `anomaly_detection`, `followup_questions`를 유지한다.
+- `analysis_plan`: `analysis-plan-1.0` 읽기 결과. 검증된 확인 신호와 계산 보류·미측정 사유를 자료 요청 단계로 묶는다. 각 단계는 `kind`, `status`, `reason_code`, `question`, `requested_information`, `related_metric_ids`, 기간·범위와 원문·검증 ID를 담는다. 공백은 숫자값이나 위험 판정으로 표시하지 않는다.
 - `dataset_artifact_id`: 해당 보고서에 연결된 불변 분석 산출물 해시. 없으면 null.
 - `statistical_analysis`: 연결된 스냅샷의 코호트 정의, 추세, 분위수 비교, 강건 통계, 관계 분석. 지표마다 표본 요건에 따라 보류한다.
 - 스냅샷이 없으면 `insufficient_peer_data`와 `verified_peer_dataset_not_available`을 반환한다.

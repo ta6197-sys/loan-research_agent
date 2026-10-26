@@ -24,6 +24,9 @@ class AnalysisApiTests(unittest.TestCase):
             self.assertEqual(('report-analysis-1.0', self.report['id'], 'not_trained_insufficient_data'),
                              (payload['analysis_version'], payload['report_id'], payload['ml_readiness']['training_status']))
             self.assertEqual('verified_peer_dataset_not_available', payload['statistical_analysis']['reason_code'])
+            self.assertEqual('analysis-plan-1.0', payload['analysis_plan']['version'])
+            self.assertTrue(all(step['status'] in {'candidate_for_followup', 'evidence_required'}
+                                for step in payload['analysis_plan']['steps']))
             self.assertEqual(before, self.store.get_report(self.report['id']))
 
     def test_quality_analysis_has_contract_metadata_and_reproduces_batch(self):

@@ -170,7 +170,6 @@ class FinanceMCPTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(set(FINANCE_TOOL_INPUTS), {tool.name for tool in tools.tools})
                 result=await client.call_finance('search_companies',{'query':'synthetic'})
                 self.assertEqual('missing_configuration',result['status'])
-                self.assertFalse(client._flaky_pending)
             finally:
                 await client.stop()
 
@@ -183,7 +182,7 @@ class FinanceStartupTests(unittest.TestCase):
             'APP_MODE':'research','APP_DB_PATH':str(Path(tmp)/'session.db'),'APP_SOURCE_ROOT':str(Path(tmp)/'sources')}):
             script=Path(tmp)/'exiting_mcp.py'
             script.write_text('pass\n')
-            failed=MCPClient(flaky_first_tool_call=False,server_scripts={'finance':script})
+            failed=MCPClient(server_scripts={'finance':script})
             with patch.object(server,'create_finance_client',return_value=failed):
                 with TestClient(server.app,base_url='http://127.0.0.1:8100') as client:
                     self.assertEqual('unavailable',client.get('/health').json()['finance_mcp'])
