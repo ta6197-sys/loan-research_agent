@@ -9,11 +9,12 @@ VERSION='disclosure-audit-1.0'
 
 def audit_disclosure_history(store,sources,company,basis,target_receipts):
     groups=defaultdict(list);cutoff=basis['data']['public_cutoff']
+    required_begin=f'{date.fromisoformat(cutoff).year-3:04d}-01-01'
     for source in sources:
         meta=source['metadata'];q=meta.get('reporting_period',{})
         if q.get('operation')!='disclosures':continue
         if (q.get('corp_code')!=company.get('corp_code') or q.get('last_reprt_at')!='N'
-                or q.get('bgn_de','9999')>'2023-01-01' or q.get('end_de')!=cutoff):continue
+                or q.get('bgn_de','9999')>required_begin or q.get('end_de')!=cutoff):continue
         payload=json.loads(store.source_content(source['id']))
         groups[(q['bgn_de'],q['end_de'],q.get('page_count'))].append((source,payload,q))
     complete=[];errors=[]

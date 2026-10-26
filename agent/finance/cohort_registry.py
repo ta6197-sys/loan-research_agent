@@ -28,6 +28,13 @@ class CohortRegistry:
                     'scope', 'periods', 'public_cutoff', 'policy_version', 'members')
         if any(not policy.get(key) for key in required): raise ValueError('incomplete_cohort_policy')
         if policy['scope'] not in ('OFS', 'CFS'): raise ValueError('invalid_scope')
+        if policy['industry_system'] == 'KSIC':
+            if policy['industry_version'] != '11' or not re.fullmatch(r'\d{5}', str(policy['industry_code'])):
+                raise ValueError('unsupported_ksic_classification')
+            if not policy.get('industry_name'):
+                raise ValueError('industry_name_required')
+            if any(not item.get('industry_evidence') for item in policy['members']):
+                raise ValueError('member_industry_evidence_required')
         date.fromisoformat(policy['public_cutoff'])
         companies = [item.get('corp_code', '') for item in policy['members']]
         if len(set(companies)) != len(companies) or any(not re.fullmatch(r'\d{8}', code) for code in companies):

@@ -36,7 +36,7 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
         rows = []; validations = []
         amounts = {'revenue':'100','operating_profit':'10','net_profit':'8','operating_cashflow':'9','assets':'200','liabilities':'80','inventory':'40','receivables':'30'}
         for account, value in amounts.items():
-            period = {'kind':'duration','start':'2025-01-01','end':'2025-12-31'} if account in ('revenue','operating_profit','net_profit','operating_cashflow') else {'kind':'instant','as_of':'2025-12-31'}
+            period = {'kind':'duration','start':'2025-01-01','end':'2025-12-31','column_kind':'declared_period'} if account in ('revenue','operating_profit','net_profit','operating_cashflow') else {'kind':'instant','as_of':'2025-12-31'}
             fact = self.store.save_fact(run,fragment['id'],FactInput(account=account,original_account=account,raw_value=value,exact_value=value,scope='OFS',period=period,currency='KRW',unit='원'))
             vid=uuid4().hex
             data={'checks':{rule:{'status':'pass'} for rule in MANDATORY_CHECKS},'account':account,'scope':'OFS','period':period,'amount_comparison':{'original_normalized':value}}
@@ -60,10 +60,19 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
         self.assertNotIn('net_margin',row['features'])
         self.assertIn('liabilities_to_assets',row['features'])
 
+    def test_synthetic_facts_cannot_be_promoted_as_actual_public_rows(self):
+        self.policy['data_origin'] = 'verified_public_disclosure'
+        cohort = CohortRegistry(self.store).register(self.policy)
+        payload = AnalyticsDatasetService(self.store).build(cohort['cohort_id'], self.reports)
+        self.assertEqual(0, payload['snapshot']['row_count'])
+        self.assertIn('independent_xbrl_mapping_batch_required', str(payload['snapshot']['build_exclusions']))
+
     def test_multiple_verified_companies_flow_into_snapshot_and_frozen_api(self):
         cohort=CohortRegistry(self.store).register(self.policy)
         service=AnalyticsDatasetService(self.store); payload=service.build(cohort['cohort_id'],self.reports)
         self.assertEqual(2,payload['snapshot']['row_count'],payload['snapshot']['build_exclusions'])
+        self.assertEqual(2, len(payload['snapshot']['manifest']['included']))
+        self.assertEqual('2026-10-20', payload['snapshot']['manifest']['public_cutoff'])
         self.assertEqual('not_trained_insufficient_data',payload['ml_readiness']['training_status'])
         self.assertEqual(payload['artifact_id'],service.build(cohort['cohort_id'],list(reversed(self.reports)))['artifact_id'])
         service.bind(self.reports[0],payload['artifact_id'])
@@ -87,6 +96,56 @@ class VerifiedPeerPipelineTests(unittest.TestCase):
             key=conn.execute('SELECT storage_key FROM research_sources WHERE id=?',(source_id,)).fetchone()[0]
         (self.store.source_root/key).write_bytes(b'tampered')
         with self.assertRaises(IntegrityFailure): service.get(payload['artifact_id'])
+
+    def test_ksic_11_requires_each_companys_own_detailed_classification(self):
+        self.policy.update(industry_system='KSIC', industry_version='11', industry_code='30392',
+                           industry_name='자동차용 신품 제동장치 제조업')
+        with self.assertRaisesRegex(ValueError, 'member_industry_evidence_required'):
+            CohortRegistry(self.store).register(self.policy)
+        for member, report_id in zip(self.members, self.reports):
+            run = self.store.get_report(report_id)['run_id']
+            identity = self.store.save_source(run, source_input(kind='dart',rights_status='public_disclosure',
+                reporting_period={'operation':'company'}),
+                encode({'corp_code':member['corp_code'],'induty_code':'303'}).encode())
+            member['identity_source_id'] = identity['id']
+            raw = b'<dart-gcd:StandardIndustryCode contextRef="CFY2025dFY">30392</dart-gcd:StandardIndustryCode>'
+            classified = self.store.save_source(run, source_input(kind='dart',rights_status='public_disclosure',
+                published_at='2026-03-30',receipt_number='20260330000001',
+                reporting_period={'operation':'xbrl_member','member_name':'entity'+member['corp_code']+'_2025-12-31.xbrl'}),raw)
+            member['industry_evidence'] = {'source_id':classified['id'], 'location':{
+                'byte_start':0,'byte_end':len(raw),'raw_span_verified':True,'raw_span_sha256':digest(raw)}}
+        cohort = CohortRegistry(self.store).register(self.policy)
+        result = AnalyticsDatasetService(self.store).build(cohort['cohort_id'],self.reports)
+        self.assertEqual(2,result['snapshot']['row_count'],result['snapshot']['build_exclusions'])
+        self.members[0]['industry_evidence'] = self.members[1]['industry_evidence']
+        invalid = CohortRegistry(self.store).register(self.policy)
+        result = AnalyticsDatasetService(self.store).build(invalid['cohort_id'],self.reports)
+        self.assertEqual(1,result['snapshot']['row_count'])
+        self.assertIn('industry_evidence_company_mismatch',str(result['snapshot']['build_exclusions']))
+
+    def test_latest_xbrl_industry_conflict_excludes_old_classification(self):
+        self.policy.update(industry_system='KSIC',industry_version='11',industry_code='30392',
+                           industry_name='자동차용 신품 제동장치 제조업')
+        for member, report_id in zip(self.members,self.reports):
+            run = self.store.get_report(report_id)['run_id']
+            identity = self.store.save_source(run,source_input(kind='dart',rights_status='public_disclosure',
+                reporting_period={'operation':'company'}),encode({'corp_code':member['corp_code'],'induty_code':'303'}).encode())
+            member['identity_source_id'] = identity['id']
+            raw = b'<dart-gcd:StandardIndustryCode>30392</dart-gcd:StandardIndustryCode>'
+            older = self.store.save_source(run,source_input(kind='dart',rights_status='public_disclosure',
+                published_at='2025-03-30',receipt_number='20250330000001',
+                reporting_period={'operation':'xbrl_member','member_name':'entity'+member['corp_code']+'_2024-12-31.xbrl'}),raw)
+            member['industry_evidence']={'source_id':older['id'],'location':{'byte_start':0,'byte_end':len(raw),
+                'raw_span_verified':True,'raw_span_sha256':digest(raw)}}
+        changed = b'<dart-gcd:StandardIndustryCode>30399</dart-gcd:StandardIndustryCode>'
+        run=self.store.get_report(self.reports[1])['run_id']
+        self.store.save_source(run,source_input(kind='dart',rights_status='public_disclosure',
+            published_at='2026-03-30',receipt_number='20260330000002',
+            reporting_period={'operation':'xbrl_member','member_name':'entity00000002_2025-12-31.xbrl'}),changed)
+        cohort=CohortRegistry(self.store).register(self.policy)
+        result=AnalyticsDatasetService(self.store).build(cohort['cohort_id'],self.reports)
+        self.assertEqual(1,result['snapshot']['row_count'])
+        self.assertIn('industry_latest_code_conflict',str(result['snapshot']['build_exclusions']))
 
     def test_industry_mismatch_is_excluded_and_original_tamper_rejected(self):
         self.policy['industry_code']='C30'

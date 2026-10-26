@@ -1,6 +1,7 @@
 """설계 1.0의 결정적 수치 대조. 모델·네트워크 없이 불변 검사 이력을 만든다."""
 from collections import Counter, defaultdict
 from datetime import date
+from calendar import monthrange
 from decimal import Decimal, Inexact, InvalidOperation, ROUND_HALF_UP, ROUND_DOWN, localcontext
 import hashlib
 import json
@@ -21,7 +22,7 @@ from .borrowing_composition import reconcile_composition, link_same_period_compo
 from .scope_observations import observe_scope, unchanged_scope_support
 from .consolidation_checks import VERSION as SCOPE_CHANGE_VERSION, collect_disclosed_changes, blocking_changes
 
-POLICY_VERSION='numeric-validation-1.27'
+POLICY_VERSION='numeric-validation-1.30'
 UNIT_SCALE={'원':'1','천원':'1000','백만원':'1000000','억원':'100000000'}
 ACCOUNT_IDS={
     'revenue':{'ifrs-full_Revenue'},
@@ -100,10 +101,62 @@ def period_key(period):
     return {k:period[k] for k in ('kind','as_of','start','end') if k in period}
 
 
-def api_field(period, statement, query):
-    """12월 결산·역년 보고기간만 지원. 다른 회계연도는 원문을 확인해도 보류한다."""
+def fiscal_report_period(year, code, fiscal_month):
+    """보고서 코드와 확인된 결산월로 당기 표지의 시작·종료일을 계산한다."""
+    if type(year) is not int or type(fiscal_month) is not int or not 1 <= fiscal_month <= 12:
+        return None
+    if code == '11011':
+        end_month, length = fiscal_month, 12
+    elif code == '11012':
+        end_month, length = (fiscal_month + 5) % 12 + 1, 6
+    else:
+        return None
+    try:
+        end = date(year, end_month, monthrange(year, end_month)[1])
+        start_month_index = end.year * 12 + end.month - length
+        start = date(start_month_index // 12, start_month_index % 12 + 1, 1)
+    except ValueError:
+        return None
+    return start, end
+
+
+def api_field(period, statement, query, fiscal_month=12):
+    """확인된 결산월의 당기·전기 기간에만 OpenDART 금액 열을 연결한다."""
     try:
         year=int(query['bsns_year']);code=query['reprt_code']
+        if fiscal_month != 12:
+            bounds=fiscal_report_period(year,code,fiscal_month)
+            if bounds is None:return None
+            current_start,current_end=bounds
+            if period.get('kind')=='instant' and statement=='BS':
+                instant=period.get('as_of')
+                if instant==current_end.isoformat():return 'thstrm_amount'
+                prior_annual_year=year-1
+                if code=='11012':
+                    same_year_annual=fiscal_report_period(year,'11011',fiscal_month)
+                    prior_annual_year=year-1 if same_year_annual and same_year_annual[1]>current_end else year
+                prior_year_end=fiscal_report_period(prior_annual_year,'11011',fiscal_month)
+                if prior_year_end and instant==prior_year_end[1].isoformat():return 'frmtrm_amount'
+                if code=='11011':
+                    two_year_end=fiscal_report_period(year-2,'11011',fiscal_month)
+                    if two_year_end and instant==two_year_end[1].isoformat():return 'bfefrmtrm_amount'
+                return None
+            if period.get('kind')!='duration' or statement not in {'CF','IS','CIS'}:return None
+            start=date.fromisoformat(period['start']);end=date.fromisoformat(period['end'])
+            for shift in (0,1,2) if code=='11011' else (0,1):
+                candidate=fiscal_report_period(year-shift,code,fiscal_month)
+                if candidate is None:continue
+                expected_start,expected_end=candidate
+                if end!=expected_end:continue
+                if start==expected_start:
+                    if code=='11011':return ('thstrm_amount','frmtrm_amount','bfefrmtrm_amount')[shift]
+                    if statement=='CF':return ('thstrm_amount','frmtrm_q_amount')[shift]
+                    return ('thstrm_add_amount','frmtrm_add_amount')[shift]
+                if code=='11012' and statement!='CF' and period.get('column_kind')=='three_months':
+                    quarter_index=end.year*12+end.month-3
+                    quarter_start=date(quarter_index//12,quarter_index%12+1,1)
+                    if start==quarter_start:return ('thstrm_amount','frmtrm_q_amount')[shift]
+            return None
         month={'11011':'12-31','11012':'06-30','11013':'03-31','11014':'09-30'}[code]
         if period.get('kind')=='instant' and statement=='BS':
             candidates={f'{year}-{month}':'thstrm_amount',f'{year-1}-12-31':'frmtrm_amount'}
@@ -132,7 +185,7 @@ def api_field(period, statement, query):
     return None
 
 
-def comparison_policy(current, previous, *, account_equivalent=False):
+def comparison_policy(current, previous, *, account_equivalent=False, fiscal_month=12):
     if current['scope']!=previous['scope'] or current['currency']!=previous['currency'] or current['account']!=previous['account']:
         return 'scope_currency_or_account_mismatch'
     if not account_equivalent and normalize_label(current.get('original_account',''))!=normalize_label(previous.get('original_account','')):
@@ -141,7 +194,14 @@ def comparison_policy(current, previous, *, account_equivalent=False):
     if a.get('kind')!=b.get('kind'):return 'instant_duration_mismatch'
     if a.get('kind')=='instant':
         x=date.fromisoformat(a['as_of']);y=date.fromisoformat(b['as_of'])
-        if y.isoformat()==f'{x.year-1}-12-31':return 'previous_year_end'
+        if fiscal_month == 12:
+            if y.isoformat()==f'{x.year-1}-12-31':return 'previous_year_end'
+        elif type(fiscal_month) is int and 1 <= fiscal_month <= 12:
+            annual=fiscal_report_period(x.year,'11011',fiscal_month)
+            half=fiscal_report_period(x.year,'11012',fiscal_month)
+            previous_annual=fiscal_report_period(x.year-1,'11011',fiscal_month)
+            expected=(previous_annual if x==annual[1] or annual[1]>x else annual)
+            if x in {annual[1],half[1]} and expected and y==expected[1]:return 'previous_year_end'
         if x.month==y.month and x.day==y.day and x.year==y.year+1:return 'prior_same_date_supplementary'
         return 'incomparable_dates'
     x0,x1=(date.fromisoformat(a[k]) for k in ('start','end'))
@@ -198,7 +258,7 @@ class NumericValidationService:
         methods={x['method'] for x in declarations}
         return declarations[0] if len(methods)==1 else None
 
-    def _validate_fact(self,fact,source,content,identity,api_records,basis,company,superseded):
+    def _validate_fact(self,fact,source,content,identity,api_records,basis,company,superseded,fiscal_month=None):
         d=fact['data'];fragment=fact['fragment']['data'];ctx=fragment['context'];checks={}
         def check(rule,status,reason):checks[rule]={'status':status,'reason':reason}
         corp=company.get('corp_code')
@@ -254,7 +314,7 @@ class NumericValidationService:
             if normalize_label(record.get('account_nm',''))!=normalize_label(d['original_account']):continue
             if record.get('account_id') not in ACCOUNT_IDS[d['account']]:
                 unsupported.append(item['id']);continue
-            field=api_field(d['period'],record['sj_div'],query)
+            field=api_field(d['period'],record['sj_div'],query,fiscal_month or 12)
             matches.append((item,record,query,field))
         details={'checks':checks,'account':d['account'],'original_account':d['original_account'],'currency':d['currency'],'source_id':source['id'],'scope':scope,'period':d['period'],
                  'extraction_warnings':fragment['extraction_warnings'],'identity_locations':identity['locations'],
@@ -279,12 +339,21 @@ class NumericValidationService:
             if record.get('fs_div',scope)!=scope:check('V03','fail','api_record_scope_mismatch')
             check('V01','pass' if corp and identity['company']==corp==record.get('corp_code')==query.get('corp_code') else 'fail','original_api_research_company_code')
             check('V06',checks.get('V06',{}).get('status','pass'),'standard_id_original_label_and_hierarchy')
-            # API의 회계연도/보고서 코드와 원문 표지의 역년 시작/끝이 함께 맞아야 한다.
-            code_end={'11011':'12-31','11012':'06-30','11013':'03-31','11014':'09-30'}.get(query.get('reprt_code'))
-            calendar_ok=(identity['start']==str(query.get('bsns_year'))+'-01-01' and
-                         identity['end']==str(query.get('bsns_year'))+'-'+str(code_end) and
-                         record.get('bsns_year')==query.get('bsns_year') and record.get('reprt_code')==query.get('reprt_code'))
-            check('V04','pass' if field and calendar_ok else 'not_checked','calendar_cover_statement_specific_api_column')
+            # 원문 표지의 당기 기간, API 조회·응답 연도/코드가 모두 같은 회계기간을 가리켜야 한다.
+            if fiscal_month in (None,12):
+                code_end={'11011':'12-31','11012':'06-30','11013':'03-31','11014':'09-30'}.get(query.get('reprt_code'))
+                cover_ok=(identity['start']==str(query.get('bsns_year'))+'-01-01' and
+                          identity['end']==str(query.get('bsns_year'))+'-'+str(code_end))
+            else:
+                try:expected=fiscal_report_period(int(query.get('bsns_year')),query.get('reprt_code'),fiscal_month)
+                except (TypeError,ValueError):expected=None
+                cover_ok=bool(expected and identity['start']==expected[0].isoformat() and
+                              identity['end']==expected[1].isoformat())
+            period_ok=(cover_ok and record.get('bsns_year')==query.get('bsns_year') and
+                       record.get('reprt_code')==query.get('reprt_code'))
+            check('V04','pass' if field and period_ok and fiscal_month != 0 else 'not_checked',
+                  'company_fiscal_month_conflict' if fiscal_month == 0 else
+                  'fiscal_cover_statement_specific_api_column')
             lexical=number(d['raw_value']) if d['raw_value'] is not None else None
             amounts=match_amount(d['exact_value'],number(record.get(field,'')) if field else None,d['unit'],self._declared_rounding(content,table))
             currency_ok=d['currency']==record.get('currency') and d['unit']==table['unit'] and d['currency']==table['currency']
@@ -353,13 +422,31 @@ class NumericValidationService:
             old=conn.execute('SELECT id FROM research_validation_batches WHERE run_id=? AND fingerprint=?',(run_id,fingerprint)).fetchone()
         if old:return self.batch(old[0]) | {'reused':True}
         superseded=set()
+        fiscal_months=set()
         for source in sources:
             meta=source['metadata'];parent=meta.get('supersedes_id');receipt=meta.get('receipt_number') or ''
+            if meta.get('reporting_period',{}).get('operation')=='company':
+                try:
+                    identity=json.loads(self.store.source_content(source['id']))
+                    month=identity.get('acc_mt')
+                    if (meta.get('kind')=='dart' and
+                            meta.get('reporting_period',{}).get('corp_code')==company.get('corp_code') and
+                            identity.get('corp_code')==company.get('corp_code') and
+                            isinstance(month,str) and re.fullmatch(r'0[1-9]|1[0-2]',month)):
+                        fiscal_months.add(int(month))
+                except (ValueError,TypeError):
+                    pass
             try:allowed=date.fromisoformat(receipt[:8])<=date.fromisoformat(basis['data']['public_cutoff'])
             except ValueError:allowed=False
             if parent and allowed:superseded.add(parent)
+        fiscal_month=(0 if len(fiscal_months)>1 else next(iter(fiscal_months)) if fiscal_months else None)
+        if run['trigger'].get('kind')=='general_company':
+            fiscal=run['trigger'].get('collection_result',{}).get('fiscal_period',{})
+            planned=fiscal.get('month')
+            fiscal_month=(planned if fiscal.get('status') in {'supported','identity_only'} and
+                          type(planned) is int and planned in range(1,13) and fiscal_months=={planned} else 0)
         validations=[self._validate_fact(f,documents[f['source']['id']],contents[f['source']['id']],
-            identities[f['source']['id']],apis,basis,company,superseded) for f in facts]
+            identities[f['source']['id']],apis,basis,company,superseded,fiscal_month) for f in facts]
         notes=[]
         for sid,source in documents.items():
             notes+=reconcile_note_amounts(source,contents[sid],identities[sid],tables[sid],facts,validations,self._raw_check)
@@ -423,7 +510,7 @@ class NumericValidationService:
             if sid in confirmed_sources:
                 scope_changes+=collect_disclosed_changes(source,contents[sid],identities[sid],tables[sid],self._raw_check)
                 scope_observations+=observe_scope(source,contents[sid],identities[sid],tables[sid],facts,validations,self._raw_check)
-        calculations=self._calculations(facts,validations,scope_changes,scope_observations,compositions,composition_links,alias_contexts)
+        calculations=self._calculations(facts,validations,scope_changes,scope_observations,compositions,composition_links,alias_contexts,fiscal_month)
         withhold_affected_calculations(calculations,composition_review_records)
         validations+=notes+scope_changes+scope_observations+compositions+composition_links+detail_records+composition_review_records
         for item in manifests:
@@ -484,7 +571,7 @@ class NumericValidationService:
                     {'batch_id':batch_id,'policy_version':POLICY_VERSION,**summary})
         return self.batch(batch_id) | {'reused':reused}
 
-    def _calculations(self,facts,validations,scope_changes=(),scope_observations=(),compositions=(),composition_links=(),alias_contexts=None):
+    def _calculations(self,facts,validations,scope_changes=(),scope_observations=(),compositions=(),composition_links=(),alias_contexts=None,fiscal_month=12):
         alias_contexts=alias_contexts or {}
         composition_by_group={(c['data']['source_id'],c['data']['scope'],c['data']['period']['as_of']):c for c in compositions if c['status']=='pass'}
         composition_by_group.update({(c['data']['source_id'],c['data']['scope'],c['data']['period']['as_of']):c for c in composition_links})
@@ -601,7 +688,7 @@ class NumericValidationService:
                 for f,v in current_items:
                     for p,w in previous_items:
                         equivalence=verified_alias_pair(alias_contexts.get(f['id']),alias_contexts.get(p['id']))
-                        policy=comparison_policy(f['data'],p['data'],account_equivalent=equivalence is not None)
+                        policy=comparison_policy(f['data'],p['data'],account_equivalent=equivalence is not None,fiscal_month=fiscal_month)
                         if policy in ('same_period','previous_year_end','prior_same_date_supplementary'):
                             pairs.append((f,v,p,w,policy,equivalence))
                 if not pairs:continue

@@ -59,7 +59,7 @@ class DartServiceTests(unittest.IsolatedAsyncioTestCase):
         original=b'<REPORT><TABLE>synthetic only</TABLE></REPORT>'
         def handler(req):
             if req.url.path.endswith('company.json'):
-                return httpx.Response(200,json={'status':'000','corp_code':'00129642','stock_code':'041650','corp_name':'합성 제조기업'})
+                return httpx.Response(200,json={'status':'000','corp_code':'00129642','stock_code':'041650','corp_name':'합성 제조기업','acc_mt':'12'})
             if req.url.path.endswith('fnlttSinglAcntAll.json'):
                 return httpx.Response(200,json=self.financial())
             return httpx.Response(200,content=zip_bytes(original))
@@ -68,6 +68,7 @@ class DartServiceTests(unittest.IsolatedAsyncioTestCase):
         financial=await service.call('financials',self.args(year=2026,report_code='11012',scope='OFS'))
         document=await service.call('document',{'run_id':self.run_id,'receipt':'20260813000874'})
         self.assertEqual(['ok']*3,[result['status'] for result in (company,financial,document)])
+        self.assertEqual('12',company['company']['acc_mt'])
         self.assertEqual(original,self.store.source_content(document['members'][0]['source_id']))
         self.assertEqual(3,self.store.get_run(self.run_id)['usage']['external_requests'])
         self.assertEqual('not_performed',financial['financial_verification'])

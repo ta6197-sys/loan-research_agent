@@ -4,6 +4,7 @@
 공시·내부 정보를 함께 반환한다.
 """
 from decimal import Decimal, InvalidOperation
+from datetime import date
 
 
 BORROWING_ACCOUNTS = ("short_term_borrowings", "current_long_term_borrowings", "long_term_borrowings")
@@ -48,14 +49,31 @@ def _borrowing(rows, end):
             "label": "차입금 3계정 소계"}
 
 
-def _period_pairs(rows):
-    annual = sorted({row.get("end") for row in rows if row.get("scope") == "OFS" and str(row.get("end", "")).endswith("-12-31")})
-    interim = sorted({row.get("end") for row in rows if row.get("scope") == "OFS" and str(row.get("end", "")).endswith("-06-30")})
+def _period_pairs(rows, scope='OFS'):
+    grouped = {"annual": set(), "interim": set()}
+    for row in rows:
+        if row.get('scope') != scope:continue
+        period=row.get('period') or {}
+        kind=period.get('kind')
+        if kind=='duration':
+            try:start,end=date.fromisoformat(period['start']),date.fromisoformat(period['end'])
+            except (KeyError,ValueError):continue
+            length=(end.year-start.year)*12+end.month-start.month+1
+            if start.day!=1 or length not in (6,12):continue
+            grouped['annual' if length==12 else 'interim'].add((end.isoformat(),start.isoformat()))
+        elif not period:
+            end=row.get('end','')
+            if end.endswith('-12-31'):grouped['annual'].add((end,None))
+            elif end.endswith('-06-30'):grouped['interim'].add((end,None))
     pairs = []
-    if len(annual) >= 2:
-        pairs.append((annual[-2], annual[-1], "annual"))
-    if len(interim) >= 2:
-        pairs.append((interim[-2], interim[-1], "interim"))
+    for kind in ('annual','interim'):
+        values=sorted(grouped[kind])
+        if len(values)<2:continue
+        before,after=values[-2],values[-1]
+        if before[0][5:]!=after[0][5:] or int(after[0][:4])-int(before[0][:4])!=1:continue
+        if before[1] and after[1] and (before[1][5:]!=after[1][5:] or
+                int(after[1][:4])-int(before[1][:4])!=1):continue
+        pairs.append((before[0],after[0],kind))
     return pairs
 
 

@@ -126,7 +126,7 @@ def detect(snapshot, *, features=None):
     gate = readiness(snapshot, core_features=features)
     selected = list(features or gate["selected_core_features"])
     base = {"schema_version": VERSION, "dataset_snapshot_id": snapshot.get("snapshot_id"), "model": {"name": "IsolationForest", "sklearn_version": sklearn.__version__, "random_state": RANDOM_STATE, "n_estimators": N_ESTIMATORS, "feature_policy_version": snapshot.get("feature_policy_version")},
-            "data_origin": snapshot.get("cohort", {}).get("data_origin", "unspecified"),
+            "data_origin": gate['data_origin'],
             "features": selected, "feature_missingness": {feature: snapshot.get("feature_missingness", {}).get(feature) for feature in selected}, "readiness": gate}
     if gate["training_status"] != "ready_for_exploratory_training":
         return {**base, "status": "not_trained_insufficient_data", "reason": "model_readiness_gate_not_passed", "splits": []}
@@ -134,4 +134,6 @@ def detect(snapshot, *, features=None):
     splits = [_run_split("time_ordered", rows, selected, _split_time), _run_split("company_holdout", rows, selected, _split_company)]
     return {**base, "status": "measured" if any(split["status"] == "measured" for split in splits) else "not_trained_insufficient_split_data", "industry_group": rows[0].get("peer_group") if rows else None,
             "splits": splits,
-            "limitations": ["IsolationForest 점수는 부도확률·신용위험 확률이 아닙니다.", "모델 결과는 원문의 검증 통과·보류 상태를 변경하지 않습니다.", "결측 특성은 0 또는 추정치로 대체하지 않고 해당 분할에서 제외합니다."]}
+            "limitations": ["IsolationForest 점수는 부도확률·신용위험 확률이 아닙니다.", "모델 결과는 원문의 검증 통과·보류 상태를 변경하지 않습니다.", "결측 특성은 0 또는 추정치로 대체하지 않고 해당 분할에서 제외합니다."]
+            + (["합성 시험 자료의 탐지 결과이며 실제 기업의 탐지 성능이 아닙니다."]
+               if gate['data_origin'] == 'synthetic_test_only' else [])}

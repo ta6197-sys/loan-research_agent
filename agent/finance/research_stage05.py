@@ -217,6 +217,10 @@ class Stage05Service:
             await asyncio.gather(*(t for t in (graph_task,heartbeat) if t),return_exceptions=True)
 
     def _publish(self,run_id,key,content,batch_id):
+        context=content['context']
+        if context.get('comparison_periods'):
+            if context.get('xbrl_report_gate',{}).get('status')!='pass':
+                raise ValueError('independent_xbrl_period_account_amount_unconfirmed')
         data=safe_payload(content);content_hash=digest(data.encode())
         fact_ids={fid for row in content['confirmed_facts'] for fid in row['fact_ids']}
         with self.store.connection(write=True) as conn:

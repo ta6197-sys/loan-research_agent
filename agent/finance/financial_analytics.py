@@ -128,9 +128,8 @@ def _ratio(name, category, scope, period, numerator, denominator, formula, *, de
 
 
 def _period_pairs(index, scope):
-    annual = sorted({end for s, _, end in index if s == scope and str(end).endswith("-12-31")})
-    interim = sorted({end for s, _, end in index if s == scope and str(end).endswith("-06-30")})
-    return [(annual[-2], annual[-1]) for _ in [0] if len(annual) >= 2] + [(interim[-2], interim[-1]) for _ in [0] if len(interim) >= 2]
+    from .change_analysis import _period_pairs as comparable_pairs
+    return [(before,after) for before,after,_ in comparable_pairs(index.values(),scope)]
 
 
 def analyze(report, batch, *, raw_ok=lambda row: True):
