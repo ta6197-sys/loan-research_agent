@@ -18,7 +18,7 @@ from .dart_service import DartService
 from .dart_protocol import DartFailure
 from .extraction_service import ExtractionService
 from .document_extractor import ExtractionFailure
-from .general_company import create_collection_retry, disclosures_begin
+from .general_company import create_collection_retry, create_refresh_run, disclosures_begin
 
 
 REPORT_CODES = (("사업보고서", "11011"), ("반기보고서", "11012"),
@@ -60,7 +60,7 @@ def declared_taxonomy_references(members, read_content):
 
 
 def report_code(report_name):
-    text = str(report_name or "")
+    text = re.sub(r"^(?:\s*\[[^\]]+\])+\s*", "", str(report_name or ""))
     for label, code in REPORT_CODES:
         if text.startswith(label):
             return code
@@ -200,14 +200,14 @@ class GeneralCollectionService:
     async def _all_disclosures(self, run_id, corp_code, cutoff):
         """DART 페이지 전체를 읽되, 각 호출은 기존 실행 예산을 그대로 소비한다."""
         begin = disclosures_begin(date.fromisoformat(cutoff))
-        first=await self.dart.disclosures(run_id,corp_code,begin,cutoff,page_no=1,page_count=100,last_report="Y")
+        first=await self.dart.disclosures(run_id,corp_code,begin,cutoff,page_no=1,page_count=100,last_report="N")
         pages=[first]
         try:total_pages=int(first.get('total_page') or 1)
         except (TypeError,ValueError):raise ValueError('invalid_disclosure_pagination') from None
         if not 1<=total_pages<=1000:raise ValueError('invalid_disclosure_pagination')
         for page_no in range(2,total_pages+1):
             pages.append(await self.dart.disclosures(run_id,corp_code,begin,cutoff,
-                                                      page_no=page_no,page_count=100,last_report="Y"))
+                                                      page_no=page_no,page_count=100,last_report="N"))
         return {'items':[item for page in pages for item in page['items']],
                 'source_ids':[page['source_id'] for page in pages],
                 'page_count':len(pages),'complete':len(pages)==total_pages}
@@ -280,13 +280,13 @@ class GeneralCollectionService:
                                   "general_collection_failed", {"phase": "collection", "at": now()})
             raise
 
-    async def refresh(self, research_id):
+    async def refresh(self, research_id, cutoff):
         """기존 조사를 열 때 최신·정정 공시만 먼저 확인한다.
 
         변동이 없으면 기존 게시본과 원문을 그대로 사용한다. 변동이 있으면 새 실행을
         만들고 전체 수집으로 이어져 이전 판의 근거를 바꾸지 않는다.
         """
-        receipt=create_collection_retry(self.store, research_id)
+        receipt=create_refresh_run(self.store, research_id, cutoff)
         run_id=receipt['run_id'];basis,company=self._begin(run_id)
         try:
             identity=await self.dart.company(run_id,company['corp_code'])
@@ -331,7 +331,14 @@ class GeneralCollectionService:
                 self.store._event(conn,basis_row['research_id'],basis_row['id'],run_id,'general_freshness_change_detected',
                                   {'changes':changes,'checked_disclosures_source_ids':disclosed['source_ids']})
             result=await self.run(run_id)
-            return {**receipt,'status':'changed','changes':changes,'collection_result':result}
+            if result.get('next_phase')!='numeric_and_xbrl_validation':
+                return {**receipt,'status':'changed_validation_pending','changes':changes,'collection_result':result}
+            from .numeric_validation import NumericValidationService
+            from .xbrl_mapping import XbrlMappingService
+            numeric=await asyncio.to_thread(NumericValidationService(self.store).validate_run,run_id)
+            mapping=await asyncio.to_thread(XbrlMappingService(self.store).validate_run,run_id)
+            return {**receipt,'status':'changed','changes':changes,'collection_result':result,
+                    'numeric_batch_id':numeric['id'],'mapping_batch_id':mapping['id']}
         except Exception:
             with self.store.connection(write=True) as conn:
                 run,basis_row=self.store._context(conn,run_id)

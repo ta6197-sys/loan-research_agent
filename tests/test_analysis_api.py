@@ -46,3 +46,4 @@ class AnalysisApiTests(unittest.TestCase):
             # 백엔드가 없는 테스트 환경에서는 502가 정상이며, 403은 allowlist 누락이다.
             self.assertNotEqual(403, client.get('/api/reports/' + report + '/financial-analysis').status_code)
             self.assertNotEqual(403, client.get('/api/validation-batches/' + batch + '/quality-analysis').status_code)
+            self.assertNotEqual(403, client.get('/api/runs/' + report + '/verified-analysis').status_code)

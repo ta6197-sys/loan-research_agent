@@ -173,25 +173,150 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
             _createElementVNode("span", null, _toDisplayString(phaseLabel), 1),
             _createElementVNode("span", { class: "usage" }, _toDisplayString(modelBackendLabel) + " · 모델 " + _toDisplayString(activeRun?.usage?.model_calls || 0) + " / " + _toDisplayString(activeRun?.budget?.model_calls || 20) + "회 · 실행 " + _toDisplayString(activeRun?.usage?.execution_seconds || 0) + "초", 1)
           ]),
+          runAnalysis
+            ? (_openBlock(), _createElementBlock("section", {
+                key: 2,
+                class: "question-card",
+                "aria-label": "검증 데이터 분석"
+              }, [
+                _createElementVNode("p", { class: "eyebrow" }, "미게시 검증 자료 · " + _toDisplayString(day(research.bases.find(b=>b.id===activeRun?.basis_id)?.data.public_cutoff)), 1),
+                _createElementVNode("h2", null, "검증 데이터 분석"),
+                (runAnalysis.disclosure_history?.status==='partial_withheld')
+                  ? (_openBlock(), _createElementBlock("div", {
+                      key: 0,
+                      class: "alert"
+                    }, _toDisplayString(runAnalysis.disclosure_history.withheld_period_ends.join(', ')) + " 보고서의 정정 전후 관계가 미확인입니다. 해당 기간과 미확인 정정본에서만 나온 비교 수치는 분석에서 제외했습니다.", 1))
+                  : _createCommentVNode("", true),
+                (_openBlock(true), _createElementBlock(_Fragment, null, _renderList((runAnalysis.disclosure_history?.confirmed_relations || []), (relation) => {
+                  return (_openBlock(), _createElementBlock("div", {
+                    key: relation.receipt_number,
+                    class: "alert success"
+                  }, "정정 원본 관계 확인: " + _toDisplayString(relation.original_receipt) + " → " + _toDisplayString(relation.receipt_number) + ". 원본·정정본·공시목록의 보관 해시를 다시 확인했습니다. 이는 보고서 게시 승인이 아닙니다.", 1))
+                }), 128)),
+                _createElementVNode("p", { class: "muted" }, "수치 " + _toDisplayString(runAnalysis.row_counts.verified) + "행 확인 · " + _toDisplayString(runAnalysis.row_counts.withheld) + "행 사용 보류 · 독립 XBRL 대응 " + _toDisplayString(runAnalysis.xbrl_gate.matched_row_keys.length) + "행. 보고서·신용 판단은 생성하지 않았습니다.", 1),
+                _createElementVNode("div", { class: "analytics-cards" }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(runAnalysis.financial_rows.filter(item=>item.status==='verified'), (row) => {
+                  return (_openBlock(), _createElementBlock("div", {
+                    key: row.scope+row.end+row.account,
+                    class: "question-card"
+                  }, [
+                    _createElementVNode("strong", null, _toDisplayString(row.label), 1),
+                    _createElementVNode("p", null, _toDisplayString(row.scope==='OFS'?'별도':'연결') + " · " + _toDisplayString(row.end), 1),
+                    _createElementVNode("p", { class: "analytics-value" }, _toDisplayString(row.value) + " 원", 1),
+                    _createElementVNode("small", null, "검증 ID " + _toDisplayString(row.validation_ids.join(', ')), 1),
+                    (row.fact_ids.length)
+                      ? (_openBlock(), _createElementBlock("button", {
+                          key: 0,
+                          onClick: $event => (openRunEvidence(row.fact_ids))
+                        }, "원문 근거 " + _toDisplayString(row.fact_ids.length) + "건 보기", 9, ["onClick"]))
+                      : _createCommentVNode("", true)
+                  ]))
+                }), 128))]),
+                _createElementVNode("h3", null, "산출 가능한 재무지표"),
+                _createElementVNode("div", { class: "analytics-cards" }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(runAnalysis.financial_metrics.filter(item=>item.status==='supported'), (item) => {
+                  return (_openBlock(), _createElementBlock("div", {
+                    key: item.analysis_id,
+                    class: "question-card"
+                  }, [
+                    _createElementVNode("strong", null, _toDisplayString(analysisLabel(item.name)), 1),
+                    _createElementVNode("p", null, _toDisplayString(item.scope==='OFS'?'별도':'연결') + " · " + _toDisplayString(item.period?.end || item.period?.as_of), 1),
+                    _createElementVNode("p", { class: "analytics-value" }, _toDisplayString(item.value) + " " + _toDisplayString(item.unit==='percent'?'%':item.unit), 1),
+                    _createElementVNode("small", null, "원문 " + _toDisplayString(item.source_ids.join(', ')) + " · 검증 " + _toDisplayString(item.input_validation_ids.join(', ')), 1),
+                    (item.input_fact_ids.length)
+                      ? (_openBlock(), _createElementBlock("button", {
+                          key: 0,
+                          onClick: $event => (openRunEvidence(item.input_fact_ids))
+                        }, "계산 입력 원문 보기", 8, ["onClick"]))
+                      : _createCommentVNode("", true)
+                  ]))
+                }), 128))]),
+                selectedRunEvidence
+                  ? (_openBlock(), _createElementBlock("div", {
+                      key: 1,
+                      class: "question-card",
+                      "aria-label": "선택한 검증 원문"
+                    }, [
+                      _createElementVNode("div", { class: "section-heading" }, [_createElementVNode("h3", null, "선택한 검증 원문"), _createElementVNode("button", { onClick: $event => (selectedRunEvidence=null) }, "닫기", 8, ["onClick"])]),
+                      (selectedRunEvidenceList.length>1)
+                        ? (_openBlock(), _createElementBlock("div", {
+                            key: 0,
+                            class: "scope-switch"
+                          }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(selectedRunEvidenceList, (item) => {
+                            return (_openBlock(), _createElementBlock("button", {
+                              key: item.fact_id,
+                              class: _normalizeClass({active:selectedRunEvidence.fact_id===item.fact_id}),
+                              onClick: $event => (selectedRunEvidence=item)
+                            }, _toDisplayString(item.fact_id.slice(0,8)), 11, ["onClick"]))
+                          }), 128))]))
+                        : _createCommentVNode("", true),
+                      _createElementVNode("strong", null, _toDisplayString(selectedRunEvidence.title), 1),
+                      _createElementVNode("p", null, "접수번호 " + _toDisplayString(selectedRunEvidence.receipt_number) + " · " + _toDisplayString(selectedRunEvidence.location), 1),
+                      _createElementVNode("blockquote", null, _toDisplayString(selectedRunEvidence.excerpt), 1),
+                      _createElementVNode("p", { class: "hint" }, "원문 SHA-256 " + _toDisplayString(selectedRunEvidence.content_hash), 1),
+                      (selectedRunEvidence.url)
+                        ? (_openBlock(), _createElementBlock("a", {
+                            key: 1,
+                            href: selectedRunEvidence.url,
+                            target: "_blank",
+                            rel: "noopener noreferrer"
+                          }, "DART 공시 열기 ↗", 8, ["href"]))
+                        : _createCommentVNode("", true),
+                      _createElementVNode("button", { onClick: downloadRunFragment }, "검증 위치의 원본 바이트 ↓", 8, ["onClick"])
+                    ]))
+                  : _createCommentVNode("", true),
+                _createElementVNode("h3", null, "추가 확인할 자료"),
+                (!runAnalysis.analysis_plan.steps.length)
+                  ? (_openBlock(), _createElementBlock("p", {
+                      key: 2,
+                      class: "muted"
+                    }, "현재 자동 생성된 확인 항목이 없습니다."))
+                  : _createCommentVNode("", true),
+                (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(runAnalysis.analysis_plan.steps, (step) => {
+                  return (_openBlock(), _createElementBlock("div", {
+                    key: step.id,
+                    class: "question-card"
+                  }, [
+                    _createElementVNode("strong", null, _toDisplayString(step.kind==='verified_signal_followup'?'확인 신호':'검증 공백'), 1),
+                    _createElementVNode("p", null, _toDisplayString(step.question), 1),
+                    _createElementVNode("p", null, "필요 자료: " + _toDisplayString(step.requested_information), 1),
+                    _createElementVNode("small", null, _toDisplayString(step.reason_code || step.limitation), 1)
+                  ]))
+                }), 128)),
+                _createElementVNode("details", null, [_createElementVNode("summary", null, "보류된 수치·계산 사유"), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(runAnalysis.financial_rows.filter(item=>item.status!=='verified'), (row) => {
+                  return (_openBlock(), _createElementBlock("p", { key: row.scope+row.end+row.account }, _toDisplayString(row.scope) + " · " + _toDisplayString(row.end) + " · " + _toDisplayString(row.label) + ": " + _toDisplayString(row.reason), 1))
+                }), 128)), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(runAnalysis.financial_metrics.filter(item=>item.status!=='supported'), (item) => {
+                  return (_openBlock(), _createElementBlock("p", { key: item.analysis_id }, _toDisplayString(analysisLabel(item.name)) + " · " + _toDisplayString(item.scope) + " · " + _toDisplayString(item.period?.end || item.period?.as_of) + ": " + _toDisplayString(item.reason_code), 1))
+                }), 128))])
+              ]))
+            : (runAnalysisError && activeRun?.status==='finished')
+              ? (_openBlock(), _createElementBlock("div", {
+                  key: 3,
+                  class: "alert"
+                }, [_createTextVNode("검증 데이터 분석 보류: " + _toDisplayString(runAnalysisError) + " ", 1), _createElementVNode("button", { onClick: $event => (loadRunAnalysis()) }, "다시 확인", 8, ["onClick"])]))
+              : _createCommentVNode("", true),
           (!view)
             ? (_openBlock(), _createElementBlock("div", {
-                key: 2,
+                key: 4,
                 class: "empty-report"
               }, [
-                _createElementVNode("h2", null, _toDisplayString(activeRun?.status === 'stopped' ? '조사를 중단했습니다.' : '근거를 확인하고 있습니다.'), 1),
-                _createElementVNode("p", null, "일곱 항목을 조사하고 원문·수치 검증을 마친 뒤 첫 초안을 게시합니다."),
-                _createElementVNode("ol", { class: "plan" }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(sectionTitles, (title) => {
-                  return (_openBlock(), _createElementBlock("li", { key: title }, _toDisplayString(title), 1))
-                }), 128))]),
+                _createElementVNode("h2", null, _toDisplayString(activeRun?.status === 'stopped' ? '조사를 중단했습니다.' : runAnalysis ? '검증 자료를 확인했습니다. 보고서는 미게시 상태입니다.' : '근거를 확인하고 있습니다.'), 1),
+                _createElementVNode("p", null, _toDisplayString(runAnalysis ? '위의 수치와 지표는 보관된 공시·검증 배치에서 계산했습니다. 보고서 생성에는 별도 실행이 필요합니다.' : '일곱 항목을 조사하고 원문·수치 검증을 마친 뒤 첫 초안을 게시합니다.'), 1),
+                (!runAnalysis)
+                  ? (_openBlock(), _createElementBlock("ol", {
+                      key: 0,
+                      class: "plan"
+                    }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(sectionTitles, (title) => {
+                      return (_openBlock(), _createElementBlock("li", { key: title }, _toDisplayString(title), 1))
+                    }), 128))]))
+                  : _createCommentVNode("", true),
                 _createElementVNode("p", { class: "hint" }, "브라우저를 닫아도 서버의 조사는 계속됩니다. 명시 중단은 재개 전 유지됩니다."),
                 limited
                   ? (_openBlock(), _createElementBlock("div", {
-                      key: 0,
+                      key: 1,
                       class: "alert"
                     }, _toDisplayString(limited.limitation), 1))
                   : _createCommentVNode("", true)
               ]))
-            : (_openBlock(), _createElementBlock(_Fragment, { key: 3 }, [_createElementVNode("div", { class: "report-toolbar" }, [_createElementVNode("div", { class: "tabs" }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs, (tab) => {
+            : (_openBlock(), _createElementBlock(_Fragment, { key: 5 }, [_createElementVNode("div", { class: "report-toolbar" }, [_createElementVNode("div", { class: "tabs" }, [(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs, (tab) => {
                 return (_openBlock(), _createElementBlock("button", {
                   key: tab.id,
                   class: _normalizeClass({active:currentTab===tab.id}),
@@ -470,7 +595,7 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                                   key: step.id,
                                   class: "question-card"
                                 }, [
-                                  _createElementVNode("strong", null, _toDisplayString(step.kind==='verification_gap'?'검증 공백':'확인 신호'), 1),
+                                  _createElementVNode("strong", null, _toDisplayString(step.kind==='verified_signal_followup'?'확인 신호':'검증 공백'), 1),
                                   _createElementVNode("p", null, _toDisplayString(step.question), 1),
                                   _createElementVNode("p", null, "필요 자료: " + _toDisplayString(step.requested_information), 1),
                                   (step.reason_code)

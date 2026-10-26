@@ -7,14 +7,16 @@ from agent.research_store import ResearchStore
 
 
 class QualityMigrationTests(unittest.TestCase):
-    def test_new_store_has_v6_review_table_and_all_migrations(self):
+    def test_new_store_has_review_table_and_fragment_lookup_index(self):
         with tempfile.TemporaryDirectory() as directory:
             store = ResearchStore(Path(directory) / 'research.db', Path(directory) / 'sources')
             with store.connection() as conn:
                 versions = [row[0] for row in conn.execute('SELECT version FROM research_migrations ORDER BY version')]
                 tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-            self.assertEqual([1, 2, 3, 4, 5, 6], versions)
+                indexes = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='index'")}
+            self.assertEqual([1, 2, 3, 4, 5, 6, 7], versions)
             self.assertIn('research_quality_review_events', tables)
+            self.assertIn('research_fragment_source_lookup', indexes)
 
     def test_v5_database_upgrades_without_replacing_prior_rows(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -22,7 +24,8 @@ class QualityMigrationTests(unittest.TestCase):
             store = ResearchStore(db, root / 'sources')
             with store.connection(write=True) as conn:
                 conn.execute('DROP TABLE research_quality_review_events')
-                conn.execute('DELETE FROM research_migrations WHERE version=6')
+                conn.execute('DROP INDEX research_fragment_source_lookup')
+                conn.execute('DELETE FROM research_migrations WHERE version IN (6,7)')
             upgraded = ResearchStore(db, root / 'sources')
             with upgraded.connection() as conn:
-                self.assertEqual(6, conn.execute('SELECT MAX(version) FROM research_migrations').fetchone()[0])
+                self.assertEqual(7, conn.execute('SELECT MAX(version) FROM research_migrations').fetchone()[0])

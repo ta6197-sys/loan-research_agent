@@ -1,12 +1,15 @@
 """일반 기업 조사 진입은 외부 요청 없이도 불변 계획을 저장해야 한다."""
+from datetime import date
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import AsyncMock
 
-from agent.finance.general_company import GeneralStartInput, create_collection_retry, receive
+from agent.finance.general_company import GeneralStartInput, create_collection_retry, create_refresh_run, receive
 from agent.finance.general_collection import (GeneralCollectionService, changed_regular_reports,
     planned_reports, select_regular_reports, comparison_targets, fiscal_month_status)
 from agent.finance.report_context import prepare_context
+from agent.research_models import SourceInput
 from agent.research_store import Conflict, ResearchStore
 
 
@@ -63,6 +66,18 @@ class GeneralCompanyStartTests(unittest.TestCase):
                           ("2025", "11012", "20250814000001"), ("2026", "11012", "20260814000001")],
                          [(str(row["year"]), row["report_code"], row["rcept_no"]) for row in selected])
 
+    def test_prefixed_correction_is_selected_and_fiscal_month_checked(self):
+        rows = [
+            {"report_nm": "사업보고서 (2025.03)", "rcept_no": "20250601000001"},
+            {"report_nm": "[기재정정]사업보고서 (2025.03)", "rcept_no": "20250602000001"},
+            {"report_nm": "[첨부정정][기재정정]반기보고서 (2025.09)", "rcept_no": "20251202000001"},
+        ]
+        selected = select_regular_reports(rows, "2026-10-25", 3)
+        self.assertEqual(["20250602000001", "20251202000001"],
+                         [row["rcept_no"] for row in selected])
+        self.assertEqual("supported", fiscal_month_status(
+            {"company": {"acc_mt": "03"}}, rows, "2026-10-25")["status"])
+
     def test_collection_plan_fills_disclosure_list_gaps_with_comparison_window(self):
         targets = planned_reports([{"report_nm": "반기보고서 (2026.06)", "rcept_no": "20260814000001", "rcept_dt": "20260814"}], "2026-10-22")
         self.assertEqual([(2023, "11011", None), (2024, "11011", None), (2025, "11011", None),
@@ -110,6 +125,35 @@ class GeneralCompanyStartTests(unittest.TestCase):
         self.assertEqual(first["run_id"], retry["previous_run_id"])
         self.assertEqual(2, len(research["runs"]))
         self.assertEqual("general_company", self.store.get_run(retry["run_id"])["trigger"]["kind"])
+
+    def test_refresh_advances_immutable_cutoff_and_preserves_old_run(self):
+        first=receive(self.store,self.value())
+        newer=create_refresh_run(self.store,first['research_id'],date(2026,10,27))
+        research=self.store.get_research(first['research_id'])
+        self.assertEqual(2,len(research['bases']))
+        self.assertEqual('2026-10-22',research['bases'][0]['data']['public_cutoff'])
+        self.assertEqual('2026-10-27',research['bases'][1]['data']['public_cutoff'])
+        self.assertEqual(first['run_id'],newer['previous_run_id'])
+        self.assertEqual('2023-01-01',self.store.get_run(newer['run_id'])['trigger']['collection_plan']['disclosures_begin'])
+        again=create_refresh_run(self.store,first['research_id'],date(2026,10,27))
+        self.assertEqual(2,len(self.store.get_research(first['research_id'])['bases']))
+        self.assertEqual(newer['run_id'],again['previous_run_id'])
+        with self.assertRaisesRegex(ValueError,'cutoff_cannot_move_backward'):
+            create_refresh_run(self.store,first['research_id'],date(2026,10,22))
+
+
+class FullDisclosureHistoryTests(unittest.IsolatedAsyncioTestCase):
+    async def test_collection_requests_all_corrections_on_every_page(self):
+        service = object.__new__(GeneralCollectionService)
+        service.dart = type("Dart", (), {})()
+        service.dart.disclosures = AsyncMock(side_effect=[
+            {"items": [], "source_id": "page1", "total_page": "2"},
+            {"items": [], "source_id": "page2", "total_page": "2"},
+        ])
+        result = await service._all_disclosures("run", "00181712", "2026-10-26")
+        self.assertEqual(result["source_ids"], ["page1", "page2"])
+        self.assertEqual([call.kwargs["last_report"] for call in service.dart.disclosures.await_args_list],
+                         ["N", "N"])
 
 
 class GeneralCollectionPaginationTests(unittest.IsolatedAsyncioTestCase):
@@ -186,3 +230,34 @@ class GeneralCollectionFiscalTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('conflict',result['fiscal_period']['status'])
         self.assertEqual('fiscal_month_review_required',result['next_phase'])
         self.assertEqual([],calls)
+
+
+class GeneralRefreshTests(unittest.IsolatedAsyncioTestCase):
+    async def test_new_cutoff_rechecks_dart_and_keeps_last_verified_run_when_unchanged(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);store=ResearchStore(root/'session.db',root/'sources')
+            first=receive(store,GeneralStartInput(company_name='합성 기업',corp_code='00181712',
+                public_cutoff='2026-10-26',request_key='refresh-fixture'))
+            receipt='20260318000001'
+            store.save_source(first['run_id'],SourceInput(kind='dart',title='보관 원문',
+                publisher='금융감독원 OpenDART',receipt_number=receipt,retrieved_at='2026-10-26T00:00:00Z',
+                reporting_period={'operation':'document_member'},rights_status='public_disclosure'),b'<DOC/>')
+            service=GeneralCollectionService(store)
+            service._finish(first['run_id'],{'target_reports':[{'rcept_no':receipt}],
+                                              'next_phase':'numeric_and_xbrl_validation',
+                                              'fiscal_period':{'month':12,'status':'supported'}})
+            calls=[]
+            class Dart:
+                async def company(self,*args):calls.append('company');return {'source_id':'identity','company':{'acc_mt':'12'}}
+                async def disclosures(self,*args,**kwargs):
+                    calls.append('disclosures')
+                    return {'items':[{'report_nm':'사업보고서 (2025.12)','rcept_no':receipt,'rcept_dt':'20260318'}],
+                            'source_id':'listing','total_page':1}
+            service.dart=Dart()
+            result=await service.refresh(first['research_id'],date(2026,10,27))
+            self.assertEqual('unchanged',result['status'])
+            self.assertEqual(['company','disclosures'],calls)
+            research=store.get_research(first['research_id'])
+            self.assertEqual(['2026-10-26','2026-10-27'],[b['data']['public_cutoff'] for b in research['bases']])
+            self.assertEqual('numeric_and_xbrl_validation',store.get_run(first['run_id'])['trigger']['collection_result']['next_phase'])
+            self.assertEqual('finished',store.get_run(result['run_id'])['status'])

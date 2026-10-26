@@ -229,13 +229,17 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
     # 보관 사례의 특정 접수번호에 묶지 않는다. 일반기업의 정기공시 원문도 같은 검색·근거
     # 계약으로 읽되, 검색 발췌는 전체 공시 검토나 부재의 증명이 아니다.
     documents=[s for s in sources if s['metadata']['reporting_period'].get('operation')=='document_member']
-    from .change_analysis import investigate_hypotheses
-    def search_stored_documents(query):
-        return [extractor.search(source['id'],query,limit=2) for source in documents]
-    change_analysis['actions']=investigate_hypotheses(change_analysis['hypotheses'],search_stored_documents)
+    from .change_analysis import investigate_hypotheses, FOLLOWUP_QUERIES
     queries={'identity':['회사명'],'business':['주요제품','사업의 내용'],'finance':['재무제표'],
              'cashflow':['영업활동'],'borrowing':['차입금','리스'],'disclosure':['담보','보증','감사의견'],
              'purpose':['재고자산','매출채권']}
+    search_terms=list(dict.fromkeys(query for section_terms in queries.values() for query in section_terms))
+    if change_analysis['hypotheses']:
+        search_terms=list(dict.fromkeys(search_terms+[query for _,query in FOLLOWUP_QUERIES]))
+    document_matches={source['id']:extractor.search_many(source['id'],search_terms,limit=2) for source in documents}
+    def search_stored_documents(query):
+        return [document_matches[source['id']][query] for source in documents]
+    change_analysis['actions']=investigate_hypotheses(change_analysis['hypotheses'],search_stored_documents)
     sections=[]
     focus=trigger.get('focus_sections',[])
     for section,label in sorted(SECTIONS,key=lambda item:(item[0] not in focus,focus.index(item[0]) if item[0] in focus else 0)):
@@ -246,7 +250,7 @@ def prepare_context(store,batch,mapping,*,report_run_id=None):
         attempts=[];fragments=[]
         for source in documents:
             for query in queries[section]:
-                found=extractor.search(source['id'],query,limit=2)
+                found=document_matches[source['id']][query]
                 attempts.append({'source_id':source['id'],'query':query,'status':found['status'],
                                  'match_count':found.get('match_count',0),'truncated':found.get('truncated',False)})
                 for item in found['items']:

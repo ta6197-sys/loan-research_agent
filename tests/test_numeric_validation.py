@@ -270,7 +270,7 @@ class ValidationStorageTests(ValidationFixture):
         ResearchStore(db,self.root/'other_sources')
         c=sqlite3.connect(db);self.assertEqual([('user','보존')],c.execute("SELECT role,content FROM messages WHERE thread_id='chat'").fetchall());c.close()
         c=sqlite3.connect(db)
-        self.assertEqual([(1,),(2,),(3,),(4,),(5,),(6,)],c.execute('SELECT version FROM research_migrations ORDER BY version').fetchall());c.close()
+        self.assertEqual([(1,),(2,),(3,),(4,),(5,),(6,),(7,)],c.execute('SELECT version FROM research_migrations ORDER BY version').fetchall());c.close()
 
 class RegressionAndCalculationTests(ValidationFixture):
     def test_current_asset_raw_whitespace_and_inventory_alias(self):

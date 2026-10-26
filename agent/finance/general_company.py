@@ -7,7 +7,7 @@ from datetime import date
 
 from pydantic import Field, field_validator
 
-from agent.research_models import Budget, Company, Contract, ResearchInput
+from agent.research_models import BasisInput, Budget, Company, Contract, ResearchInput
 
 
 def disclosures_begin(cutoff):
@@ -97,3 +97,21 @@ def create_collection_retry(store, research_id):
                            budget=Budget.model_validate(previous["budget"]))
     return {"research_id": research_id, "basis_id": basis["id"], "run_id": run["id"],
             "status": "collection_plan_pending", "previous_run_id": previous["id"]}
+
+
+def create_refresh_run(store, research_id, cutoff):
+    """Advance the immutable cutoff when needed, then create a fresh bounded check run."""
+    research=store.get_research(research_id)
+    if not research['company'].get('corp_code'):
+        raise ValueError('company_identity_required')
+    if not any(run['trigger'].get('kind')=='general_company' for run in research['runs']):
+        raise ValueError('general_company_research_required')
+    latest=research['bases'][-1]
+    previous=date.fromisoformat(latest['data']['public_cutoff'])
+    if cutoff<previous:
+        raise ValueError('cutoff_cannot_move_backward')
+    if cutoff>previous:
+        basis=BasisInput.model_validate({**latest['data'],'public_cutoff':cutoff,
+                                         'comparison_window':comparison_window(cutoff)})
+        store.create_basis(research_id,basis,expected_version=latest['version'])
+    return create_collection_retry(store,research_id)

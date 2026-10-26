@@ -16,6 +16,9 @@ REQUESTS = {
     "zero_or_nonpositive_comparison_base": "비교 기준값과 증감률 대신 사용할 금액 변화 근거",
     "zero_or_inappropriate_denominator": "분모의 회계 의미와 원문 수치",
     "required_verified_input_missing": "해당 계정의 공시 원문과 독립 수치 검증 근거",
+    "input_missing": "해당 계정·기간·범위의 공시 재무제표와 수치 대조 자료",
+    "composition_or_numeric_evidence_unconfirmed": "차입금 구성 주석과 각 항목의 원문·API·XBRL 대응 근거",
+    "correction_history_unconfirmed": "원본·정정본 접수 관계와 기준일까지의 공식 전체 공시목록",
 }
 
 
@@ -24,7 +27,7 @@ def _refs(items):
             for key in ("input_fact_ids", "input_validation_ids", "source_ids")}
 
 
-def build(report_id, validation_batch_id, metrics, signals):
+def build(report_id, validation_batch_id, metrics, signals, financial_rows=()):
     """비교집단과 무관하게 단일기업의 검증 상태만으로 재현 가능한 계획을 만든다."""
     steps = []
     for signal in sorted(signals, key=lambda item: item["signal_id"]):
@@ -55,6 +58,26 @@ def build(report_id, validation_batch_id, metrics, signals):
                       "related_metric_ids": sorted(item["metric_id"] for item in items),
                       **_refs(items),
                       "limitation": "자료 요청은 미검증 값을 수치나 사실로 승격하지 않습니다."})
+    row_gaps={}
+    for row in financial_rows:
+        if row.get('status')!='withheld':continue
+        reason=row.get('reason') or 'analysis_input_unavailable'
+        key=(row.get('scope'),row.get('account'),reason)
+        row_gaps.setdefault(key,[]).append(row)
+    for (scope,account,reason),items in sorted(row_gaps.items(),key=lambda pair:tuple(str(x) for x in pair[0])):
+        periods=sorted({row.get('end') for row in items if row.get('end')})
+        label=items[0].get('label') or account
+        refs=[{'input_fact_ids':row.get('fact_ids',[]),
+               'input_validation_ids':row.get('validation_ids',[]),
+               'source_ids':row.get('source_ids',[])} for row in items]
+        steps.append({'id':'account-gap:'+str(scope)+':'+str(account)+':'+reason,
+                      'kind':'account_verification_gap','status':'evidence_required',
+                      'reason_code':reason,
+                      'question':f'{label}의 원문 수치와 계정·기간 대응을 확인할 수 있나요?',
+                      'requested_information':REQUESTS.get(reason,'해당 계정의 공시 원문과 검증 근거'),
+                      'scope':scope,'periods':[{'end':end} for end in periods],
+                      'related_metric_ids':[],**_refs(refs),
+                      'limitation':'해당 계정은 미검증 상태이며 금액을 0으로 대체하지 않습니다.'})
     return {"version": VERSION, "report_id": report_id, "validation_batch_id": validation_batch_id,
             "status": "review_items_available" if steps else "no_review_items",
             "steps": steps, "limitations": ["계획과 질문은 공개 자료 사전조사 후보이며 대출·신용위험 판단이 아닙니다."]}

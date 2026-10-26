@@ -31,6 +31,20 @@ class AnalysisPlanTests(unittest.TestCase):
         self.assertEqual("no_review_items", result["status"])
         self.assertEqual([], result["steps"])
 
+    def test_unverified_account_creates_specific_evidence_question_without_number(self):
+        rows=[{'scope':'OFS','end':'2026-06-30','account':'cash','label':'현금및현금성자산',
+               'status':'withheld','reason':'input_missing','fact_ids':[],'validation_ids':[]},
+              {'scope':'OFS','end':'2025-06-30','account':'cash','label':'현금및현금성자산',
+               'status':'withheld','reason':'input_missing','fact_ids':[],'validation_ids':[]},
+              {'scope':'OFS','end':'2026-06-30','account':'revenue','status':'verified','value':'0'}]
+        result=build(None,'batch',[],[],rows)
+        self.assertEqual(1,len(result['steps']))
+        step=result['steps'][0]
+        self.assertEqual('account_verification_gap',step['kind'])
+        self.assertIn('현금및현금성자산',step['question'])
+        self.assertEqual([{'end':'2025-06-30'},{'end':'2026-06-30'}],step['periods'])
+        self.assertNotIn('value',step)
+
 
 if __name__ == "__main__":
     unittest.main()
