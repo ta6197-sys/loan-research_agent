@@ -316,7 +316,7 @@ def report_financial_analysis(report_id: str, request: Request):
 
 @router.get('/cohorts/broad-303/companies/{corp_code}/analysis')
 def broad_303_company_analysis(corp_code: str, scope: Literal['OFS','CFS'] = 'OFS',
-                               snapshot_version: Literal['v1','v2'] = 'v2'):
+                               snapshot_version: Literal['v1','v2','v3'] = 'v2'):
     if len(corp_code) != 8 or not corp_code.isdigit():
         raise HTTPException(422, '8자리 DART 법인코드가 필요합니다.')
     try:

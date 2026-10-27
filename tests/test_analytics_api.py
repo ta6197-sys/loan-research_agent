@@ -29,6 +29,20 @@ class AnalyticsApiContractTests(unittest.TestCase):
             self.assertEqual(200,previous.status_code)
             self.assertEqual(21,previous.json()['peer_company_count'])
             self.assertEqual('v1',previous.json()['snapshot_version'])
+            successor=client.get('/cohorts/broad-303/companies/00102353/analysis?scope=OFS&snapshot_version=v3')
+            self.assertEqual(200,successor.status_code)
+            self.assertEqual('v3',successor.json()['snapshot_version'])
+            self.assertEqual(30,successor.json()['peer_company_count'])
+            ratios=[(row['period_end'],row['features']['borrowing_to_assets'],
+                     row['feature_evidence']['borrowing_to_assets'])
+                    for row in successor.json()['company_period_features']
+                    if 'borrowing_to_assets' in row['features']]
+            self.assertEqual({'2023-12-31','2025-06-30'},{item[0] for item in ratios})
+            self.assertTrue(all(item[2] for item in ratios))
+            unchanged=client.get('/cohorts/broad-303/companies/00102353/analysis?scope=OFS&snapshot_version=v2')
+            self.assertEqual(200,unchanged.status_code)
+            self.assertFalse(any('borrowing_to_assets' in row['features']
+                for row in unchanged.json()['company_period_features']))
             self.assertEqual(404,client.get('/cohorts/broad-303/companies/00000000/analysis').status_code)
             self.assertEqual(422,client.get('/cohorts/broad-303/companies/bad/analysis').status_code)
             self.assertEqual(422,client.get('/cohorts/broad-303/companies/00157539/analysis?scope=bad').status_code)

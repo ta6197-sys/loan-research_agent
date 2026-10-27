@@ -8,10 +8,11 @@ from .statistical_analysis import analyze
 
 ROOT = Path(__file__).resolve().parents[2]
 AUDITS = {'v1': ROOT / 'doc/finance/BROAD_303_EXPANDED_AUDIT_20261027.json',
-          'v2': ROOT / 'doc/finance/BROAD_303_EXPANDED_V2_AUDIT_20261027.json'}
+          'v2': ROOT / 'doc/finance/BROAD_303_EXPANDED_V2_AUDIT_20261027.json',
+          'v3': ROOT / 'doc/finance/BROAD_303_EXPANDED_V3_AUDIT_20261027.json'}
 SNAPSHOTS = {version: {scope: ROOT / f'doc/finance/BROAD_303_EXPANDED_{suffix}{scope}_20261027.json'
                        for scope in ('OFS', 'CFS')}
-             for version,suffix in (('v1',''),('v2','V2_'))}
+             for version,suffix in (('v1',''),('v2','V2_'),('v3','V3_'))}
 
 
 def read_company(corp_code: str, scope: str = 'OFS', snapshot_version: str = 'v2'):
@@ -45,6 +46,11 @@ def read_company(corp_code: str, scope: str = 'OFS', snapshot_version: str = 'v2
         'public_cutoff': audit['public_cutoff'],
         'snapshot_id': snapshot['snapshot_id'],
         'company_period_count': len(rows),
+        'company_period_features': [
+            {'period_start': row['period_start'], 'period_end': row['period_end'],
+             'feature_policy_version': row['feature_policy_version'],
+             'features': row['features'], 'feature_evidence': row['feature_evidence']}
+            for row in rows],
         'peer_company_count': expected['distinct_companies'],
         'peer_company_period_count': expected['row_count'],
         'classification_revision': audit['classification_revision'],
