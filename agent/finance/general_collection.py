@@ -287,6 +287,8 @@ class GeneralCollectionService:
         만들고 전체 수집으로 이어져 이전 판의 근거를 바꾸지 않는다.
         """
         receipt=create_refresh_run(self.store, research_id, cutoff)
+        if receipt['status']=='in_progress':
+            return receipt
         run_id=receipt['run_id'];basis,company=self._begin(run_id)
         try:
             identity=await self.dart.company(run_id,company['corp_code'])
@@ -342,6 +344,16 @@ class GeneralCollectionService:
         except Exception:
             with self.store.connection(write=True) as conn:
                 run,basis_row=self.store._context(conn,run_id)
-                conn.execute("UPDATE research_runs SET status='failed' WHERE id=? AND status='running'",(run_id,))
-                self.store._event(conn,basis_row['research_id'],basis_row['id'],run_id,'general_freshness_check_failed',{'at':now()})
+                trigger=json.loads(run['trigger_json'])
+                if (run['status']=='finished' and
+                        trigger.get('collection_result',{}).get('next_phase')=='numeric_and_xbrl_validation'):
+                    trigger['phase']='validation_failed'
+                    conn.execute("UPDATE research_runs SET trigger_json=? WHERE id=?",
+                                 (safe_payload(trigger),run_id))
+                    self.store._event(conn,basis_row['research_id'],basis_row['id'],run_id,
+                                      'general_validation_failed',{'at':now()})
+                else:
+                    conn.execute("UPDATE research_runs SET status='failed' WHERE id=? AND status='running'",(run_id,))
+                    self.store._event(conn,basis_row['research_id'],basis_row['id'],run_id,
+                                      'general_freshness_check_failed',{'at':now()})
             raise

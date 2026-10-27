@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from agent.finance.general_company import GeneralStartInput, create_collection_retry, create_refresh_run, receive
 from agent.finance.general_collection import (GeneralCollectionService, changed_regular_reports,
@@ -128,6 +128,11 @@ class GeneralCompanyStartTests(unittest.TestCase):
 
     def test_refresh_advances_immutable_cutoff_and_preserves_old_run(self):
         first=receive(self.store,self.value())
+        pending=create_refresh_run(self.store,first['research_id'],date(2026,10,27))
+        self.assertEqual({'status':'in_progress','run_id':first['run_id']},
+                         {key:pending[key] for key in ('status','run_id')})
+        self.assertEqual(1,len(self.store.get_research(first['research_id'])['runs']))
+        GeneralCollectionService(self.store)._finish(first['run_id'],{'next_phase':'fiscal_month_review_required'})
         newer=create_refresh_run(self.store,first['research_id'],date(2026,10,27))
         research=self.store.get_research(first['research_id'])
         self.assertEqual(2,len(research['bases']))
@@ -137,7 +142,11 @@ class GeneralCompanyStartTests(unittest.TestCase):
         self.assertEqual('2023-01-01',self.store.get_run(newer['run_id'])['trigger']['collection_plan']['disclosures_begin'])
         again=create_refresh_run(self.store,first['research_id'],date(2026,10,27))
         self.assertEqual(2,len(self.store.get_research(first['research_id'])['bases']))
-        self.assertEqual(newer['run_id'],again['previous_run_id'])
+        self.assertEqual('in_progress',again['status'])
+        self.assertEqual(newer['run_id'],again['run_id'])
+        GeneralCollectionService(self.store)._finish(newer['run_id'],{'next_phase':'fiscal_month_review_required'})
+        next_check=create_refresh_run(self.store,first['research_id'],date(2026,10,27))
+        self.assertEqual(newer['run_id'],next_check['previous_run_id'])
         with self.assertRaisesRegex(ValueError,'cutoff_cannot_move_backward'):
             create_refresh_run(self.store,first['research_id'],date(2026,10,22))
 
@@ -233,6 +242,19 @@ class GeneralCollectionFiscalTests(unittest.IsolatedAsyncioTestCase):
 
 
 class GeneralRefreshTests(unittest.IsolatedAsyncioTestCase):
+    async def test_active_collection_is_reused_without_dart_call(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);store=ResearchStore(root/'session.db',root/'sources')
+            first=receive(store,GeneralStartInput(company_name='합성 기업',corp_code='00181712',
+                public_cutoff='2026-10-26',request_key='active-refresh-fixture'))
+            class Dart:
+                async def company(self,*args):raise AssertionError('dart_must_not_be_called')
+            result=await GeneralCollectionService(store,dart_service=Dart()).refresh(
+                first['research_id'],date(2026,10,27))
+            self.assertEqual('in_progress',result['status'])
+            self.assertEqual(first['run_id'],result['run_id'])
+            self.assertEqual(1,len(store.get_research(first['research_id'])['bases']))
+
     async def test_new_cutoff_rechecks_dart_and_keeps_last_verified_run_when_unchanged(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);store=ResearchStore(root/'session.db',root/'sources')
@@ -261,3 +283,43 @@ class GeneralRefreshTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(['2026-10-26','2026-10-27'],[b['data']['public_cutoff'] for b in research['bases']])
             self.assertEqual('numeric_and_xbrl_validation',store.get_run(first['run_id'])['trigger']['collection_result']['next_phase'])
             self.assertEqual('finished',store.get_run(result['run_id'])['status'])
+
+    async def test_new_correction_collects_and_runs_both_validation_batches(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);store=ResearchStore(root/'session.db',root/'sources')
+            first=receive(store,GeneralStartInput(company_name='합성 기업',corp_code='00181712',
+                public_cutoff='2026-10-26',request_key='changed-refresh-fixture'))
+            old='20260318000001';new='20261027000001'
+            store.save_source(first['run_id'],SourceInput(kind='dart',title='보관 원문',
+                publisher='금융감독원 OpenDART',receipt_number=old,retrieved_at='2026-10-26T00:00:00Z',
+                reporting_period={'operation':'document_member'},rights_status='public_disclosure'),b'<DOC/>')
+            service=GeneralCollectionService(store)
+            service._finish(first['run_id'],{'target_reports':[{'rcept_no':old}],
+                'next_phase':'numeric_and_xbrl_validation','fiscal_period':{'month':12,'status':'supported'}})
+            class Dart:
+                async def company(self,*args):return {'source_id':'identity','company':{'acc_mt':'12'}}
+                async def disclosures(self,*args,**kwargs):
+                    return {'items':[{'report_nm':'사업보고서 (2025.12)','rcept_no':old,'rcept_dt':'20260318'},
+                        {'report_nm':'[기재정정]사업보고서 (2025.12)','rcept_no':new,'rcept_dt':'20261027'}],
+                        'source_id':'listing','total_page':1}
+            service.dart=Dart()
+            async def collected(run_id):
+                result={'target_reports':[{'rcept_no':new}],
+                        'next_phase':'numeric_and_xbrl_validation','fiscal_period':{'month':12,'status':'supported'}}
+                service._finish(run_id,result)
+                return result
+            service.run=AsyncMock(side_effect=collected)
+            with patch('agent.finance.numeric_validation.NumericValidationService.validate_run',return_value={'id':'numeric'}), \
+                 patch('agent.finance.xbrl_mapping.XbrlMappingService.validate_run',return_value={'id':'mapping'}):
+                result=await service.refresh(first['research_id'],date(2026,10,27))
+            self.assertEqual('changed',result['status'])
+            self.assertEqual([new],[row['rcept_no'] for row in result['changes']])
+            self.assertEqual(('numeric','mapping'),(result['numeric_batch_id'],result['mapping_batch_id']))
+            self.assertEqual('finished',store.get_run(first['run_id'])['status'])
+            with patch('agent.finance.numeric_validation.NumericValidationService.validate_run',
+                       side_effect=ValueError('synthetic_validation_failure')):
+                with self.assertRaisesRegex(ValueError,'synthetic_validation_failure'):
+                    await service.refresh(first['research_id'],date(2026,10,27))
+            latest=store.get_research(first['research_id'])['runs'][-1]
+            self.assertEqual('finished',latest['status'])
+            self.assertEqual('validation_failed',latest['trigger']['phase'])
