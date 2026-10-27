@@ -286,9 +286,19 @@ class DartService:
             data = json.loads(self.store.source_content(source['id']))
             data = data.get('response', data)
             for entry in data.get('list',[]):
+                # The disclosure-list API supplies report_nm, while the
+                # financial API supplies reprt_code. Accept the former only
+                # when its regular-report title and period are explicit.
+                disclosed_code = None
+                if op == 'disclosures':
+                    title = re.sub(r'^(?:\s*\[[^\]]+\])+\s*', '', str(entry.get('report_nm') or ''))
+                    match = re.match(r'^(사업보고서|반기보고서)\s*\(20\d{2}\.\d{2}\)', title)
+                    if match:
+                        disclosed_code = {'사업보고서':'11011','반기보고서':'11012'}[match.group(1)]
                 if (entry.get('rcept_no') == receipt
                         and entry.get('corp_code') == research['company'].get('corp_code')
-                        and (report_code is None or entry.get('reprt_code') == report_code)):
+                        and (report_code is None or entry.get('reprt_code') == report_code
+                             or disclosed_code == report_code)):
                     return date.fromisoformat(receipt[:8]).isoformat() <= basis['public_cutoff']
         return False
 

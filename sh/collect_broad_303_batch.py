@@ -94,6 +94,7 @@ async def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--limit',type=int,default=24)
     parser.add_argument('--retry-no-data',action='store_true')
+    parser.add_argument('--retry-receipt-mismatch',action='store_true')
     args=parser.parse_args()
     if not 1<=args.limit<=24:raise ValueError('limit_must_be_1_to_24')
     load_dotenv(ROOT/'.env')
@@ -107,19 +108,25 @@ async def main():
     for index,target in enumerate(plan['targets'][:args.limit],1):
         code=target['corp_code']
         previous=progress['results'].get(code)
-        if previous and not (args.retry_no_data and previous.get('reason')=='DartFailure:no_data'
-                             and not previous.get('retry_attempted')):
+        retry_missing = (args.retry_no_data and previous and
+                         previous.get('reason')=='DartFailure:no_data' and
+                         not previous.get('retry_attempted'))
+        retry_receipt = (args.retry_receipt_mismatch and previous and
+                         previous.get('reason')=='DartFailure:receipt_not_in_research' and
+                         not previous.get('receipt_retry_attempted'))
+        if previous and not (retry_missing or retry_receipt):
             print(json.dumps({'index':index,'corp_code':code,'status':'already_recorded'},ensure_ascii=False),flush=True)
             continue
         try:
             result=await process(store,target,candidates[code],plan['public_cutoff'],
-                                 retry_no_data=bool(previous and args.retry_no_data))
+                                 retry_no_data=bool(retry_missing or retry_receipt))
         except Exception as error:
             result={'corp_code':code,'corp_name':target['corp_name'],'status':'review_required',
                     'reason':type(error).__name__+':'+str(error)[:240],
                     'cohort_status':'not_included'}
-        if previous and args.retry_no_data:
-            result['retry_attempted']=True
+        if retry_missing or retry_receipt:
+            result['retry_attempted']=bool(previous.get('retry_attempted') or retry_missing)
+            result['receipt_retry_attempted']=bool(retry_receipt)
             result['previous_result']=previous
         progress['results'][code]=result
         save_progress(progress)

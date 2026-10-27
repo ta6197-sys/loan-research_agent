@@ -92,9 +92,20 @@ def main():
              'limitations':['이 표본은 24개 후보의 고정 개발 표본이며 303 산업 전체의 대표 표본이 아닙니다.',
                 'XBRL 자체 업종코드의 KSIC 개정 차수가 미확인되어 ML 학습은 차단합니다.',
                 '통계적 특이성은 회계 오류·신용위험 또는 대출 판단이 아닙니다.']}
-    immutable_write(ROOT/'doc/finance/BROAD_303_EXPANDED_AUDIT_20261027.json',summary)
-    print(json.dumps({'scope_summary':scopes,'external_requests_total':summary['external_requests_total']},
-                     ensure_ascii=False,sort_keys=True))
+    audit_path=ROOT/'doc/finance/BROAD_303_EXPANDED_AUDIT_20261027.json'
+    if audit_path.exists():
+        historical=json.loads(audit_path.read_text())
+        if historical['scopes']!=scopes:
+            raise ValueError('immutable_expanded_snapshot_conflict:new_revision_required')
+        print(json.dumps({'status':'historical_snapshot_preserved','scope_summary':scopes,
+                          'snapshot_external_requests':historical['external_requests_total'],
+                          'current_isolated_external_requests':summary['external_requests_total']},
+                         ensure_ascii=False,sort_keys=True))
+    else:
+        immutable_write(audit_path,summary)
+        print(json.dumps({'status':'new_snapshot_audit','scope_summary':scopes,
+                          'external_requests_total':summary['external_requests_total']},
+                         ensure_ascii=False,sort_keys=True))
 
 
 if __name__=='__main__':main()
