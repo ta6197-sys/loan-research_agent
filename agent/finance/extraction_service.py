@@ -207,45 +207,54 @@ class ExtractionService:
         return original
 
     def search(self,source_id,query,limit=10):
-        if not query or len(query)>200 or not 1<=limit<=50:
+        return self.search_many(source_id,[query],limit)[query]
+
+    def search_many(self,source_id,queries,limit=10):
+        """같은 원문의 여러 검색어를 한 번의 원문·조각 검증 순회로 평가한다."""
+        queries=tuple(dict.fromkeys(queries))
+        if not queries or any(not isinstance(q,str) or not q or len(q)>200 for q in queries) or not 1<=limit<=50:
             raise ExtractionFailure('invalid_query')
         self.store.source_content(source_id)
         source=self.store.get_source(source_id)
-        hits=[];total=0
+        normalized={q:q.casefold() for q in queries}
+        hits={q:[] for q in queries};totals={q:0 for q in queries}
         with self.store.connection() as conn:
             manifest=self._existing(conn,source_id,self._fingerprint(source))
             if manifest is None:
-                return {'status':'not_indexed','items':[],'search_scope':'indexed_fragments_only',
-                        'financial_verification':'not_performed'}
+                return {q:{'status':'not_indexed','items':[],'search_scope':'indexed_fragments_only',
+                           'financial_verification':'not_performed'} for q in queries}
             summary=manifest['data']['context']['summary']
             selected_ids=set(manifest['data']['context']['fragment_ids'])
-            rows=conn.execute('SELECT * FROM research_fragments WHERE source_id=? ORDER BY rowid',(source_id,)).fetchall()
-        for row in rows:
-            if row['id'] not in selected_ids:
-                continue
-            fragment=row_data(row); data=fragment['data']; context=data['context'];kind=context.get('kind')
-            if kind=='extraction_manifest':
-                summary=context['summary']
-                continue
-            if kind=='table':
-                units=context['unit_candidates']
-                matches=[(cell['text'],{**cell['location'],'table_number':context['table_number'],
-                         'row':cell['row'],'column':cell['column']},cell['column_headers'],cell['period'])
-                         for r in context['rows'] for cell in r['cells'] if query.casefold() in cell['text'].casefold()]
-            elif kind in {'paragraph','api_record'}:
-                units=[]
-                value=data['text'] if kind=='paragraph' else encode(context['record'])
-                matches=[(value,data['location'],[],None)] if query.casefold() in value.casefold() else []
-            else:
-                continue
-            total+=len(matches)
-            for value,location,headers,period in matches:
-                if len(hits)<limit:
-                    hits.append({'fragment_id':fragment['id'],'kind':kind,'snippet':value[:800],
-                                 'location':location,'section_path':context.get('section_path',[]),
-                                 'unit_candidates':units,'column_headers':headers,'period':period,
-                                 'warnings':data['extraction_warnings']})
-        return {'status':'ok' if hits else 'no_match_in_index','items':hits,'match_count':total,
-                'returned_count':len(hits),'truncated':total>len(hits),'index_summary':summary,
-                'manifest_id':manifest['id'],
-                'search_scope':'indexed_fragments_only','financial_verification':'not_performed'}
+            for row in conn.execute('SELECT * FROM research_fragments WHERE source_id=? ORDER BY rowid',(source_id,)):
+                if row['id'] not in selected_ids:
+                    continue
+                fragment=row_data(row); data=fragment['data']; context=data['context'];kind=context.get('kind')
+                if kind=='extraction_manifest':
+                    summary=context['summary']
+                    continue
+                if kind=='table':
+                    units=context['unit_candidates']
+                    values=((cell['text'],{**cell['location'],'table_number':context['table_number'],
+                             'row':cell['row'],'column':cell['column']},cell['column_headers'],cell['period'])
+                            for r in context['rows'] for cell in r['cells'])
+                elif kind in {'paragraph','api_record'}:
+                    units=[]
+                    value=data['text'] if kind=='paragraph' else encode(context['record'])
+                    values=((value,data['location'],[],None),)
+                else:
+                    continue
+                for value,location,headers,period in values:
+                    folded=value.casefold()
+                    for query,needle in normalized.items():
+                        if needle not in folded:
+                            continue
+                        totals[query]+=1
+                        if len(hits[query])<limit:
+                            hits[query].append({'fragment_id':fragment['id'],'kind':kind,'snippet':value[:800],
+                                                'location':location,'section_path':context.get('section_path',[]),
+                                                'unit_candidates':units,'column_headers':headers,'period':period,
+                                                'warnings':data['extraction_warnings']})
+        return {q:{'status':'ok' if hits[q] else 'no_match_in_index','items':hits[q],
+                   'match_count':totals[q],'returned_count':len(hits[q]),'truncated':totals[q]>len(hits[q]),
+                   'index_summary':summary,'manifest_id':manifest['id'],
+                   'search_scope':'indexed_fragments_only','financial_verification':'not_performed'} for q in queries}

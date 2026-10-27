@@ -5,7 +5,7 @@ from collections import Counter, defaultdict
 from decimal import Decimal, InvalidOperation
 
 VERSION = "peer-dataset-1.0"
-FEATURE_POLICY_VERSION = "verified-financial-features-1.0"
+FEATURE_POLICY_VERSION = "verified-financial-features-1.1"
 FEATURES = {
     "operating_margin": "영업이익 / 매출액",
     "net_margin": "순이익 / 매출액",
@@ -16,7 +16,7 @@ FEATURES = {
     "inventory_growth": "재고자산 전년 동기 증가율",
     "revenue_growth": "매출액 전년 동기 증가율",
     "operating_cashflow_growth": "영업현금흐름 전년 동기 증가율",
-    "borrowing_to_assets": "검증된 차입금 구성 합계 / 자산",
+    "borrowing_to_assets": "동일 범위·시점의 V12 검증 차입 3계정 합계 / 양수 자산 * 100",
 }
 IDENTITY = ("corp_code", "industry_code", "period_start", "period_end", "period_kind", "scope",
             "public_cutoff", "source_receipt", "source_hash", "validation_batch_id")
@@ -84,7 +84,10 @@ def _canonical(record, feature_policy_version):
             "account_definition_version": record.get("account_definition_version"), "peer_group": record.get("peer_group"),
             "features": values, "missing_features": missing_features, "feature_evidence": evidence,
             "correction_status": record["correction_status"],
-            **{key: record[key] for key in ("source_manifest", "source_public_at", "report_id", "accounting_standard", "currency", "data_origin", "verification_gates") if key in record}}, None
+            **{key: record[key] for key in ("source_manifest", "source_public_at", "report_id", "run_id",
+               "mapping_batch_id", "report_period_kind", "industry_system", "industry_version",
+               "industry_observed_code", "accounting_standard_evidence", "accounting_standard",
+               "currency", "data_origin", "verification_gates") if key in record}}, None
 
 
 def build_snapshot(records, *, feature_policy_version=FEATURE_POLICY_VERSION):

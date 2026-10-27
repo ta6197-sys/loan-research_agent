@@ -162,6 +162,12 @@ class ExtractionStorageTests(unittest.TestCase):
         self.assertTrue(result['items'][0]['location']['raw_span_verified'])
         missing=self.service.search(source['id'],'없는 문구')
         self.assertEqual('no_match_in_index',missing['status'])
+        with patch.object(self.store,'source_content',wraps=self.store.source_content) as original:
+            batch=self.service.search_many(source['id'],['매출액','없는 문구'],limit=2)
+        self.assertEqual(1,original.call_count)
+        self.assertEqual(result['match_count'],batch['매출액']['match_count'])
+        self.assertEqual(result['items'][:2],batch['매출액']['items'])
+        self.assertEqual(missing,batch['없는 문구'])
 
     def test_api_json_pointer_keeps_original_record_without_period_guessing(self):
         data={'status':'000','list':[{'account_nm':'현금','thstrm_amount':'9,007,199,254,740,993','rcept_no':'20260813000874'}]}

@@ -13,5 +13,5 @@ def create_finance_client(db_path, source_root):
     for name in ('DART_MAX_RESPONSE_BYTES','DART_MAX_EXPANDED_BYTES','DART_MAX_ARCHIVE_MEMBERS'):
         if name in os.environ:
             environment[name] = os.environ[name]
-    return MCPClient(flaky_first_tool_call=False,server_scripts={'finance':script},
+    return MCPClient(server_scripts={'finance':script},
                      server_env={'finance':environment})

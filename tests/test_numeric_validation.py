@@ -13,7 +13,6 @@ from agent.finance.numeric_validation import (
 )
 from agent.research_models import ResearchInput, SourceInput
 from agent.research_store import IntegrityFailure, ResearchStore
-from agent.session_store import SqliteSessionStore
 from test_document_extraction import document
 
 
@@ -265,14 +264,13 @@ class ValidationStorageTests(ValidationFixture):
 
     def test_v1_migration_preserves_original_rows_and_chat(self):
         db=self.root/'old.db'
-        session=SqliteSessionStore(db);session.append('chat','user','보존');session.close()
+        c=sqlite3.connect(db);c.execute('CREATE TABLE messages (thread_id TEXT, role TEXT, content TEXT, created TEXT)');c.execute("INSERT INTO messages VALUES ('chat','user','보존','2026-10-20')");c.commit();c.close()
         c=sqlite3.connect(db);c.executescript(Path('agent/research_schema.sql').read_text())
         c.execute("INSERT INTO research_migrations VALUES (1,'before')");c.commit();c.close()
         ResearchStore(db,self.root/'other_sources')
-        session=SqliteSessionStore(db);self.addCleanup(session.close)
-        self.assertEqual([{'role':'user','content':'보존'}],session.load('chat'))
+        c=sqlite3.connect(db);self.assertEqual([('user','보존')],c.execute("SELECT role,content FROM messages WHERE thread_id='chat'").fetchall());c.close()
         c=sqlite3.connect(db)
-        self.assertEqual([(1,),(2,),(3,),(4,),(5,),(6,)],c.execute('SELECT version FROM research_migrations ORDER BY version').fetchall());c.close()
+        self.assertEqual([(1,),(2,),(3,),(4,),(5,),(6,),(7,)],c.execute('SELECT version FROM research_migrations ORDER BY version').fetchall());c.close()
 
 class RegressionAndCalculationTests(ValidationFixture):
     def test_current_asset_raw_whitespace_and_inventory_alias(self):

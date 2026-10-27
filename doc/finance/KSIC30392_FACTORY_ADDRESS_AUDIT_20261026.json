@@ -1,0 +1,725 @@
+{
+  "as_of": "2026-10-26",
+  "candidate_source_sha256": "867da8379d97e1bf21d05434a1cec4212a7ea83ee7d94c25de7985ba0d913d7f",
+  "factory_source_date": "2025-12-31",
+  "factory_source_sha256": "5f5699a909601edb3adac4f63c3d2daa2a0d0c26135b0f58f6cdd52673745792",
+  "factory_source_url": "https://www.data.go.kr/data/15105482/fileData.do",
+  "limitation": "2025 원본에는 공장등록번호·업종코드·사업자등록번호가 없어 2021 업종 행이나 DART 법인과의 동일성을 확정할 수 없다.",
+  "records": [
+    {
+      "candidate_source_row": 11447,
+      "corp_name": "(주)스마트아이",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)스마트아이",
+          "factory_address": "서울특별시 송파구 법원로 128 (문정동) 문정에스케이브이원지엘메트로시티 A동 1304호",
+          "production": "5인지 인증장비, 번호 인증장비, RFID 인증기",
+          "source_row": 11066
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 23993,
+      "corp_name": "티엔비오토파트",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "티엔비오토파트",
+          "factory_address": "대구광역시 서구 북비산로6길 15 (이현동)",
+          "production": "라이닝제조",
+          "source_row": 37796
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 24953,
+      "corp_name": "삼창산업",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "삼창산업",
+          "factory_address": "대구광역시 북구 팔달로1길 106 (노원동3가)",
+          "production": "자동차부품(샤시,브레이크)",
+          "source_row": 38826
+        },
+        {
+          "company_name": "삼창산업(주)",
+          "factory_address": "울산광역시 북구 매곡산업4길 7 (매곡동)",
+          "production": "자동차엔진부품, 컨베이어",
+          "source_row": 64525
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 25455,
+      "corp_name": "영남하네스부품",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "영남하네스부품",
+          "factory_address": "대구광역시 북구 검단로 135, 101동 1층 124 (검단동)",
+          "production": "자동차 전자 하네스 부품",
+          "source_row": 39810
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 26404,
+      "corp_name": "(주)광덕금속",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)광덕금속",
+          "factory_address": "대구광역시 달서구 성서서로 236 (갈산동) 1차단지 51B 8-3L",
+          "production": "사이드힌지브라켁 등",
+          "source_row": 40398
+        },
+        {
+          "company_name": "광덕금속",
+          "factory_address": "대구광역시 달서구 성서서로 236, (1차단지 51B 8-3L) (갈산동)",
+          "production": "브라켓류",
+          "source_row": 40686
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 29589,
+      "corp_name": "산도브레이크(주)",
+      "dart_legal_address_exact_matches": [
+        {
+          "corp_code": "01897625",
+          "factory_2025_source_rows": [
+            43757
+          ],
+          "legal_address": "대구광역시 달성군 논공읍 논공로 438 (본리리, 산도브레이크(주))",
+          "profile_source_sha256": "daf2191fac2c1ac8ecc6e0b6a81460acfa832fe36a7da857a807f1552a8693c1"
+        }
+      ],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "산도브레이크(주)",
+          "factory_address": "대구광역시 달성군 논공읍 논공로 438",
+          "production": "브레이크라이닝",
+          "source_row": 43757
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 30528,
+      "corp_name": "(주)대철",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)대철",
+          "factory_address": "대구광역시 달성군 구지면 국가산단대로39길 85",
+          "production": "브레이크, 클러치 실린더류",
+          "source_row": 44739
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 30725,
+      "corp_name": "에이비테크(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "에이비테크(주)",
+          "factory_address": "대구광역시 달성군 구지면 달성2차4로 75",
+          "production": "자동차용 브레이크 마찰재 ",
+          "source_row": 44980
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 30756,
+      "corp_name": "(주)두림산업",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)두림산업",
+          "factory_address": "대구광역시 달성군 구지면 달성2차동1로 52 (두림산업)",
+          "production": "자동차브레이크부품",
+          "source_row": 45021
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 30890,
+      "corp_name": "상신브레이크(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "상신브레이크(주)",
+          "factory_address": "대구광역시 달성군 논공읍 논공중앙로33길 10 (총 4 필지)",
+          "production": "자동차 브레이크부품, 철도관련부품",
+          "source_row": 43593
+        },
+        {
+          "company_name": "상신브레이크(주)",
+          "factory_address": "대구광역시 달성군 논공읍 논공로91길 52",
+          "production": "임대업",
+          "source_row": 43766
+        },
+        {
+          "company_name": "상신브레이크(주)",
+          "factory_address": "대구광역시 달성군 유가읍 테크노중앙대로 90 외 1필지",
+          "production": "자동차 부품",
+          "source_row": 44134
+        },
+        {
+          "company_name": "상신브레이크(주)",
+          "factory_address": "대구광역시 달성군 구지면 국가산단서로84길 79",
+          "production": "자동차브레이크마찰재",
+          "source_row": 45177
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 32901,
+      "corp_name": "(주)아이엔테크놀로지",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)아이엔테크놀로지",
+          "factory_address": "인천광역시 남동구 남동동로 385, 36블럭 6로트 (남촌동)",
+          "production": "자동차부품(페달)",
+          "source_row": 47488
+        },
+        {
+          "company_name": "(주)아이엔테크놀로지",
+          "factory_address": "인천광역시 남동구 청능대로340번길 7 (고잔동)",
+          "production": "자동차부품",
+          "source_row": 49633
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 47594,
+      "corp_name": "주식회사 예성코퍼레이션",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 49373,
+      "corp_name": "주식회사케이앤더블유",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "주식회사케이앤더블유",
+          "factory_address": "대전광역시 유성구 테크노2로 334 (탑립동)",
+          "production": "자동차부품(모터)",
+          "source_row": 61126
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 54054,
+      "corp_name": "(주)동하산업",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 54113,
+      "corp_name": "(주)태양정밀",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 71717,
+      "corp_name": "엘에스오토모티브테크놀로지스(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "엘에스오토모티브테크놀로지스(주)",
+          "factory_address": "경기도 안산시 단원구 정왕천동로 174, 4다 108 (성곡동, 다성산업(주))",
+          "production": "자동차 부품, 자동차 부품",
+          "source_row": 85032
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 74463,
+      "corp_name": "남양넥스모(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "남양넥스모(주)",
+          "factory_address": "경기도 안산시 단원구 성곡로 152, 604블럭 2롯트 (성곡동)",
+          "production": "자동차부품(조향장치)",
+          "source_row": 84324
+        },
+        {
+          "company_name": "남양넥스모(주)",
+          "factory_address": "경기도 안산시 단원구 목내로 150, 2블럭 (목내동)",
+          "production": "자동차부품(제동장치)",
+          "source_row": 88001
+        },
+        {
+          "company_name": "남양넥스모(주)",
+          "factory_address": "경기도 안산시 단원구 별망로 441, 403-9, 6-28 (목내동)",
+          "production": "자동차부품(조향장치)",
+          "source_row": 88002
+        },
+        {
+          "company_name": "남양넥스모(주)",
+          "factory_address": "경기도 안산시 단원구 목내로 144, 2블럭 (목내동)",
+          "production": "자동차부품(조향장치)",
+          "source_row": 88004
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 74671,
+      "corp_name": "엠테스(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "엠테스(주)",
+          "factory_address": "경기도 안산시 단원구 별망로459번길 116-16, 2블럭 (목내동)",
+          "production": "자동차부품(ABS, 밸브류)",
+          "source_row": 88208
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 74768,
+      "corp_name": "지비시스템즈(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "지비시스템즈(주)",
+          "factory_address": "경기도 안산시 단원구 별망로 415 (목내동)",
+          "production": "자동차용 브레이크 ",
+          "source_row": 88306
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 80600,
+      "corp_name": "(주)기선산업",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)기선산업",
+          "factory_address": "경기도 시흥시 공단2대로 147, 2마 708(정왕동)",
+          "production": "전기차배터리케이스 외",
+          "source_row": 94661
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 130450,
+      "corp_name": "나무전력주식회사",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "나무전력주식회사",
+          "factory_address": "강원특별자치도 평창군 방림면 평창대로 84-7, 제1동",
+          "production": "태양광발전장치, LED등기구",
+          "source_row": 211895
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 131328,
+      "corp_name": "(주)지쓰리",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)지쓰리",
+          "factory_address": "충청북도 청주시 서원구 남들로25번길 25-2 (수곡동)",
+          "production": "전자기기, 소프트웨어,차량용디지털운행기록계,분석프로그램",
+          "source_row": 147058
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 136055,
+      "corp_name": "(주)제이앤드에프 (2공장)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)제이앤드에프 (2공장)",
+          "factory_address": "충청북도 옥천군 이원면 이원농공로 50 공장",
+          "production": "자동차부품(브레이크 호스피팅)",
+          "source_row": 152615
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 146807,
+      "corp_name": "건우전장(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "건우전장(주)",
+          "factory_address": "충청남도 아산시 신창면 남성리 67-7",
+          "production": "자동차용와이어하네스(제어장치)",
+          "source_row": 164594
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 150847,
+      "corp_name": "㈜한진오토모티브",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "㈜한진오토모티브",
+          "factory_address": "충청남도 홍성군 결성면 산업로116번길 30",
+          "production": "브레이크패드",
+          "source_row": 169067
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 150848,
+      "corp_name": "㈜한진오토모티브 2공장",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "㈜한진오토모티브 2공장",
+          "factory_address": "충청남도 홍성군 결성면 산업로116번길 13",
+          "production": "자동차용 고무 부품",
+          "source_row": 169068
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 156586,
+      "corp_name": "(주)미래브이씨",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)미래브이씨",
+          "factory_address": "전북특별자치도 김제시 순동산단1길 48 (순동, 미래브이씨㈜)",
+          "production": "허브및드럼",
+          "source_row": 218027
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 157089,
+      "corp_name": "주식회사 백현이앤에스",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 168807,
+      "corp_name": "라온산업",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "라온산업",
+          "factory_address": "경상북도 경주시 외동읍 구어공단1길 16-26",
+          "production": "자동차 브레이크 디스크(제동장치)",
+          "source_row": 172240
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 176260,
+      "corp_name": "(주)성호하네스 경산공장",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)성호하네스 경산공장",
+          "factory_address": "경상북도 경산시 진량읍 평사1길 77-38",
+          "production": "자동차용 와이어하네스 조립",
+          "source_row": 180365
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 176916,
+      "corp_name": "기룡산업사",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "기룡산업사",
+          "factory_address": "경상북도 경산시 와촌면 대동공단길 32-34",
+          "production": "브레이크 부품, 차량시트 부품",
+          "source_row": 181136
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 179147,
+      "corp_name": "산도테크(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "산도테크(주)",
+          "factory_address": "경상북도 고령군 다산면 다산산단1길 7",
+          "production": "자동차브레이크",
+          "source_row": 183242
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 180045,
+      "corp_name": "한국산업사",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 185144,
+      "corp_name": "현대모비스(주)",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "현대모비스(주)",
+          "factory_address": "경상남도 창원시 성산구 성산패총로 87 (성산동)",
+          "production": "자동차 제동장치",
+          "source_row": 189493
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 187152,
+      "corp_name": "선진테크",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 188713,
+      "corp_name": "(주)미래전자",
+      "dart_legal_address_exact_matches": [
+        {
+          "corp_code": "01732230",
+          "factory_2025_source_rows": [
+            193390
+          ],
+          "legal_address": "경상남도 김해시 서김해산단로 20-17 (풍유동)",
+          "profile_source_sha256": "2ab440257b239fde0d8c5399ba17a0f1f3e10425e9ce57ca5e7a4026738e65c3"
+        }
+      ],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)미래전자",
+          "factory_address": "경상남도 김해시 서김해산단로 20-17 (풍유동)",
+          "production": "자동차용 배선장치",
+          "source_row": 193390
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 188716,
+      "corp_name": "(주)유원전자",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)유원전자",
+          "factory_address": "경상남도 김해시 서김해산단로 20-17 (풍유동)",
+          "production": "자동차용 배선장치",
+          "source_row": 193403
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 191488,
+      "corp_name": "(주)삼화피엠아이",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)삼화피엠아이",
+          "factory_address": "경상남도 김해시 분성로557번길 46-15 (어방동)",
+          "production": "자동차부품",
+          "source_row": 193586
+        },
+        {
+          "company_name": "(주)삼화피엠아이",
+          "factory_address": "경상남도 김해시 주촌면 골든루트로 158-13",
+          "production": "장고형 웜기어, 조향장치, 마스크, 자동차용 베어링, 니플 등",
+          "source_row": 196283
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 196980,
+      "corp_name": "주식회사 세양",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "주식회사 세양",
+          "factory_address": "경상남도 양산시 용당산단4길 13 (용당동)",
+          "production": "자동차용 신품 제동장치",
+          "source_row": 202308
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 450,
+      "corp_name": "(주)한국토미",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)한국토미",
+          "factory_address": "경기도 고양시 일산동구 장항로 313-18 (장항동)",
+          "production": "특장차제조",
+          "source_row": 89219
+        }
+      ],
+      "identity_status": "충돌",
+      "industry_classification_version": "11",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 601,
+      "corp_name": "대성오토",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "(주)대성오토",
+          "factory_address": "경기도 고양시 일산동구 성석동 729-3 1층",
+          "production": "미션제제소",
+          "source_row": 89756
+        },
+        {
+          "company_name": "대성오토",
+          "factory_address": "경기도 고양시 일산동구 성석로 214 (성석동)",
+          "production": "자동변속기 재제조",
+          "source_row": 89813
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "11",
+      "next_stage_allowed": false
+    },
+    {
+      "candidate_source_row": 1311,
+      "corp_name": "태일정공",
+      "dart_legal_address_exact_matches": [],
+      "factory_2025_same_name_city_matches": [
+        {
+          "company_name": "태일정공",
+          "factory_address": "경기도 고양시 일산동구 은마길 31-54 (성석동)",
+          "production": "조향장치",
+          "source_row": 89875
+        }
+      ],
+      "identity_status": "미확인",
+      "industry_classification_version": "11",
+      "next_stage_allowed": false
+    }
+  ],
+  "status": "address_clues_only_not_legal_identity"
+}

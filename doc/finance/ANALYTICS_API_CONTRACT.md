@@ -9,11 +9,25 @@
 게시된 보고서에 대한 읽기 요청이다. 외부 수집, 모델 호출, 스냅샷 생성·연결을 수행하지 않는다.
 
 - 기존 필드 `financial_metrics`, `analysis_signals`, `ml_readiness`, `anomaly_detection`, `followup_questions`를 유지한다.
+- `analysis_plan`: `analysis-plan-1.0` 읽기 결과. 검증된 확인 신호와 계산 보류·미측정 사유를 자료 요청 단계로 묶는다. 각 단계는 `kind`, `status`, `reason_code`, `question`, `requested_information`, `related_metric_ids`, 기간·범위와 원문·검증 ID를 담는다. 공백은 숫자값이나 위험 판정으로 표시하지 않는다.
 - `dataset_artifact_id`: 해당 보고서에 연결된 불변 분석 산출물 해시. 없으면 null.
 - `statistical_analysis`: 연결된 스냅샷의 코호트 정의, 추세, 분위수 비교, 강건 통계, 관계 분석. 지표마다 표본 요건에 따라 보류한다.
 - 스냅샷이 없으면 `insufficient_peer_data`와 `verified_peer_dataset_not_available`을 반환한다.
 - `financial_metrics`는 Decimal 값 문자열과 `name`, `unit`, 공통 분석 메타데이터를 포함한다.
 - 근거 변조·스냅샷 해시 불일치는 오류로 처리한다. 다른 스냅샷으로 자동 대체하지 않는다.
+
+## POST /researches/{research_id}/refresh
+
+요청 본문은 `{}` 또는 `{"public_cutoff":"YYYY-MM-DD"}`다. 생략 시 한국 시간의 오늘을 사용한다. 기존 공개 기준일보다 이른 날짜와 미래 날짜는 거절한다. 기준일이 전진하면 기존 기준·실행을 수정하지 않고 새 불변 기준 버전과 조회 실행을 만든다. 같은 날짜의 재조회는 기준 버전만 재사용한다. 매번 공식 기업개황·전체 정기공시 목록을 확인한다.
+
+대상은 `general_company` 정기공시 조사다. 기존 `cached_case` 조사는 화면에서 이 엔드포인트를 자동 호출하지 않고 저장된 게시본을 그대로 연다.
+
+- 새·정정 정기공시가 없으면 `status=unchanged`를 반환하고 직전 게시본 또는 검증 자료를 사용한다.
+- 새 공시가 있으면 새 실행에서 원문·API·XBRL을 수집하고 별도 숫자 검증과 XBRL 매핑 배치를 실행한다. 수집만으로 게시나 분석 적격을 표시하지 않는다.
+- 결산월 변경·불명확성 또는 수집/검증 미완료는 검토 필요 상태로 보류한다.
+- 이미 수집·갱신 실행이 대기 또는 진행 중이면 `status=in_progress`와 기존 실행 ID를 반환하고 새 실행·기준 버전을 만들지 않는다. 같은 조사를 여러 화면에서 열어도 확인이 겹치지 않는다.
+- 새 공시를 수집한 뒤 검증에 실패하면 해당 실행의 `phase=validation_failed`를 기록한다. 화면은 이 실행을 분석 자료로 선택하지 않고 직전 검증 결과를 보여준다. 오류 자체도 화면에 남긴다.
+- 기존 보고서·검증 배치·코호트 스냅샷은 변경하지 않는다.
 
 ## GET /validation-batches/{batch_id}/quality-analysis
 

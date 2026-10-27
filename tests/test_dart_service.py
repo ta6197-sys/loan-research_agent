@@ -124,6 +124,16 @@ class DartServiceTests(unittest.IsolatedAsyncioTestCase):
         source=self.store.get_source(result['source_id'])
         self.assertEqual('N',source['metadata']['reporting_period']['last_reprt_at'])
 
+    async def test_regular_disclosure_receipt_can_authorize_matching_xbrl_only(self):
+        data={'status':'000','list':[{'corp_code':'00129642','rcept_no':'20260321000776',
+              'rcept_dt':'20260321','report_nm':'사업보고서 (2025.12)'}],
+              'page_no':1,'total_page':1,'total_count':1}
+        service=self.make_service(lambda req:httpx.Response(200,json=data))
+        await service.call('disclosures',self.args(begin='2026-01-01',end='2026-10-20'))
+        self.assertTrue(service._receipt_known(self.run_id,'20260321000776','11011'))
+        self.assertFalse(service._receipt_known(self.run_id,'20260321000776','11012'))
+        self.assertFalse(service._receipt_known(self.run_id,'20260321000777','11011'))
+
     async def test_catalogue_refresh_once_and_stale_cache_is_visible(self):
         content=b'<result><list><corp_code>00129642</corp_code><corp_name>synthetic</corp_name><stock_code>041650</stock_code><modify_date>20261020</modify_date></list><list><corp_code>01933981</corp_code><corp_name>alphanumeric</corp_name><stock_code>0068Y0</stock_code><modify_date>20251121</modify_date></list></result>'
         service=self.make_service(lambda req:httpx.Response(200,content=zip_bytes(content,'CORPCODE.xml')))
@@ -170,7 +180,6 @@ class FinanceMCPTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(set(FINANCE_TOOL_INPUTS), {tool.name for tool in tools.tools})
                 result=await client.call_finance('search_companies',{'query':'synthetic'})
                 self.assertEqual('missing_configuration',result['status'])
-                self.assertFalse(client._flaky_pending)
             finally:
                 await client.stop()
 
@@ -183,7 +192,7 @@ class FinanceStartupTests(unittest.TestCase):
             'APP_MODE':'research','APP_DB_PATH':str(Path(tmp)/'session.db'),'APP_SOURCE_ROOT':str(Path(tmp)/'sources')}):
             script=Path(tmp)/'exiting_mcp.py'
             script.write_text('pass\n')
-            failed=MCPClient(flaky_first_tool_call=False,server_scripts={'finance':script})
+            failed=MCPClient(server_scripts={'finance':script})
             with patch.object(server,'create_finance_client',return_value=failed):
                 with TestClient(server.app,base_url='http://127.0.0.1:8100') as client:
                     self.assertEqual('unavailable',client.get('/health').json()['finance_mcp'])

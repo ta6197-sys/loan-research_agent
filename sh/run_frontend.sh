@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 #
-# 금융 모드는 로컬 Vue 금융 화면, legacy 모드는 기존 실습 채팅을 제공한다.
+# 로컬 Vue 기업금융 조사 화면을 제공한다.
 # 금융: 먼저 bash sh/run_research.sh 실행. Vue/폰트는 프로젝트의 고정 파일이다.
 # 금융 템플릿 변경 시 node sh/build_finance_ui.cjs로 미리 컴파일한다.
 #
-# ⚠️ 먼저 run_agent_openai.sh / run_agent_ollma.sh / run.sh 등으로 백엔드(8100)를
-# 띄워둔 상태여야 한다 — 백엔드 없이 이 스크립트만 띄우면 채팅 화면은 열리지만
-# 메시지를 보내면 전부 에러가 난다.
+# 백엔드(8100)를 먼저 실행한다.
 #
 # 종료하려면 이 터미널에서 Ctrl+C.
 #
@@ -22,9 +20,8 @@ if ! curl -s --max-time 2 http://127.0.0.1:8100/health >/dev/null 2>&1; then
     echo "ERROR: 백엔드(http://127.0.0.1:8100)가 응답하지 않습니다."
     echo "  먼저 다른 터미널에서 아래 중 하나로 백엔드를 띄우세요:"
     echo "    bash sh/run_research.sh    (금융 조사, 로컬 전용)"
-    echo "    ./sh/run_agent_openai.sh   (실제 OpenAI API, 과금)"
-    echo "    ./sh/run_agent_ollma.sh    (로컬 Ollama)"
-    echo "    ./sh/run.sh                (fake 모드, 통합 테스트)"
+    echo "    bash sh/run_research_ollama.sh  (로컬 Ollama)"
+    echo "    bash sh/run_research_openai.sh  (명시적 외부 모델)"
     exit 1
 fi
 
@@ -56,7 +53,7 @@ cat <<EOF
 
 ################################################################
  프론트엔드가 떠 있습니다 → http://localhost:8600
- (금융 모드: 금융 보고서 / legacy 모드: 기존 실습 채팅)
+ (기업금융 조사 및 보고서)
 ################################################################
 
 브라우저에서 http://localhost:8600 접속해 저장된 조사와 보고서를 확인합니다.

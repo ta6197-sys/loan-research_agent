@@ -1,5 +1,7 @@
 """저장·근거 조회 API. 모델 실행이나 금융 검증 완료를 가장하지 않는다."""
 import asyncio
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
 
@@ -12,7 +14,7 @@ from .finance.research_followup import FollowupInput
 from .finance.cached_case import CachedStartInput
 from .finance.general_company import GeneralStartInput, receive as receive_general_company, create_collection_retry
 from .finance.general_collection import GeneralCollectionService
-from .finance.report_view import build_view,chart_svg,compare_views
+from .finance.report_view import build_view,chart_svg,compare_views, text as safe_text, location_label, public_url
 from .finance.report_exports import ReportExports
 from typing import Literal
 from .finance.attachments import AttachmentService
@@ -20,13 +22,17 @@ from .finance.research_lifecycle import ResearchLifecycle,PlanInput
 from .finance.quality_metrics import calculate as quality_metrics
 from .finance.quality_exceptions import build as quality_exceptions
 from .finance.quality_analytics import analyze as quality_analysis
-from .finance.financial_analytics import FinancialAnalyticsService
+from .finance.financial_analytics import FinancialAnalyticsService, analyze as financial_analyze
+from .finance.report_context import fiscal_periods, numeric_rows, xbrl_report_gate
+from .finance.disclosure_audit import analysis_receipt_policy, apply_relation_evidence
 from .finance.analysis_signals import build as analysis_signals
+from .finance.analysis_plan import build as analysis_plan
 from .finance.peer_dataset import build_snapshot
 from .finance.analytics_dataset_service import AnalyticsDatasetService
 from .finance.model_readiness import evaluate as model_readiness
 from .finance.anomaly_detection import detect as anomaly_detection
 from .finance.analysis_questions import build as analysis_questions
+from .finance.broad_303_read_model import read_company as read_broad_303_company
 from .research_store import Conflict
 
 router = APIRouter()
@@ -34,6 +40,10 @@ router = APIRouter()
 
 class CachedDraftInput(Contract):
     request_key: str = Field(min_length=1,max_length=200)
+
+
+class RefreshInput(Contract):
+    public_cutoff: date = Field(default_factory=lambda: datetime.now(ZoneInfo('Asia/Seoul')).date())
 
 
 class ExportInput(Contract):
@@ -114,13 +124,124 @@ def _financial_analysis_payload(store, report_id):
                             'signal_id': item['id'], 'value': None, 'period': item.get('period'), 'scope': item.get('scope'),
                             'method_version': signals['schema_version'], 'limitations': [item['limitation']],
                             'reason_code': None, **refs, 'question': item['question']})
+    metrics = [_metric_contract(report_id, batch_id, item) for item in financial['results']]
+    plan = analysis_plan(report_id, batch_id, metrics, signal_rows,
+                         report.get('content',{}).get('context',{}).get('financial_rows',[]))
     return {'analysis_id': 'report-analysis:' + report_id, 'analysis_version': 'report-analysis-1.0',
             'report_id': report_id, 'validation_batch_id': batch_id, 'status': 'measured',
-            'financial_metrics': [_metric_contract(report_id, batch_id, item) for item in financial['results']],
+            'financial_metrics': metrics,
             'analysis_signals': signal_rows,
+            'analysis_plan': plan,
             'statistical_analysis': statistics, 'dataset_artifact_id': stored['artifact_id'] if stored else None,
             'ml_readiness': readiness, 'anomaly_detection': anomaly, 'followup_questions': questions,
             'limitations': financial['limitations'] + ['기존 보고서·PDF·원문·검증 배치는 변경하지 않는 읽기 모델입니다.']}
+
+
+def _run_verified_analysis_payload(store, run_id):
+    """게시본 없이 끝난 범용 수집 실행의 검증 자료만 읽는다."""
+    run = store.get_run(run_id)
+    collection = run.get('trigger', {}).get('collection_result', {})
+    fiscal = collection.get('fiscal_period', {})
+    if (run.get('status') != 'finished' or run.get('trigger', {}).get('kind') != 'general_company'
+            or collection.get('next_phase') != 'numeric_and_xbrl_validation'
+            or fiscal.get('status') not in {'supported', 'identity_only'}):
+        raise HTTPException(409, '완료된 범용 공시 수집과 결산월 확인이 필요합니다.')
+    try:
+        periods = fiscal_periods(collection.get('target_reports', []), fiscal.get('month'))
+    except ValueError as error:
+        raise HTTPException(409, str(error)) from None
+    service = NumericValidationService(store)
+    history = service.history(run_id)
+    numeric_ids = [b['id'] for b in history if b['policy_version'].startswith('numeric-validation-')]
+    mapping_ids = [b['id'] for b in history if b['policy_version'].startswith('xbrl-mapping-')]
+    if len(numeric_ids) != 1 or len(mapping_ids) != 1:
+        raise HTTPException(409, '실행에 연결된 수치 검증과 독립 XBRL 배치가 각각 하나씩 필요합니다.')
+    batch, mapping = service.batch(numeric_ids[0]), service.batch(mapping_ids[0])
+    if not batch['validations'] or not mapping['validations']:
+        raise HTTPException(409, '수치 검증과 독립 XBRL 검증 결과가 필요합니다.')
+    try:
+        receipt_policy = analysis_receipt_policy(batch.get('summary', {}).get('disclosure_history_audit', {}),
+                                                 collection['target_reports'])
+        receipt_policy = apply_relation_evidence(store,
+            batch.get('summary', {}).get('disclosure_history_audit', {}), receipt_policy)
+    except ValueError:
+        raise HTTPException(409, '대상 보고서의 정정 공시 이력이 확인되지 않아 분석 입력을 보류합니다.') from None
+    allowed = set(receipt_policy['allowed_receipts'])
+    withheld = set(receipt_policy['withheld_receipts'])
+    target_by_period = {(int(item['year']), item['report_code']):item['rcept_no']
+                        for item in collection['target_reports']}
+    withheld_ends = {item['end'] for item in periods
+                     if target_by_period.get((item['year'], item['report_code'])) in withheld}
+    source_receipts = {}
+    def safe_validation(item):
+        if item.get('rule_id') != 'numeric_fact':
+            return True
+        source_id = item.get('data', {}).get('source_id')
+        if source_id not in source_receipts:
+            source_receipts[source_id] = store.get_source(source_id)['metadata'].get('receipt_number') if source_id else None
+        return source_receipts[source_id] in allowed
+    accepted_batch = {**batch, 'validations':[item for item in batch['validations'] if safe_validation(item)]}
+    accepted_mapping = {**mapping, 'validations':[item for item in mapping['validations']
+                        if item.get('rule_id') != 'XBRL_STANDARD_CONCEPT'
+                        or item.get('data', {}).get('receipt_number') in allowed]}
+    period_ends = tuple(p['end'] for p in periods)
+    original_rows = numeric_rows(batch, period_ends, periods)
+    rows = numeric_rows(accepted_batch, period_ends, periods)
+    original_status = {(row['scope'], row['end'], row['account']):row['status'] for row in original_rows}
+    for row in rows:
+        if row['end'] in withheld_ends:
+            row.update(status='withheld', reason='correction_history_unconfirmed')
+            row.pop('value', None)
+        elif row['status'] != 'verified' and original_status[(row['scope'], row['end'], row['account'])]=='verified':
+            row['reason']='unreviewed_correction_source_excluded'
+    def raw_ok(row):
+        try:
+            for fact_id in row.get('fact_ids', []):
+                fact = store.get_evidence(fact_id)
+                if (fact['run_id'] != run_id or fact['source']['metadata'].get('receipt_number') not in allowed
+                        or not NumericValidationService._raw_check(
+                            store.source_content(fact['source']['id']), fact['fragment']['data']['location'])):
+                    return False
+            return bool(row.get('fact_ids'))
+        except (ValueError, KeyError):
+            return False
+    for row in rows:
+        if row['status'] == 'verified' and not raw_ok(row):
+            row.update(status='withheld', reason='original_source_integrity_unconfirmed')
+            row.pop('value', None)
+    gate = xbrl_report_gate(rows, accepted_batch, accepted_mapping)
+    if gate['status'] != 'pass':
+        raise HTTPException(409, '독립 XBRL 계정·기간·금액 대응이 확인되지 않았습니다.')
+    evidence = []
+    for fact_id in sorted({identifier for row in rows if row['status'] == 'verified' for identifier in row['fact_ids']}):
+        fact = store.get_evidence(fact_id)
+        source, fragment = fact['source'], fact['fragment']
+        metadata = source['metadata']
+        evidence.append({'fact_id': fact_id, 'fragment_id': fragment['id'], 'source_id': source['id'],
+                         'title': safe_text(metadata.get('title')), 'receipt_number': metadata.get('receipt_number'),
+                         'url': public_url(metadata.get('url')), 'excerpt': safe_text(fragment['data'].get('text'))[:1800],
+                         'location': location_label(fragment['data']['location']),
+                         'content_hash': source['content_hash'], 'scope': fact['data'].get('scope'),
+                         'period': fact['data'].get('period')})
+    financial = financial_analyze({'content': {'context': {'financial_rows': rows}}}, accepted_batch, raw_ok=raw_ok)
+    metrics = [_metric_contract(None, batch['id'], item) for item in financial['results']]
+    signals = analysis_signals(financial)
+    signal_rows = []
+    for item in signals['signals']:
+        refs = _analysis_refs({'inputs': [ref for metric in item.get('evidence', []) for ref in metric.get('inputs', [])]})
+        signal_rows.append({'signal_id': item['id'], 'status': item['status'], 'question': item['question'],
+                            'period': item.get('period'), 'scope': item.get('scope'), 'limitations': [item['limitation']], **refs})
+    return {'analysis_id': 'run-analysis:' + run_id, 'analysis_version': 'run-analysis-1.0',
+            'run_id': run_id, 'report_id': None, 'publication_status': 'not_published',
+            'validation_batch_id': batch['id'], 'mapping_batch_id': mapping['id'],
+            'status': 'validated_data_preview', 'financial_rows': rows,
+            'disclosure_history': {**receipt_policy, 'withheld_period_ends':sorted(withheld_ends)},
+            'evidence': evidence,
+            'row_counts': {'verified': sum(r['status'] == 'verified' for r in rows),
+                           'withheld': sum(r['status'] != 'verified' for r in rows)},
+            'xbrl_gate': gate, 'financial_metrics': metrics, 'analysis_signals': signal_rows,
+            'analysis_plan': analysis_plan(None, batch['id'], metrics, signal_rows, rows),
+            'limitations': financial['limitations'] + ['게시 보고서가 없는 검증 자료 조회이며 비교집단·ML 결과를 포함하지 않습니다.']}
 
 
 @router.get('/research-archives')
@@ -191,6 +312,25 @@ def report_quality(report_id: str, request: Request):
 @router.get('/reports/{report_id}/financial-analysis')
 def report_financial_analysis(report_id: str, request: Request):
     return _financial_analysis_payload(request.app.state.research_store, report_id)
+
+
+@router.get('/cohorts/broad-303/companies/{corp_code}/analysis')
+def broad_303_company_analysis(corp_code: str, scope: Literal['OFS','CFS'] = 'OFS',
+                               snapshot_version: Literal['v1','v2'] = 'v2'):
+    if len(corp_code) != 8 or not corp_code.isdigit():
+        raise HTTPException(422, '8자리 DART 법인코드가 필요합니다.')
+    try:
+        result = read_broad_303_company(corp_code, scope, snapshot_version)
+    except (OSError, ValueError, KeyError) as error:
+        raise HTTPException(503, '탐색 비교 스냅샷을 확인할 수 없습니다: '+str(error)) from error
+    if result is None:
+        raise HTTPException(404, '고정 탐색 비교집단에 포함되지 않은 법인입니다.')
+    return result
+
+
+@router.get('/runs/{run_id}/verified-analysis')
+def run_verified_analysis(run_id: str, request: Request):
+    return _run_verified_analysis_payload(request.app.state.research_store, run_id)
 
 
 @router.get('/validation-batches/{batch_id}/quality')
@@ -365,9 +505,11 @@ async def retry_general_collection(research_id: str,request: Request):
 
 
 @router.post('/researches/{research_id}/refresh',status_code=202)
-async def refresh_general_research(research_id: str,request: Request):
+async def refresh_general_research(research_id: str,value: RefreshInput,request: Request):
     if request.app.state.mode!='research':raise HTTPException(409,'연구 모드에서 실행해주세요.')
-    return await GeneralCollectionService(request.app.state.research_store).refresh(research_id)
+    if value.public_cutoff>datetime.now(ZoneInfo('Asia/Seoul')).date():
+        raise HTTPException(422,'공개 기준일은 오늘 이후일 수 없습니다.')
+    return await GeneralCollectionService(request.app.state.research_store).refresh(research_id,value.public_cutoff)
 
 
 @router.post("/researches", status_code=201)

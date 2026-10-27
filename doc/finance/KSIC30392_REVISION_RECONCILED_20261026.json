@@ -1,0 +1,2222 @@
+{
+  "as_of": "2026-10-26",
+  "collection_plan": {
+    "maximum_reports_per_company": 2,
+    "missing_numeric_value": null,
+    "no_report_status": "비상장 또는 공시 미확인",
+    "public_cutoff": "2026-10-26",
+    "request_limit": 0,
+    "target_corp_codes": [],
+    "unselected_count": 43
+  },
+  "identity_triage_sha256": "6cc3adb03115e6b98a0e20053d6df743f26f5e235a02e2d48053b920945e64d0",
+  "ksic_correspondence_source": {
+    "new_code": "30392",
+    "new_name": "자동차용 신품 제동장치 제조업",
+    "new_version": "11",
+    "old_code": "30392",
+    "old_name": "자동차용 신품 제동장치 제조업",
+    "old_version": "10",
+    "source_row": 492,
+    "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+    "source_sheet": "구신연계표",
+    "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+  },
+  "records": [
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)스마트아이",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "송파구",
+        "province": "서울특별시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 11447,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "티엔비오토파트",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "서구",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 23993,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "삼창산업",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "북구",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 24953,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "영남하네스부품",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "북구",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 25455,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)광덕금속",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "달서구",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 26404,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "01897625"
+      ],
+      "checks": {
+        "corp_code": "pass",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "산도브레이크(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "달성군",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": "01897625",
+      "source_row": 29589,
+      "unresolved": [
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00177898"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)대철",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "달성군",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 30528,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00970286"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "에이비테크(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "달성군",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 30725,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)두림산업",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "달성군",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 30756,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00129642"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "상신브레이크(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "달성군",
+        "province": "대구광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 30890,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)아이엔테크놀로지",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "남동구",
+        "province": "인천광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 32901,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "01826885"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "주식회사 예성코퍼레이션",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "광산구",
+        "province": "광주광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 47594,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "주식회사케이앤더블유",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "유성구",
+        "province": "대전광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 49373,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00118859"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)동하산업",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "울주군",
+        "province": "울산광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 54054,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00692643"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)태양정밀",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "울주군",
+        "province": "울산광역시",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 54113,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "01247778"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "엘에스오토모티브테크놀로지스(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "안산시 단원구",
+        "province": "경기도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 71717,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00107491"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "남양넥스모(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "안산시 단원구",
+        "province": "경기도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 74463,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00327040"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "엠테스(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "안산시 단원구",
+        "province": "경기도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 74671,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "지비시스템즈(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "안산시 단원구",
+        "province": "경기도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 74768,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)기선산업",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "시흥시",
+        "province": "경기도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 80600,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "excluded_ksic9_30392_electrical_equipment",
+      "corp_code": null,
+      "corp_name": "(주)비엠씨 제1공장",
+      "evidence": {},
+      "exclusion_reason": "ksic9_30392_is_automotive_electrical_equipment",
+      "factory_location": {
+        "city": "안성시",
+        "province": "경기도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "9",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "not_equivalent",
+      "ksic_correspondence_evidence": null,
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 98534,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "나무전력주식회사",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "평창군",
+        "province": "강원도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 130450,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "01840131"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)지쓰리",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "청주시 서원구",
+        "province": "충청북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 131328,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)제이앤드에프 (2공장)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "옥천군",
+        "province": "충청북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 136055,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "건우전장(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "아산시",
+        "province": "충청남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 146807,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "㈜한진오토모티브",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "홍성군",
+        "province": "충청남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 150847,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "㈜한진오토모티브 2공장",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "홍성군",
+        "province": "충청남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 150848,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)미래브이씨",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "김제시",
+        "province": "전라북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 156586,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "주식회사 백현이앤에스",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "김제시",
+        "province": "전라북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 157089,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "라온산업",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "경주시",
+        "province": "경상북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 168807,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)성호하네스 경산공장",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "경산시",
+        "province": "경상북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 176260,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "기룡산업사",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "경산시",
+        "province": "경상북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 176916,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00569770"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "산도테크(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "고령군",
+        "province": "경상북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 179147,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "한국산업사",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "성주군",
+        "province": "경상북도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 180045,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00164788"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "현대모비스(주)",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "창원시 성산구",
+        "province": "경상남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 185144,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "01210969",
+        "01485961",
+        "01642432",
+        "01662223",
+        "01928679",
+        "01961045"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "선진테크",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "진주시",
+        "province": "경상남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 187152,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "01732230",
+        "02050531"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)미래전자",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "김해시",
+        "province": "경상남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": "01732230",
+      "source_row": 188713,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)유원전자",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "김해시",
+        "province": "경상남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 188716,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "01226340"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)삼화피엠아이",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "김해시",
+        "province": "경상남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 191488,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00362584",
+        "00613017",
+        "00887986",
+        "01287882",
+        "01327108"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "주식회사 세양",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "양산시",
+        "province": "경상남도",
+        "street_address": null
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "10",
+      "industry_code": "30392",
+      "industry_evidence_date": "2021-07-31",
+      "industry_evidence_source": "https://www.data.go.kr/data/15088923/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "supported",
+      "ksic_correspondence_evidence": {
+        "new_code": "30392",
+        "new_name": "자동차용 신품 제동장치 제조업",
+        "new_version": "11",
+        "old_code": "30392",
+        "old_name": "자동차용 신품 제동장치 제조업",
+        "old_version": "10",
+        "source_row": 492,
+        "source_sha256": "a4e3485c7404bfae5d7f208b61123a3b8399cd151b789c038da7aaa6ce7ec0f3",
+        "source_sheet": "구신연계표",
+        "source_url": "https://mods.go.kr/boardDownload.es?bid=107&list_no=430619&seq=7"
+      },
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": "01287882",
+      "source_row": 196980,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [
+        "00665348"
+      ],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "(주)한국토미",
+      "evidence": {},
+      "exclusion_reason": "possible_legal_profile_3020_conflicts_with_factory_30392",
+      "factory_location": {
+        "city": "고양시",
+        "province": "경기도",
+        "street_address": "경기도 고양시 일산동구 장항로 313-18 (장항동)"
+      },
+      "identity_status": "충돌",
+      "industry_classification_version": "11",
+      "industry_code": "30392",
+      "industry_evidence_date": "2025-12-10",
+      "industry_evidence_source": "https://www.data.go.kr/data/3080741/fileData.do",
+      "industry_status": "conflict",
+      "ksic11_30392_meaning": "direct_source",
+      "ksic_correspondence_evidence": null,
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 450,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "대성오토",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "고양시",
+        "province": "경기도",
+        "street_address": "경기도 고양시 일산동구 성석로 214 (성석동)"
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "11",
+      "industry_code": "30392",
+      "industry_evidence_date": "2025-12-10",
+      "industry_evidence_source": "https://www.data.go.kr/data/3080741/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "direct_source",
+      "ksic_correspondence_evidence": null,
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 601,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    },
+    {
+      "candidate_source_sha256": "357b65f5cba8912c39559f500a842ed5e45a3347a32b2dc34ccdf8a48a1a1eff",
+      "catalogue_name_matches": [],
+      "checks": {
+        "corp_code": "unverified",
+        "factory_location": "unverified",
+        "legal_address": "unverified",
+        "official_registration": "unverified"
+      },
+      "cohort_candidate_status": "identity_review_required",
+      "corp_code": null,
+      "corp_name": "태일정공",
+      "evidence": {},
+      "exclusion_reason": "factory_and_legal_entity_identity_not_proven",
+      "factory_location": {
+        "city": "고양시",
+        "province": "경기도",
+        "street_address": "경기도 고양시 일산동구 은마길 31-54 (성석동)"
+      },
+      "identity_status": "미확인",
+      "industry_classification_version": "11",
+      "industry_code": "30392",
+      "industry_evidence_date": "2025-12-10",
+      "industry_evidence_source": "https://www.data.go.kr/data/3080741/fileData.do",
+      "industry_status": "unverified",
+      "ksic11_30392_meaning": "direct_source",
+      "ksic_correspondence_evidence": null,
+      "legal_address": null,
+      "next_stage_allowed": false,
+      "official_registration_evidence": null,
+      "possible_dart_corp_code": null,
+      "source_row": 1311,
+      "unresolved": [
+        "corp_code",
+        "legal_address",
+        "factory_location",
+        "official_registration",
+        "ksic_revision_and_legal_industry"
+      ]
+    }
+  ],
+  "status": "ksic_meaning_reconciled_identity_unverified"
+}

@@ -74,6 +74,12 @@ class FinancialAnalyticsTests(unittest.TestCase):
         report, batch = fixture(); values = analyze(report, batch)
         total = self.result(values, 'borrowing_total_change')
         self.assertEqual(('supported', '12'), (total['status'], total['value']))
+        ratio = self.result(values, 'borrowing_to_assets')
+        self.assertEqual(('supported', '30.83333333333333333333333333', 'percent'),
+                         (ratio['status'], ratio['value'], ratio['unit']))
+        self.assertEqual(4, len(ratio['inputs']))
+        self.assertTrue(all(item['fact_ids'] and item['validation_ids'] and item['source_ids']
+                            for item in ratio['inputs']))
         signals = build(values)
         kinds = {item['signal'] for item in signals['signals']}
         self.assertIn('positive_profit_negative_operating_cashflow', kinds)
@@ -83,6 +89,23 @@ class FinancialAnalyticsTests(unittest.TestCase):
         validation = next(item for item in batch['validations'] if item['id'] == borrowed['validation_ids'][0])
         validation['data']['checks']['V12']['status'] = 'not_checked'
         self.assertEqual('withheld', self.result(analyze(report, batch), 'borrowing_total_change')['status'])
+        self.assertEqual(('withheld', 'borrowing_composition_not_verified'),
+                         (self.result(analyze(report, batch), 'borrowing_to_assets')['status'],
+                          self.result(analyze(report, batch), 'borrowing_to_assets')['reason']))
+
+    def test_borrowing_ratio_requires_all_parts_positive_assets_and_original(self):
+        report, batch = fixture()
+        rows = report['content']['context']['financial_rows']
+        current = next(item for item in rows if item['account'] == 'assets' and item['end'] == '2026-06-30')
+        current['value'] = '0'
+        self.assertEqual('nonpositive_assets_denominator',
+                         self.result(analyze(report, batch), 'borrowing_to_assets')['reason'])
+        current['value'] = '120'
+        self.assertEqual('unmeasured', self.result(analyze(report, batch,
+            raw_ok=lambda item: item['account'] != 'short_term_borrowings'), 'borrowing_to_assets')['status'])
+        rows.remove(next(item for item in rows if item['account'] == 'long_term_borrowings' and
+                         item['end'] == '2026-06-30'))
+        self.assertEqual('unmeasured', self.result(analyze(report, batch), 'borrowing_to_assets')['status'])
 
     def test_raw_evidence_failure_never_becomes_analysis_input(self):
         report, batch = fixture()
