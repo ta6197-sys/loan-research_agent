@@ -12,7 +12,7 @@ import re
 
 from agent.research_store import encode
 from .numeric_validation import NumericValidationService
-from .peer_dataset import FEATURES
+from .peer_dataset import FEATURES, FEATURE_POLICY_VERSION
 from .report_context import fiscal_periods
 
 VERSION = 'verified-unpublished-peer-1.0'
@@ -178,7 +178,7 @@ def build_run(store, run_id, candidate):
                 'scope':scope,'public_cutoff':cutoff,'source_receipt':receipt,
                 'source_hash':sha256(encode(manifest).encode()).hexdigest(),
                 'source_public_at':public_at,'validation_batch_id':preview['validation_batch_id'],
-                'mapping_batch_id':preview['mapping_batch_id'],'feature_policy_version':VERSION,
+                'mapping_batch_id':preview['mapping_batch_id'],'feature_policy_version':FEATURE_POLICY_VERSION,
                 'account_definition_version':'verified-peer-account-definitions-1.0',
                 'peer_group':'exploratory_observed_303_family','correction_status':'current_verified',
                 'features':features,'source_manifest':manifest,'report_id':None,

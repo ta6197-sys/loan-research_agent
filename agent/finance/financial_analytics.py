@@ -156,6 +156,7 @@ def analyze(report, batch, *, raw_ok=lambda row: True):
             else: results.append(_item("net_margin", "profitability", scope, period, "net_profit / revenue * 100", status="unmeasured", reason="same_period_verified_revenue_and_net_profit_required"))
             results.append(_ratio("liabilities_to_equity", "stability", scope, {"as_of": end}, liabilities, equity, "liabilities / equity * 100"))
             results.append(_ratio("liabilities_to_assets", "stability", scope, {"as_of": end}, liabilities, assets, "liabilities / assets * 100"))
+            results.append(_borrowing_to_assets(index, held, validations, scope, end))
             if revenue and cashflow and _same_flow(revenue, cashflow):
                 results.append(_ratio("operating_cashflow_to_revenue", "cashflow", scope, period, cashflow, revenue, "operating_cashflow / revenue * 100"))
             else: results.append(_item("operating_cashflow_to_revenue", "cashflow", scope, period, "operating_cashflow / revenue * 100", status="unmeasured", reason="same_period_verified_revenue_and_operating_cashflow_required"))
@@ -192,6 +193,30 @@ def _borrowing_total_changes(index, held, batch, scope, before, after):
         return [_item("borrowing_total_change", "borrowing", scope, period, "sum(validated individual V11 changes)", status="withheld", inputs=tuple(before_rows + after_rows), reason="individual_borrowing_v11_mapping_not_supported")]
     delta = sum((_decimal(item["data"]["result"]) for item in individual), Decimal(0))
     return [_item("borrowing_total_change", "borrowing", scope, period, "sum(validated individual V11 changes)", status="supported", value=delta, unit="KRW", inputs=tuple(before_rows + after_rows))]
+
+
+def _borrowing_to_assets(index, held, validations, scope, end):
+    period = {"as_of": end}
+    formula = "sum(three V12 verified borrowing parts) / assets * 100"
+    parts = [_metric_row(index, held, scope, account, end)[0] for account in BORROWING_ACCOUNTS]
+    assets = _metric_row(index, held, scope, "assets", end)[0]
+    if not assets or not all(parts):
+        return _item("borrowing_to_assets", "borrowing", scope, period, formula,
+                     status="unmeasured", reason="all_verified_borrowing_parts_and_assets_required")
+    inputs = tuple(parts + [assets])
+    for part in parts:
+        if not part.get("validation_ids") or any(
+                validations.get(identifier, {}).get("data", {}).get("checks", {}).get("V12", {}).get("status") != "pass"
+                for identifier in part["validation_ids"]):
+            return _item("borrowing_to_assets", "borrowing", scope, period, formula,
+                         status="withheld", inputs=inputs, reason="borrowing_composition_not_verified")
+    denominator = _decimal(assets["value"])
+    if denominator is None or denominator <= 0:
+        return _item("borrowing_to_assets", "borrowing", scope, period, formula,
+                     status="withheld", inputs=inputs, reason="nonpositive_assets_denominator")
+    numerator = sum((_decimal(part["value"]) for part in parts), Decimal(0))
+    return _item("borrowing_to_assets", "borrowing", scope, period, formula,
+                 status="supported", value=numerator / denominator * 100, unit="percent", inputs=inputs)
 
 
 class FinancialAnalyticsService:
