@@ -234,15 +234,30 @@ class GeneralCollectionService:
             for target in targets:
                 receipts = {target["rcept_no"]} if target["rcept_no"] else set()
                 for scope in ("OFS", "CFS"):
-                    outcome = await self.dart.financials(run_id, corp_code, target["year"], target["report_code"], scope)
+                    try:
+                        outcome = await self.dart.financials(run_id, corp_code, target["year"], target["report_code"], scope)
+                    except DartFailure as error:
+                        if error.kind != 'no_data': raise
+                        outcome = {'status':'no_data','reason':'official_financial_api_no_data',
+                                   'usable':False,'financial_verification':'not_performed'}
                     financial_sources.append({"target": target, "scope": scope, "result": outcome})
                     if outcome.get("status") == "ok":
                         receipts.add(outcome["receipt_number"])
                 for receipt in sorted(receipt for receipt in receipts if receipt):
-                    document = await self.dart.document(run_id, receipt)
-                    xbrl = await self.dart.xbrl(run_id, receipt, target["report_code"])
+                    try:
+                        document = await self.dart.document(run_id, receipt)
+                    except DartFailure as error:
+                        if error.kind != 'no_data': raise
+                        document = {'source_id':None,'members':[],'status':'no_data'}
+                    try:
+                        xbrl = await self.dart.xbrl(run_id, receipt, target["report_code"])
+                    except DartFailure as error:
+                        if error.kind != 'no_data': raise
+                        xbrl = {'source_id':None,'members':[],'status':'no_data'}
                     archives.append({"target": target, "receipt_number": receipt,
-                                     "document_source_id": document["source_id"], "xbrl_source_id": xbrl["source_id"]})
+                                     "document_source_id": document["source_id"], "xbrl_source_id": xbrl["source_id"],
+                                     "document_status":document.get('status','ok'),
+                                     "xbrl_status":xbrl.get('status','ok')})
                     if xbrl.get('members'):
                         for referring_source_id,uri in declared_taxonomy_references(
                                 xbrl['members'],self.store.source_content):
@@ -265,7 +280,11 @@ class GeneralCollectionService:
                       "disclosures_page_count":disclosed['page_count'],
                       'fiscal_period':fiscal,
                       "target_reports": targets, "financial_requests": len(financial_sources),
-                      "archive_count": len(archives), "extracted_source_count": len(extracted),
+                      "archive_count": sum(bool(item['document_source_id'] and item['xbrl_source_id'])
+                                           for item in archives),
+                      "unavailable_archive_parts": [item for item in archives if not
+                          (item['document_source_id'] and item['xbrl_source_id'])],
+                      "extracted_source_count": len(extracted),
                       "taxonomy_reference_count":sum(x['status']=='ok' for x in taxonomy_references),
                       "taxonomy_reference_withheld":sum(x['status']!='ok' for x in taxonomy_references),
                       "financial_verification": "not_performed",

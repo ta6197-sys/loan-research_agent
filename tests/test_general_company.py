@@ -9,6 +9,7 @@ from agent.finance.general_company import GeneralStartInput, create_collection_r
 from agent.finance.general_collection import (GeneralCollectionService, changed_regular_reports,
     planned_reports, select_regular_reports, comparison_targets, fiscal_month_status)
 from agent.finance.report_context import prepare_context
+from agent.finance.dart_protocol import DartFailure
 from agent.research_models import SourceInput
 from agent.research_store import Conflict, ResearchStore
 
@@ -239,6 +240,23 @@ class GeneralCollectionFiscalTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('conflict',result['fiscal_period']['status'])
         self.assertEqual('fiscal_month_review_required',result['next_phase'])
         self.assertEqual([],calls)
+
+    async def test_provider_no_data_withholds_only_missing_archive_parts(self):
+        class Dart:
+            async def company(self,*args):return {'source_id':'identity','company':{'acc_mt':'03'}}
+            async def disclosures(self,*args,**kwargs):
+                return {'items':[{'report_nm':'사업보고서 (2026.03)',
+                                  'rcept_no':'20260630000001'}],
+                        'source_id':'disclosures','total_page':1}
+            async def financials(self,*args):raise DartFailure('no_data')
+            async def document(self,*args):return {'source_id':'document','members':[]}
+            async def xbrl(self,*args):raise DartFailure('no_data')
+        result=await GeneralCollectionService(self.store,dart_service=Dart()).run(self.run_id)
+        self.assertEqual('numeric_and_xbrl_validation',result['next_phase'])
+        self.assertEqual(10,result['financial_requests'])
+        self.assertEqual(0,result['archive_count'])
+        self.assertEqual('no_data',result['unavailable_archive_parts'][0]['xbrl_status'])
+        self.assertEqual('not_performed',result['financial_verification'])
 
 
 class GeneralRefreshTests(unittest.IsolatedAsyncioTestCase):

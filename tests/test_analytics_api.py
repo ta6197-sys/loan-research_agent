@@ -7,9 +7,35 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from agent.research_api import router, _run_verified_analysis_payload
+from agent.finance.broad_303_read_model import read_company
 
 
 class AnalyticsApiContractTests(unittest.TestCase):
+    def test_broad_303_read_only_snapshot_endpoint_and_integrity(self):
+        app=FastAPI();app.include_router(router)
+        with TestClient(app) as client:
+            response=client.get('/cohorts/broad-303/companies/00157539/analysis?scope=OFS')
+            self.assertEqual(200,response.status_code)
+            payload=response.json()
+            self.assertEqual('exploratory_observed_303_family',payload['cohort_id'])
+            self.assertEqual('unconfirmed',payload['classification_revision'])
+            self.assertEqual('not_trained_insufficient_data',payload['ml_training_status'])
+            self.assertGreater(payload['company_period_count'],0)
+            self.assertTrue(all(row['status'] in {'measured','insufficient_peer_data'}
+                                for row in payload['peer_comparisons']))
+            self.assertEqual(404,client.get('/cohorts/broad-303/companies/00000000/analysis').status_code)
+            self.assertEqual(422,client.get('/cohorts/broad-303/companies/bad/analysis').status_code)
+            self.assertEqual(422,client.get('/cohorts/broad-303/companies/00157539/analysis?scope=bad').status_code)
+        from tempfile import TemporaryDirectory
+        from pathlib import Path
+        from agent.finance import broad_303_read_model
+        with TemporaryDirectory() as directory:
+            changed=Path(directory)/'snapshot.json'
+            changed.write_text(broad_303_read_model.SNAPSHOTS['OFS'].read_text().replace('"30399"','"30398"',1))
+            with patch.dict(broad_303_read_model.SNAPSHOTS,{'OFS':changed}):
+                with self.assertRaisesRegex(ValueError,'exploratory_snapshot_integrity_failed'):
+                    read_company('00157539')
+
     def test_unresolved_correction_history_blocks_run_preview_before_metrics(self):
         store = Mock()
         store.get_run.return_value = {'status': 'finished', 'trigger': {'kind': 'general_company',

@@ -14,6 +14,15 @@ assert.equal(state.supportsDisclosureRefresh({runs:[{trigger:{kind:'cached_case'
 assert.equal(state.supportsDisclosureRefresh({runs:[{trigger:{kind:'general_company'}}]}),true);
 state.research.value={company:{name:'합성 화면 시험',stock_code:''},bases:[{data:{purpose:'합성 시험'}}],runs:[]};
 state.view.value={report_id:'report',financial_rows:[],evidence:[{id:'E1',fact_id:'fact1'}]};
+state.view.value.comparison_periods=[
+ {period_kind:'annual',start:'2024-07-01',end:'2025-06-30'},
+ {period_kind:'annual',start:'2025-07-01',end:'2026-06-30'},
+ {period_kind:'interim',start:'2024-07-01',end:'2024-12-31'},
+ {period_kind:'interim',start:'2025-07-01',end:'2025-12-31'}];
+assert.deepEqual(Array.from(state.financialGroups.value[0].ends),['2025-06-30','2026-06-30']);
+assert.deepEqual(Array.from(state.financialGroups.value[2].ends),['2024-12-31','2025-12-31']);
+assert.deepEqual(Array.from(state.financialGroups.value[3].ends),['2025-06-30','2025-12-31']);
+assert.deepEqual(Array.from(state.financialGroups.value[4].ends),['2024-12-31']);
 state.currentTab.value='analysis';
 state.analysis.value={financial_metrics:[],analysis_signals:[],analysis_plan:{steps:[{id:'gap:OFS:missing',kind:'verification_gap',question:'계정 대응을 확인할 자료가 있나요?',requested_information:'원문 계정표',reason_code:'mapping_unverified',limitation:'미검증 값을 사용하지 않습니다.',input_fact_ids:['fact1']}]},statistical_analysis:{status:'insufficient_peer_data',trend_analysis:[],peer_comparisons:[]},ml_readiness:{training_status:'not_trained_insufficient_data'},anomaly_detection:{status:'not_trained_insufficient_data'},followup_questions:{questions:[]}};
 function text(node){if(node==null)return '';if(typeof node==='string')return node;if(Array.isArray(node))return node.map(text).join(' ');return text(node.children);}
@@ -28,4 +37,6 @@ content=render();assert(content.includes('미게시 검증 자료'));assert(cont
 state.openRunEvidence(['F1']);content=render();assert(content.includes('매출액 1,000'));assert(content.includes('표 1 / 행 2'));assert(content.includes('검증 위치의 원본 바이트'));
 state.runAnalysis.value.disclosure_history={status:'partial_withheld',withheld_period_ends:['2026-06-30']};content=render();assert(content.includes('정정 전후 관계가 미확인'));
 state.runAnalysis.value.disclosure_history={status:'pass',confirmed_relations:[{original_receipt:'20260813000914',receipt_number:'20260814002314'}]};content=render();assert(content.includes('정정 원본 관계 확인'));assert(content.includes('20260813000914'));assert(!content.includes('정정 전후 관계가 미확인'));
+state.peerAnalyses.value=[{scope:'OFS',public_cutoff:'2026-10-27',peer_company_count:21,peer_company_period_count:86,measured_comparison_count:1,peer_comparisons:[{status:'measured',comparison_definition:{metric:'liabilities_to_assets',period_end:'2024-12-31'},target_value:'0.5',sample_size:20,distinct_company_count:20,descriptive:{median:'0.4',q1:'0.3',q3:'0.6'},percentile_rank:'60',robust_outlier:{status:'unmeasured'}}]},{scope:'CFS',public_cutoff:'2026-10-27',peer_company_count:20,peer_company_period_count:80,measured_comparison_count:0,peer_comparisons:[]}];content=render();assert(content.includes('광역 303 탐색 비교'));assert(content.includes('KSIC 개정 차수가 미확인'));assert(content.includes('비교 표본 20건'));assert(content.includes('비교를 보류했습니다'));
+state.peerAnalysisError.value='스냅샷 무결성 실패';content=render();assert(content.includes('광역 303 탐색 비교 보류'));assert(content.includes('스냅샷 무결성 실패'));
 console.log('Vue 분석 화면: 표본 부족·통계 표시·원문 연결 통과');

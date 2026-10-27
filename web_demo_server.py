@@ -41,7 +41,7 @@ async def finance_proxy(path: str,req: Request):
     uid='[0-9a-f]{32}'
     read=[r'health',r'researches',r'research-archives',r'companies',rf'researches/{uid}(?:/(?:summary|events|reports))?',
         rf'runs/{uid}(?:/(?:execution|validations|verified-analysis))?',rf'validation-batches/{uid}(?:/(?:quality|quality-analysis))?',rf'reports/{uid}(?:/(?:view|quality|financial-analysis|compare/{uid}|charts/(?:annual|interim)-[a-z_]+[.]svg))?',
-        rf'evidence/{uid}',rf'fragments/{uid}(?:/original)?',rf'sources/{uid}(?:/view)?',r'exports/[0-9a-f]{64}',rf'researches/{uid}/attachment-bundles/[0-9a-f]{{64}}']
+        rf'evidence/{uid}',rf'fragments/{uid}(?:/original)?',rf'sources/{uid}(?:/view)?',r'exports/[0-9a-f]{64}',rf'researches/{uid}/attachment-bundles/[0-9a-f]{{64}}',r'cohorts/broad-303/companies/[0-9]{8}/analysis']
     write=[r'researches/general/start',rf'researches/{uid}/(?:inputs|stop|resume|attachment-bundles|plan|archive|restore|general-runs|refresh)',rf'researches/{uid}/quality-exceptions/[0-9a-f]{{64}}/reviews',rf'runs/{uid}/(?:drafts|collect|report)',rf'reports/{uid}/exports']
     if not any(re.fullmatch(pattern,path) for pattern in (read if req.method=='GET' else write)):
         return JSONResponse({'detail':'허용되지 않은 금융 API 경로입니다.'},status_code=403)

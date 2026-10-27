@@ -263,10 +263,45 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                       _createElementVNode("button", { onClick: downloadRunFragment }, "검증 위치의 원본 바이트 ↓", 8, ["onClick"])
                     ]))
                   : _createCommentVNode("", true),
+                (peerAnalyses.length)
+                  ? (_openBlock(), _createElementBlock("section", {
+                      key: 2,
+                      "aria-label": "광역 303 탐색 비교"
+                    }, [_createElementVNode("h3", null, "광역 303 탐색 비교"), _createElementVNode("p", { class: "hint" }, "정기공시 XBRL에서 관측한 303 계열의 별도 비교집단입니다. KSIC 개정 차수가 미확인이라 제동장치 30392 코호트와 섞지 않으며 ML 모델은 학습하지 않았습니다. 기준일 " + _toDisplayString(peerAnalyses[0].public_cutoff) + " · 불변 스냅샷에서 읽었습니다.", 1), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(peerAnalyses, (group) => {
+                      return (_openBlock(), _createElementBlock("div", {
+                        key: group.scope,
+                        class: "question-card"
+                      }, [_createElementVNode("strong", null, _toDisplayString(group.scope==='OFS'?'별도':'연결') + "재무제표 · " + _toDisplayString(group.peer_company_count) + "개 법인 · " + _toDisplayString(group.peer_company_period_count) + "개 기업기간", 1), (!group.measured_comparison_count)
+                        ? (_openBlock(), _createElementBlock("p", {
+                            key: 0,
+                            class: "muted"
+                          }, "같은 지표·기간의 비교 가능한 검증 표본이 부족하여 비교를 보류했습니다."))
+                        : _createCommentVNode("", true), (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(group.peer_comparisons.filter(row=>row.status==='measured'), (item, index) => {
+                        return (_openBlock(), _createElementBlock("div", {
+                          key: index,
+                          class: "question-card"
+                        }, [
+                          _createElementVNode("strong", null, _toDisplayString(analysisLabel(item.comparison_definition.metric)) + " · " + _toDisplayString(item.comparison_definition.period_end), 1),
+                          _createElementVNode("p", null, "대상 값 " + _toDisplayString(item.target_value) + " · 비교 표본 " + _toDisplayString(item.sample_size) + "건 / " + _toDisplayString(item.distinct_company_count) + "개 법인", 1),
+                          _createElementVNode("p", null, "중앙값 " + _toDisplayString(item.descriptive.median) + " · 1사분위 " + _toDisplayString(item.descriptive.q1) + " · 3사분위 " + _toDisplayString(item.descriptive.q3) + " · 백분위 " + _toDisplayString(item.percentile_rank), 1),
+                          (item.robust_outlier.status==='measured')
+                            ? (_openBlock(), _createElementBlock("p", { key: 0 }, "강건 Z " + _toDisplayString(item.robust_outlier.score) + " · " + _toDisplayString(item.robust_outlier.outside_threshold?'통계적 특이 관측':'설정 범위 이내'), 1))
+                            : _createCommentVNode("", true),
+                          _createElementVNode("p", { class: "hint" }, "통계적 위치는 회계 오류·신용위험·대출 판단이 아닙니다.")
+                        ]))
+                      }), 128))]))
+                    }), 128))]))
+                  : _createCommentVNode("", true),
+                peerAnalysisError
+                  ? (_openBlock(), _createElementBlock("p", {
+                      key: 3,
+                      class: "alert"
+                    }, "광역 303 탐색 비교 보류: " + _toDisplayString(peerAnalysisError), 1))
+                  : _createCommentVNode("", true),
                 _createElementVNode("h3", null, "추가 확인할 자료"),
                 (!runAnalysis.analysis_plan.steps.length)
                   ? (_openBlock(), _createElementBlock("p", {
-                      key: 2,
+                      key: 4,
                       class: "muted"
                     }, "현재 자동 생성된 확인 항목이 없습니다."))
                   : _createCommentVNode("", true),

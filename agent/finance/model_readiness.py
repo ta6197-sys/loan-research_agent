@@ -32,6 +32,7 @@ def evaluate(snapshot, *, core_features=None):
     accounts = {row.get("account_definition_version") for row in rows}
     peer_groups = {row.get("peer_group") for row in rows}
     origins = {row.get('data_origin') for row in rows}
+    industry_versions = {row.get('industry_version') for row in rows if row.get('industry_version') is not None}
     checks = {
         "minimum_company_period_rows": {"actual": len(rows), "minimum": MIN_ROWS, "pass": len(rows) >= MIN_ROWS},
         "minimum_distinct_companies": {"actual": len(companies), "minimum": MIN_COMPANIES, "pass": len(companies) >= MIN_COMPANIES},
@@ -42,6 +43,9 @@ def evaluate(snapshot, *, core_features=None):
                           "pass": len(industries) == len(scopes) == len(accounts) == len(peer_groups) == 1 and None not in accounts and None not in peer_groups},
         "data_origin": {"origins": sorted(origins, key=str),
                         "pass": len(origins) == 1 and next(iter(origins), None) in {'verified_public_disclosure', 'synthetic_test_only'}},
+        "industry_revision": {"versions": sorted(industry_versions, key=str),
+                              "pass": 'unconfirmed' not in industry_versions,
+                              "reason": "official_classification_revision_required_for_training"},
         "public_cutoff": {"pass": not any(row["source_receipt"][:8] > row["public_cutoff"].replace("-", "") for row in rows), "reason": "source_receipt_date_must_not_exceed_public_cutoff"},
     }
     passed = all(check["pass"] for check in checks.values())

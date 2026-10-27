@@ -47,3 +47,4 @@ class AnalysisApiTests(unittest.TestCase):
             self.assertNotEqual(403, client.get('/api/reports/' + report + '/financial-analysis').status_code)
             self.assertNotEqual(403, client.get('/api/validation-batches/' + batch + '/quality-analysis').status_code)
             self.assertNotEqual(403, client.get('/api/runs/' + report + '/verified-analysis').status_code)
+            self.assertNotEqual(403, client.get('/api/cohorts/broad-303/companies/00157539/analysis?scope=OFS').status_code)

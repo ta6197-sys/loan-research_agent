@@ -84,7 +84,10 @@ def _canonical(record, feature_policy_version):
             "account_definition_version": record.get("account_definition_version"), "peer_group": record.get("peer_group"),
             "features": values, "missing_features": missing_features, "feature_evidence": evidence,
             "correction_status": record["correction_status"],
-            **{key: record[key] for key in ("source_manifest", "source_public_at", "report_id", "accounting_standard", "currency", "data_origin", "verification_gates") if key in record}}, None
+            **{key: record[key] for key in ("source_manifest", "source_public_at", "report_id", "run_id",
+               "mapping_batch_id", "report_period_kind", "industry_system", "industry_version",
+               "industry_observed_code", "accounting_standard_evidence", "accounting_standard",
+               "currency", "data_origin", "verification_gates") if key in record}}, None
 
 
 def build_snapshot(records, *, feature_policy_version=FEATURE_POLICY_VERSION):
