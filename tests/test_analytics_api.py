@@ -18,21 +18,28 @@ class AnalyticsApiContractTests(unittest.TestCase):
             self.assertEqual(200,response.status_code)
             payload=response.json()
             self.assertEqual('exploratory_observed_303_family',payload['cohort_id'])
+            self.assertEqual('v2',payload['snapshot_version'])
+            self.assertEqual(30,payload['peer_company_count'])
             self.assertEqual('unconfirmed',payload['classification_revision'])
             self.assertEqual('not_trained_insufficient_data',payload['ml_training_status'])
             self.assertGreater(payload['company_period_count'],0)
             self.assertTrue(all(row['status'] in {'measured','insufficient_peer_data'}
                                 for row in payload['peer_comparisons']))
+            previous=client.get('/cohorts/broad-303/companies/00157539/analysis?scope=OFS&snapshot_version=v1')
+            self.assertEqual(200,previous.status_code)
+            self.assertEqual(21,previous.json()['peer_company_count'])
+            self.assertEqual('v1',previous.json()['snapshot_version'])
             self.assertEqual(404,client.get('/cohorts/broad-303/companies/00000000/analysis').status_code)
             self.assertEqual(422,client.get('/cohorts/broad-303/companies/bad/analysis').status_code)
             self.assertEqual(422,client.get('/cohorts/broad-303/companies/00157539/analysis?scope=bad').status_code)
+            self.assertEqual(422,client.get('/cohorts/broad-303/companies/00157539/analysis?snapshot_version=bad').status_code)
         from tempfile import TemporaryDirectory
         from pathlib import Path
         from agent.finance import broad_303_read_model
         with TemporaryDirectory() as directory:
             changed=Path(directory)/'snapshot.json'
-            changed.write_text(broad_303_read_model.SNAPSHOTS['OFS'].read_text().replace('"30399"','"30398"',1))
-            with patch.dict(broad_303_read_model.SNAPSHOTS,{'OFS':changed}):
+            changed.write_text(broad_303_read_model.SNAPSHOTS['v2']['OFS'].read_text().replace('"30399"','"30398"',1))
+            with patch.dict(broad_303_read_model.SNAPSHOTS['v2'],{'OFS':changed}):
                 with self.assertRaisesRegex(ValueError,'exploratory_snapshot_integrity_failed'):
                     read_company('00157539')
 

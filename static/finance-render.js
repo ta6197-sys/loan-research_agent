@@ -292,16 +292,22 @@ window.FinanceRender=(()=>{const _Vue=Vue;return function render(_ctx, _cache) {
                       }), 128))]))
                     }), 128))]))
                   : _createCommentVNode("", true),
-                peerAnalysisError
+                (peerAnalyses.length)
                   ? (_openBlock(), _createElementBlock("p", {
                       key: 3,
+                      class: "hint"
+                    }, "광역 303 스냅샷 " + _toDisplayString(peerAnalyses[0].snapshot_version) + " · 이전 분석 결과도 보존됩니다.", 1))
+                  : _createCommentVNode("", true),
+                peerAnalysisError
+                  ? (_openBlock(), _createElementBlock("p", {
+                      key: 4,
                       class: "alert"
                     }, "광역 303 탐색 비교 보류: " + _toDisplayString(peerAnalysisError), 1))
                   : _createCommentVNode("", true),
                 _createElementVNode("h3", null, "추가 확인할 자료"),
                 (!runAnalysis.analysis_plan.steps.length)
                   ? (_openBlock(), _createElementBlock("p", {
-                      key: 4,
+                      key: 5,
                       class: "muted"
                     }, "현재 자동 생성된 확인 항목이 없습니다."))
                   : _createCommentVNode("", true),

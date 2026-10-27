@@ -237,8 +237,8 @@ class GeneralCollectionService:
                     try:
                         outcome = await self.dart.financials(run_id, corp_code, target["year"], target["report_code"], scope)
                     except DartFailure as error:
-                        if error.kind != 'no_data': raise
-                        outcome = {'status':'no_data','reason':'official_financial_api_no_data',
+                        if error.kind not in {'no_data','file_not_found'}: raise
+                        outcome = {'status':error.kind,'reason':'official_financial_api_'+error.kind,
                                    'usable':False,'financial_verification':'not_performed'}
                     financial_sources.append({"target": target, "scope": scope, "result": outcome})
                     if outcome.get("status") == "ok":
@@ -247,13 +247,13 @@ class GeneralCollectionService:
                     try:
                         document = await self.dart.document(run_id, receipt)
                     except DartFailure as error:
-                        if error.kind != 'no_data': raise
-                        document = {'source_id':None,'members':[],'status':'no_data'}
+                        if error.kind not in {'no_data','file_not_found'}: raise
+                        document = {'source_id':None,'members':[],'status':error.kind}
                     try:
                         xbrl = await self.dart.xbrl(run_id, receipt, target["report_code"])
                     except DartFailure as error:
-                        if error.kind != 'no_data': raise
-                        xbrl = {'source_id':None,'members':[],'status':'no_data'}
+                        if error.kind not in {'no_data','file_not_found'}: raise
+                        xbrl = {'source_id':None,'members':[],'status':error.kind}
                     archives.append({"target": target, "receipt_number": receipt,
                                      "document_source_id": document["source_id"], "xbrl_source_id": xbrl["source_id"],
                                      "document_status":document.get('status','ok'),

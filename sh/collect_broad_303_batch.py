@@ -54,7 +54,11 @@ async def process(store,target,candidate,cutoff,*,retry_no_data=False):
     receipt=receive(store,request);run_id=receipt['run_id']
     run=store.get_run(run_id)
     if retry_no_data and run['status']=='failed':
-        retry=create_collection_retry(store,receipt['research_id'])
+        used=store.get_research(receipt['research_id'])['cumulative_usage']['external_requests']
+        remaining=60-used
+        if remaining<=0:raise ValueError('fixed_company_external_request_cap_exhausted')
+        retry=create_collection_retry(store,receipt['research_id'],
+                                      external_request_budget=remaining)
         run_id=retry['run_id'];run=store.get_run(run_id)
     if run['status']=='queued':
         collection=await GeneralCollectionService(store).run(run_id)

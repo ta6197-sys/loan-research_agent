@@ -7,16 +7,18 @@ from .analytics_dataset_service import AnalyticsDatasetService
 from .statistical_analysis import analyze
 
 ROOT = Path(__file__).resolve().parents[2]
-AUDIT = ROOT / 'doc/finance/BROAD_303_EXPANDED_AUDIT_20261027.json'
-SNAPSHOTS = {scope: ROOT / f'doc/finance/BROAD_303_EXPANDED_{scope}_20261027.json'
-             for scope in ('OFS', 'CFS')}
+AUDITS = {'v1': ROOT / 'doc/finance/BROAD_303_EXPANDED_AUDIT_20261027.json',
+          'v2': ROOT / 'doc/finance/BROAD_303_EXPANDED_V2_AUDIT_20261027.json'}
+SNAPSHOTS = {version: {scope: ROOT / f'doc/finance/BROAD_303_EXPANDED_{suffix}{scope}_20261027.json'
+                       for scope in ('OFS', 'CFS')}
+             for version,suffix in (('v1',''),('v2','V2_'))}
 
 
-def read_company(corp_code: str, scope: str = 'OFS'):
-    if scope not in SNAPSHOTS:
+def read_company(corp_code: str, scope: str = 'OFS', snapshot_version: str = 'v2'):
+    if snapshot_version not in SNAPSHOTS or scope not in SNAPSHOTS[snapshot_version]:
         raise ValueError('unsupported_scope')
-    audit = json.loads(AUDIT.read_text())
-    snapshot = json.loads(SNAPSHOTS[scope].read_text())
+    audit = json.loads(AUDITS[snapshot_version].read_text())
+    snapshot = json.loads(SNAPSHOTS[snapshot_version][scope].read_text())
     expected = audit['scopes'][scope]
     stable = json.dumps(snapshot['rows'], ensure_ascii=False, sort_keys=True, separators=(',', ':'))
     actual_hash = hashlib.sha256(stable.encode()).hexdigest()
@@ -38,6 +40,7 @@ def read_company(corp_code: str, scope: str = 'OFS'):
     return {
         'schema_version': 'broad-303-read-model-1.0',
         'cohort_id': 'exploratory_observed_303_family',
+        'snapshot_version': snapshot_version,
         'corp_code': corp_code, 'scope': scope,
         'public_cutoff': audit['public_cutoff'],
         'snapshot_id': snapshot['snapshot_id'],

@@ -127,6 +127,14 @@ class GeneralCompanyStartTests(unittest.TestCase):
         self.assertEqual(2, len(research["runs"]))
         self.assertEqual("general_company", self.store.get_run(retry["run_id"])["trigger"]["kind"])
 
+    def test_retry_can_use_only_the_remaining_fixed_request_budget(self):
+        first=receive(self.store,self.value())
+        retry=create_collection_retry(self.store,first['research_id'],external_request_budget=12)
+        self.assertEqual(12,self.store.get_run(retry['run_id'])['budget']['external_requests'])
+        self.assertEqual(60,self.store.get_run(first['run_id'])['budget']['external_requests'])
+        with self.assertRaisesRegex(ValueError,'retry_external_request_budget_invalid'):
+            create_collection_retry(self.store,first['research_id'],external_request_budget=61)
+
     def test_refresh_advances_immutable_cutoff_and_preserves_old_run(self):
         first=receive(self.store,self.value())
         pending=create_refresh_run(self.store,first['research_id'],date(2026,10,27))
@@ -256,6 +264,21 @@ class GeneralCollectionFiscalTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(10,result['financial_requests'])
         self.assertEqual(0,result['archive_count'])
         self.assertEqual('no_data',result['unavailable_archive_parts'][0]['xbrl_status'])
+        self.assertEqual('not_performed',result['financial_verification'])
+
+    async def test_missing_official_xbrl_file_is_recorded_without_promoting_validation(self):
+        class Dart:
+            async def company(self,*args):return {'source_id':'identity','company':{'acc_mt':'03'}}
+            async def disclosures(self,*args,**kwargs):
+                return {'items':[{'report_nm':'사업보고서 (2026.03)',
+                                  'rcept_no':'20260630000001'}],
+                        'source_id':'disclosures','total_page':1}
+            async def financials(self,*args):raise DartFailure('no_data')
+            async def document(self,*args):return {'source_id':'document','members':[]}
+            async def xbrl(self,*args):raise DartFailure('file_not_found')
+        result=await GeneralCollectionService(self.store,dart_service=Dart()).run(self.run_id)
+        self.assertEqual(0,result['archive_count'])
+        self.assertEqual('file_not_found',result['unavailable_archive_parts'][0]['xbrl_status'])
         self.assertEqual('not_performed',result['financial_verification'])
 
 

@@ -81,7 +81,7 @@ def receive(store, value: GeneralStartInput):
     }
 
 
-def create_collection_retry(store, research_id):
+def create_collection_retry(store, research_id, *, external_request_budget=None):
     """이전 실패/완료 수집을 보존한 채 같은 기준으로 새 수집 실행을 만든다."""
     research = store.get_research(research_id)
     basis = research["bases"][-1]
@@ -96,8 +96,13 @@ def create_collection_retry(store, research_id):
         },
         "supersedes_collection_run_id": previous["id"],
     }
+    budget=Budget.model_validate(previous["budget"])
+    if external_request_budget is not None:
+        if not 0 <= external_request_budget <= budget.external_requests:
+            raise ValueError('retry_external_request_budget_invalid')
+        budget=budget.model_copy(update={'external_requests':external_request_budget})
     run = store.create_run(basis["id"], previous_run_id=previous["id"], trigger=trigger,
-                           budget=Budget.model_validate(previous["budget"]))
+                           budget=budget)
     return {"research_id": research_id, "basis_id": basis["id"], "run_id": run["id"],
             "status": "collection_plan_pending", "previous_run_id": previous["id"]}
 
